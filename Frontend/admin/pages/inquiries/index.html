@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="إدارة الاستفسارات - نظام إدارة العقارات المؤسسي">
+    <title>إدارة الاستفسارات | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="inquiries.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                    
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-headset page-title-icon"></i>
+                        إدارة الاستفسارات
+                    </h1>
+                    <p class="page-description">
+                        إدارة استفسارات العملاء الواردة والرد عليها وتتبع حالاتها
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                    
+                    <div class="quick-stats">
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">المجموع:</span>
+                            <span class="quick-stat-value" id="total-inquiries">3</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">جديد:</span>
+                            <span class="quick-stat-value new" id="new-inquiries">2</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">قيد المراجعة:</span>
+                            <span class="quick-stat-value pending" id="pending-inquiries">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">3</h3>
+                            <p class="overview-card-label">إجمالي الاستفسارات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-new">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-new">2</h3>
+                            <p class="overview-card-label">استفسارات جديدة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-pending">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-pending">1</h3>
+                            <p class="overview-card-label">قيد المراجعة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-resolved">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-resolved">0</h3>
+                            <p class="overview-card-label">تم الرد عليها</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول الاستفسارات -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة الاستفسارات
+                        </h3>
+                        
+                        <div class="card-actions">
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في الاستفسارات...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-dropdown-table">
+                                <button class="btn btn-outline btn-sm filter-table-btn" id="filter-table-btn">
+                                    <i class="fas fa-filter"></i>
+                                    <span>تصفية</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="filter-dropdown-content-table" id="filter-dropdown-table">
+                                    <div class="filter-sections-scroll">
+                                        <div class="filter-section">
+                                            <h6>حالة الاستفسار</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="جديد" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">جديد</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="تحت_المراجعة" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">تحت المراجعة</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="تم_الرد">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">تم الرد</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="ملغي">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">ملغي</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="متحول_لعميل">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">متحول لعميل</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>نوع الاستفسار</h6>
+                                            <div class="filter-options" id="filter-type-options">
+                                                <!-- سيتم تعبئتها ديناميكياً عبر JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="filter-actions">
+                                        <button class="btn btn-primary btn-sm" id="apply-filter-table">تطبيق</button>
+                                        <button class="btn btn-outline btn-sm" id="reset-filter-table">إعادة تعيين</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-outline btn-sm" id="export-btn">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table" id="inquiries-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="100">رقم الاستفسار</th>
+                                        <th>العميل</th>
+                                        <th width="150">معلومات التواصل</th>
+                                        <th width="120">طريقة التواصل</th>
+                                        <th width="100">ميعاد التواصل</th>
+                                        <th width="120">المشروع</th>
+                                        <th width="120">نوع الاستفسار</th>
+                                        <th width="100">الحالة</th>
+                                        <th width="120">تاريخ الإرسال</th>
+                                        <th width="100">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inquiries-table-body">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                    <tr class="loading-row">
+                                        <td colspan="11">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل الاستفسارات...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> استفسار</span>
+                            </div>
+                            
+                            <div class="table-pagination" id="table-pagination">
+                                <!-- سيتم ملؤها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع الاستفسارات
+                                    </h4>
+                                    <select class="period-select" id="chart-period">
+                                        <option value="week">هذا الأسبوع</option>
+                                        <option value="month" selected>هذا الشهر</option>
+                                        <option value="quarter">هذا الربع</option>
+                                        <option value="year">هذه السنة</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="inquiries-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-history"></i>
+                                        أحدث الاستفسارات
+                                    </h4>
+                                    <a href="#" class="view-all-link">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="recent-list" id="recent-inquiries">
+                                        <!-- سيتم ملؤها عبر JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل الاستفسار -->
+    <div class="modal" id="inquiry-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-inquiry-title">تفاصيل الاستفسار</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-inquiry-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-reply-btn">الرد على الاستفسار</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal للرد على الاستفسار -->
+    <div class="modal" id="reply-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">الرد على الاستفسار</h3>
+                    <button class="modal-close" id="reply-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="reply-form">
+                        <div class="form-group">
+                            <label for="reply-message">نص الرد *</label>
+                            <textarea 
+                                id="reply-message" 
+                                class="form-control" 
+                                rows="5" 
+                                placeholder="اكتب ردك هنا..." 
+                                required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reply-status">تغيير الحالة</label>
+                            <select id="reply-status" class="form-control">
+                                <option value="تحت_المراجعة">تحت المراجعة</option>
+                                <option value="تم_الرد">تم الرد</option>
+                                <option value="ملغي">مغلق</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="reply-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="reply-submit-btn">إرسال الرد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتأكيد الحذف -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذا الاستفسار؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="inquiries.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>

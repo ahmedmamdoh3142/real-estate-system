@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="إدارة العملاء - نظام إدارة العقارات المؤسسي">
+    <title>إدارة العملاء | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="leeds.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <!-- شريط الإدارة العلوي -->
+            <div class="admin-topbar"> 
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-users page-title-icon"></i>
+                        إدارة العملاء
+                    </h1>
+                    <p class="page-description">
+                        إدارة قاعدة العملاء، تتبع العملاء المحتملين، وتحويلهم إلى عملاء متعاقدين
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <!-- زر إضافة عميل جديد -->
+                    <button class="btn btn-primary" id="add-client-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة عميل</span>
+                    </button>
+
+                    <!-- زر التحديث -->
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                    
+                    <!-- إحصاءات سريعة -->
+                    <div class="quick-stats">
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">المجموع:</span>
+                            <span class="quick-stat-value" id="total-clients">2</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">محتملون:</span>
+                            <span class="quick-stat-value potential" id="potential-clients">1</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">متعاقدون:</span>
+                            <span class="quick-stat-value contracted" id="contracted-clients">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">2</h3>
+                            <p class="overview-card-label">إجمالي العملاء</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-potential">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-potential">1</h3>
+                            <p class="overview-card-label">عملاء محتملون</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-contracted">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-contracted">1</h3>
+                            <p class="overview-card-label">عملاء متعاقدون</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-active">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-active">2</h3>
+                            <p class="overview-card-label">عقود نشطة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول العملاء -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة العملاء
+                        </h3>
+                        
+                        <div class="card-actions">
+                            <!-- بحث متقدم -->
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في العملاء...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- زر التصفية المحسّن (مثل صفحة الاستفسارات) -->
+                            <div class="filter-dropdown-table" id="filter-dropdown-table">
+                                <button class="btn btn-outline btn-sm filter-table-btn" id="filter-table-btn">
+                                    <i class="fas fa-filter"></i>
+                                    <span>تصفية متقدمة</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="filter-dropdown-content-table" id="filter-dropdown-content">
+                                    <div class="filter-header">
+                                        <h5>تصفية العملاء</h5>
+                                        <button class="filter-close-btn" id="filter-close-btn">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="filter-sections-scroll">
+                                        <div class="filter-section">
+                                            <h6><i class="fas fa-user-tag"></i> نوع العميل</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="clientType" value="محتمل" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">عميل محتمل</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="clientType" value="متعاقد" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">عميل متعاقد</span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="filter-section">
+                                            <h6><i class="fas fa-chart-line"></i> حالة العميل</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مؤهل" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">مؤهل</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="تحت المتابعة" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">تحت المتابعة</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="متعاقد">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">متعاقد</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مفقود">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">مفقود</span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="filter-section">
+                                            <h6><i class="fas fa-exclamation-circle"></i> الأولوية</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="priority" value="عالي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">عالي</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="priority" value="متوسط" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">متوسط</span>
+                                                    </span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="priority" value="منخفض" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">
+                                                        <span class="filter-label-text">منخفض</span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="filter-section">
+                                            <h6><i class="fas fa-calendar-alt"></i> فترة التسجيل</h6>
+                                            <div class="date-filters">
+                                                <div class="date-filter-group">
+                                                    <label>من تاريخ:</label>
+                                                    <input type="date" id="filter-date-from" class="form-control">
+                                                </div>
+                                                <div class="date-filter-group">
+                                                    <label>إلى تاريخ:</label>
+                                                    <input type="date" id="filter-date-to" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="filter-actions">
+                                        <button class="btn btn-outline btn-sm" id="reset-filter-table">
+                                            <i class="fas fa-redo"></i>
+                                            إعادة تعيين
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" id="apply-filter-table">
+                                            <i class="fas fa-check"></i>
+                                            تطبيق التصفية
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- جدول العملاء -->
+                        <div class="table-container">
+                            <table class="data-table" id="clients-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="100">كود العميل</th>
+                                        <th>اسم العميل</th>
+                                        <th width="150">معلومات التواصل</th>
+                                        <th width="120">المشروع المهتم به</th>
+                                        <th width="120">نوع العميل</th>
+                                        <th width="100">الحالة</th>
+                                        <th width="100">الأولوية</th>
+                                        <th width="120">تاريخ التسجيل</th>
+                                        <th width="150">المعقود معه</th>
+                                        <th width="100">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clients-table-body">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                    <tr class="loading-row">
+                                        <td colspan="11">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل العملاء...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- تذييل الجدول -->
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> عميل</span>
+                            </div>
+                            
+                            <div class="table-pagination" id="table-pagination">
+                                <!-- سيتم ملؤها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات (بألوان داكنة مثل صفحة الاستفسارات) -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <!-- مخطط توزيع العملاء -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع العملاء
+                                    </h4>
+                                    <select class="period-select" id="chart-period">
+                                        <option value="week">هذا الأسبوع</option>
+                                        <option value="month" selected>هذا الشهر</option>
+                                        <option value="quarter">هذا الربع</option>
+                                        <option value="year">هذه السنة</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="clients-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- أحدث العملاء -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-history"></i>
+                                        أحدث العملاء
+                                    </h4>
+                                    <a href="#" class="view-all-link">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="recent-list" id="recent-clients">
+                                        <!-- سيتم ملؤها عبر JavaScript -->
+                                        <div class="recent-item">
+                                            <div class="recent-item-icon">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <div class="recent-item-content">
+                                                <div class="recent-item-header">
+                                                    <h5 class="recent-item-title">محمد العتيبي</h5>
+                                                </div>
+                                                <p class="recent-item-message">عميل محتمل - مهتم بفيلات النخيل...</p>
+                                                <span class="recent-item-status status-potential">محتمل</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="recent-item">
+                                            <div class="recent-item-icon">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <div class="recent-item-content">
+                                                <div class="recent-item-header">
+                                                    <h5 class="recent-item-title">شركة التقنية المتطورة</h5>
+                                                </div>
+                                                <p class="recent-item-message">عميل متعاقد - عقد نشط...</p>
+                                                <span class="recent-item-status status-contracted">متعاقد</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل العميل -->
+    <div class="modal" id="client-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-client-title">تفاصيل العميل</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-client-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-btn">تعديل العميل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لحذف العميل (مثل صفحة الاستفسارات) -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذا العميل؟</p>
+                    <p class="text-danger"><small>هذا الإجراء لا يمكن التراجع عنه.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإضافة/تعديل عميل -->
+    <div class="modal" id="client-form-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="form-modal-title">إضافة عميل جديد</h3>
+                    <button class="modal-close" id="form-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="client-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="client-name">اسم العميل *</label>
+                                    <input type="text" id="client-name" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-email">البريد الإلكتروني *</label>
+                                    <input type="email" id="client-email" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-phone">رقم الهاتف *</label>
+                                    <input type="tel" id="client-phone" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-national-id">رقم الهوية الوطنية</label>
+                                    <input type="text" id="client-national-id" class="form-control">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="client-address">العنوان</label>
+                                    <textarea id="client-address" class="form-control" rows="2"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-project">المشروع المهتم به</label>
+                                    <select id="client-project" class="form-control">
+                                        <option value="">-- اختر مشروع --</option>
+                                        <option value="1">فيلات النخيل الراقية</option>
+                                        <option value="2">أبراج الأعمال التجارية</option>
+                                        <option value="3">شقق السفير المتميزة</option>
+                                        <option value="4">مخازن اللوجستية الحديثة</option>
+                                        <option value="5">فندق ومنتجع الضيافة</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-type">نوع العميل</label>
+                                    <select id="client-type" class="form-control">
+                                        <option value="محتمل">عميل محتمل</option>
+                                        <option value="متعاقد">عميل متعاقد</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client-status">الحالة</label>
+                                    <select id="client-status" class="form-control">
+                                        <option value="مؤهل">مؤهل</option>
+                                        <option value="تحت المتابعة">تحت المتابعة</option>
+                                        <option value="متعاقد">متعاقد</option>
+                                        <option value="مفقود">مفقود</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="client-budget">الميزانية المتوقعة (ر.س)</label>
+                                    <input type="number" id="client-budget" class="form-control">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="client-priority">الأولوية</label>
+                                    <select id="client-priority" class="form-control">
+                                        <option value="عالي">عالي</option>
+                                        <option value="متوسط">متوسط</option>
+                                        <option value="منخفض">منخفض</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="client-notes">ملاحظات</label>
+                            <textarea id="client-notes" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="next-follow-up">موعد المتابعة القادمة</label>
+                            <input type="date" id="next-follow-up" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close" id="form-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="form-submit-btn">حفظ العميل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="leeds.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>

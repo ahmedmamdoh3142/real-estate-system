@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="الملف الشخصي - نظام إدارة العقارات المؤسسي">
+    <title>الملف الشخصي | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="profile.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-user-circle page-title-icon"></i>
+                        الملف الشخصي
+                    </h1>
+                    <p class="page-description">
+                        إدارة معلومات حسابك الشخصية وتحديث كلمة المرور وعرض التقييمات والجزاءات والمهام
+                    </p>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <div class="profile-content">
+                    <div class="row">
+                        <!-- الجزء الأيسر: المعلومات الشخصية -->
+                        <div class="col-md-4">
+                            <div class="profile-sidebar">
+                                <!-- صورة المستخدم -->
+                                <div class="profile-picture-section">
+                                    <div class="profile-picture-wrapper">
+                                        <div class="profile-picture" id="profile-picture">
+                                            <i class="fas fa-user-circle"></i>
+                                        </div>
+                                        <button class="change-picture-btn" id="change-picture-btn">
+                                            <i class="fas fa-camera"></i>
+                                            <span>تغيير الصورة</span>
+                                        </button>
+                                    </div>
+                                    <input type="file" id="picture-input" accept="image/*" hidden>
+                                </div>
+
+                                <!-- معلومات الحساب -->
+                                <div class="profile-info-section">
+                                    <h4 class="profile-section-title">
+                                        <i class="fas fa-id-card"></i>
+                                        معلومات الحساب
+                                    </h4>
+                                    <div class="profile-info-list">
+                                        <div class="profile-info-item">
+                                            <div class="profile-info-label">
+                                                <i class="fas fa-user-tag"></i>
+                                                اسم المستخدم:
+                                            </div>
+                                            <div class="profile-info-value" id="info-username">admin</div>
+                                        </div>
+                                        <div class="profile-info-item">
+                                            <div class="profile-info-label">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                تاريخ التسجيل:
+                                            </div>
+                                            <div class="profile-info-value" id="info-join-date">١٥ يناير ٢٠٢٤</div>
+                                        </div>
+                                        <div class="profile-info-item">
+                                            <div class="profile-info-label">
+                                                <i class="fas fa-sign-in-alt"></i>
+                                                آخر تسجيل دخول:
+                                            </div>
+                                            <div class="profile-info-value" id="info-last-login">اليوم ١٠:٣٠ ص</div>
+                                        </div>
+                                        <div class="profile-info-item">
+                                            <div class="profile-info-label">
+                                                <i class="fas fa-history"></i>
+                                                حالة الحساب:
+                                            </div>
+                                            <div class="profile-info-value status-active">
+                                                <i class="fas fa-check-circle"></i>
+                                                نشط
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- بطاقة التقييم الإجمالي -->
+                                <div class="main-content-card" id="profile-rating-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-star rating-card-icon"></i>
+                                            الإجمالي تقييمي
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="overall-rating-display">
+                                            <div class="rating-number" id="overall-rating-value">--</div>
+                                            <div class="rating-max">من 10</div>
+                                        </div>
+                                        <div class="rating-stars" id="overall-rating-stars">
+                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </div>
+                                        <div class="rating-count" id="rating-count">
+                                            <i class="fas fa-chart-line"></i>
+                                            <span>-- تقييم</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الجزء الأيمن: النماذج والمهام والجزاءات -->
+                        <div class="col-md-8">
+                            <div class="profile-forms">
+                                <!-- معلومات المستخدم -->
+                                <div class="main-content-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-user-edit card-title-icon"></i>
+                                            المعلومات الشخصية
+                                        </h3>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <form id="profile-form">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="fullName">الاسم الكامل *</label>
+                                                    <input 
+                                                        type="text" 
+                                                        id="fullName" 
+                                                        class="form-control" 
+                                                        placeholder="أدخل اسمك الكامل" 
+                                                        required
+                                                        value="أحمد محمد">
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <label for="email">البريد الإلكتروني *</label>
+                                                    <input 
+                                                        type="email" 
+                                                        id="email" 
+                                                        class="form-control" 
+                                                        placeholder="أدخل بريدك الإلكتروني" 
+                                                        required
+                                                        value="admin@abh.com">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="phone">رقم الهاتف</label>
+                                                    <input 
+                                                        type="tel" 
+                                                        id="phone" 
+                                                        class="form-control" 
+                                                        placeholder="مثال: 0501234567"
+                                                        value="0501234567">
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <label for="department">القسم</label>
+                                                    <input 
+                                                        type="text" 
+                                                        id="department" 
+                                                        class="form-control" 
+                                                        placeholder="مثال: تقنية المعلومات"
+                                                        value="">
+                                                    <small class="form-text text-muted" id="department-edit-note"></small>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="role">الدور الوظيفي</label>
+                                                    <select id="role" class="form-control">
+                                                        <option value="مشرف_عام">مشرف عام</option>
+                                                        <option value="مدير_مشاريع">مدير مشاريع</option>
+                                                        <option value="محاسب">محاسب</option>
+                                                        <option value="موظف_استقبال">موظف استقبال</option>
+                                                        <option value="خدمة_عملاء">خدمة عملاء</option>
+                                                        <option value="مبيعات">مبيعات</option>
+                                                        <option value="موارد_بشرية">موارد بشرية</option>
+                                                        <option value="موظف">موظف</option>
+                                                    </select>
+                                                    <small class="form-text text-muted" id="role-edit-note"></small>
+                                                </div>
+                                            </div>
+                                            <div class="page-header-actions">
+                                                <button class="btn btn-primary" id="save-profile-btn">
+                                                    <i class="fas fa-save"></i>
+                                                    <span>حفظ التغييرات</span>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <!-- تغيير كلمة المرور -->
+                                <div class="main-content-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-key card-title-icon"></i>
+                                            تغيير كلمة المرور
+                                        </h3>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <form id="password-form">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="current-password">كلمة المرور الحالية *</label>
+                                                    <div class="password-input-wrapper">
+                                                        <input 
+                                                            type="password" 
+                                                            id="current-password" 
+                                                            class="form-control" 
+                                                            placeholder="أدخل كلمة المرور الحالية"
+                                                            required>
+                                                        <button type="button" class="password-toggle" data-target="current-password">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <label for="new-password">كلمة المرور الجديدة *</label>
+                                                    <div class="password-input-wrapper">
+                                                        <input 
+                                                            type="password" 
+                                                            id="new-password" 
+                                                            class="form-control" 
+                                                            placeholder="أدخل كلمة المرور الجديدة"
+                                                            required>
+                                                        <button type="button" class="password-toggle" data-target="new-password">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="confirm-password">تأكيد كلمة المرور *</label>
+                                                    <div class="password-input-wrapper">
+                                                        <input 
+                                                            type="password" 
+                                                            id="confirm-password" 
+                                                            class="form-control" 
+                                                            placeholder="أعد إدخال كلمة المرور الجديدة"
+                                                            required>
+                                                        <button type="button" class="password-toggle" data-target="confirm-password">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="password-strength" id="password-strength">
+                                                        <div class="strength-bar"></div>
+                                                        <div class="strength-text">قوة كلمة المرور: ضعيفة</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <div class="password-requirements">
+                                                        <h6>متطلبات كلمة المرور:</h6>
+                                                        <ul>
+                                                            <li class="requirement" data-requirement="length">
+                                                                <i class="fas fa-check-circle requirement-met"></i>
+                                                                <span>٨ أحرف على الأقل</span>
+                                                            </li>
+                                                            <li class="requirement" data-requirement="uppercase">
+                                                                <i class="fas fa-check-circle requirement-met"></i>
+                                                                <span>حرف كبير واحد على الأقل</span>
+                                                            </li>
+                                                            <li class="requirement" data-requirement="lowercase">
+                                                                <i class="fas fa-check-circle requirement-met"></i>
+                                                                <span>حرف صغير واحد على الأقل</span>
+                                                            </li>
+                                                            <li class="requirement" data-requirement="number">
+                                                                <i class="fas fa-check-circle requirement-met"></i>
+                                                                <span>رقم واحد على الأقل</span>
+                                                            </li>
+                                                            <li class="requirement" data-requirement="special">
+                                                                <i class="fas fa-check-circle requirement-met"></i>
+                                                                <span>رمز خاص واحد على الأقل</span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <button type="button" class="btn btn-primary" id="change-password-btn">
+                                                    <i class="fas fa-key"></i>
+                                                    تغيير كلمة المرور
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <!-- قسم الجزاءات الجديد -->
+                                <div class="main-content-card penalties-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-gavel card-title-icon"></i>
+                                            الجزاءات
+                                        </h3>
+                                        <button class="btn btn-sm btn-outline" id="refresh-penalties-btn">
+                                            <i class="fas fa-sync-alt"></i>
+                                            تحديث
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="penalties-list-container" class="penalties-list-container">
+                                            <div class="loading-penalties">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                                جاري تحميل الجزاءات...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- قائمة المهام مع التقييمات -->
+                                <div class="main-content-card tasks-ratings-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-tasks card-title-icon"></i>
+                                            مهامي وتقييماتها
+                                        </h3>
+                                        <button class="btn btn-sm btn-outline" id="refresh-tasks-btn">
+                                            <i class="fas fa-sync-alt"></i>
+                                            تحديث
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        
+                                        <div id="tasks-list-container" class="tasks-list-container">
+                                            <div class="loading-tasks">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                                جاري تحميل المهام...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>

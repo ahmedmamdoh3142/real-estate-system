@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تسجيل الدخول لنظام إدارة العقارات المؤسسي">
+    <title>تسجيل الدخول | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بصفحة Login -->
+    <link rel="stylesheet" href="login.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../../../global/assets/images/favicon.ico">
+</head>
+<body class="dark-mode rtl login-page">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🎪 قسم تسجيل الدخول الرئيسي -->
+    <main class="login-container">
+        <!-- خلفية زخرفية -->
+        <div class="login-background">
+            <div class="bg-pattern-1"></div>
+            <div class="bg-pattern-2"></div>
+            <div class="bg-glow"></div>
+        </div>
+        
+        <!-- بطاقة تسجيل الدخول -->
+        <div class="login-card">
+            <!-- شعار الشركة -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الشركة العقارية" class="logo-image">
+                    <div class="logo-glow"></div>
+                </div>
+                <div class="login-title">
+                    <h1 class="title-main">
+                        <span class="title-text">تسجيل الدخول</span>
+                        <span class="title-sub">نظام إدارة العقارات</span>
+                    </h1>
+                    <p class="title-description">
+                        أدخل بيانات الدخول الخاصة بك للوصول إلى لوحة التحكم الإدارية
+                    </p>
+                </div>
+            </div>
+            
+            <!-- نموذج تسجيل الدخول -->
+            <form id="login-form" class="login-form">
+                <!-- حقل اسم المستخدم -->
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user-circle"></i>
+                        <span>اسم المستخدم</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="form-input" 
+                            placeholder="أدخل اسم المستخدم" 
+                            required
+                            autocomplete="username"
+                        >
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="input-border"></div>
+                    </div>
+                    <div class="form-error" id="username-error"></div>
+                </div>
+                
+                <!-- حقل كلمة المرور -->
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-key"></i>
+                        <span>كلمة المرور</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="أدخل كلمة المرور" 
+                            required
+                            autocomplete="current-password"
+                        >
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <button type="button" class="password-toggle" id="password-toggle" aria-label="إظهار/إخفاء كلمة المرور">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                    <div class="form-error" id="password-error"></div>
+                </div>
+                
+                <!-- خيارات إضافية -->
+                <div class="form-options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="remember-me" name="remember-me">
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-label">تذكر بيانات الدخول</span>
+                    </label>
+                </div>
+                
+                <!-- زر تسجيل الدخول -->
+                <button type="submit" class="btn-login" id="login-button">
+                    <div class="btn-content">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>تسجيل الدخول</span>
+                    </div>
+                    <div class="btn-loader" id="login-loader">
+                        <div class="loader-spinner"></div>
+                    </div>
+                    <div class="btn-glow"></div>
+                </button>
+                
+                <!-- رسالة تحذير أمان -->
+                <div class="security-message">
+                    <div class="security-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="security-text">
+                        <p>نظام آمن ومشفر. تأكد من تسجيل الخروج بعد الانتهاء.</p>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- معلومات إضافية -->
+            <div class="login-footer">
+                <div class="footer-links">
+                    <a href="../../../public/pages/home/index.html" class="footer-link">
+                        <i class="fas fa-home"></i>
+                        <span>الرجوع للموقع العام</span>
+                    </a>
+                </div>
+                
+                <div class="footer-info">
+                    <p class="copyright">
+                        <i class="far fa-copyright"></i>
+                        <span>جميع الحقوق محفوظة © 2026</span>
+                    </p>
+                    <p class="version">الإصدار 5.0.0</p>
+                </div>
+            </div>
+            
+            <!-- تأثيرات زخرفية -->
+            <div class="login-ornaments">
+                <div class="ornament ornament-1"></div>
+                <div class="ornament ornament-2"></div>
+                <div class="ornament ornament-3"></div>
+            </div>
+        </div>
+        
+        <!-- معلومات الخادم -->
+        <div class="server-info" id="server-info">
+            <div class="server-status" id="server-status">
+                <span class="status-dot"></span>
+                <span class="status-text">جارٍ التحقق من الاتصال...</span>
+            </div>
+            <div class="server-time" id="server-time">
+                <i class="far fa-clock"></i>
+                <span>--:--:--</span>
+            </div>
+        </div>
+        
+        <!-- موجات زخرفية في الأسفل -->
+        <div class="login-waves">
+            <div class="wave wave-1"></div>
+            <div class="wave wave-2"></div>
+        </div>
+    </main>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

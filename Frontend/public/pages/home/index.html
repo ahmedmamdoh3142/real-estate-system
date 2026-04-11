@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="أفضل العقارات السكنية والتجارية للإيجار - نظام إدارة العقارات المؤسسي">
+    <title>عقارات للإيجار | أفضل العقارات السكنية والتجارية</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="home.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🎯 شريط التنقل الرئيسي البروفيشونال -->
+    <nav class="navbar premium-navbar">
+        <div class="container nav-container">
+            <!-- الشعار المميز -->
+            <div class="nav-brand">
+                <a href="../../../admin/pages/login/index.html" class="logo-link">
+                    <!-- REPLACE LOGO HERE -->
+                    <div class="upper-logo">
+                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
+                    </div>
+                </a>
+            </div>
+
+            <!-- قائمة التنقل البروفيشونالية -->
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <span class="nav-text">الرئيسية</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <span class="nav-text">العقارات</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../inquiry/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <span class="nav-text">طلب استفسار</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../about/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <span class="nav-text">من نحن</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- زر القائمة المتنقلة المميز -->
+            <button class="mobile-toggle premium-toggle" id="mobile-toggle" aria-label="فتح القائمة">
+                <span class="toggle-bar"></span>
+                <span class="toggle-bar"></span>
+                <span class="toggle-bar"></span>
+            </button>
+        </div>
+        
+        <!-- خط تألق تحت النافبار -->
+        <div class="navbar-glow-line"></div>
+    </nav>
+
+    <!-- 🎪 قسم الهيرو البروفيشونال المبهر -->
+    <section class="hero-section premium-hero">
+        <div class="hero-gradient-overlay"></div>
+        <div class="hero-particles" id="hero-particles"></div>
+        
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="hero-badge premium-badge">
+                    <span class="badge badge-premium glow">
+                        <i class="fas fa-crown"></i>
+                        <span class="badge-text">عقارات حصرية للإيجار</span>
+                    </span>
+                </div>
+                
+                <h1 class="hero-title">
+                    <span class="title-line animate-text">اكتشف عقارات</span>
+                    <span class="title-line highlight premium-highlight">
+                        <span class="highlight-text">فاخرة للإيجار</span>
+                        <span class="highlight-glow"></span>
+                    </span>
+                </h1>
+                
+                <p class="hero-description premium-description">
+                    نقدم لك أفضل العقارات السكنية والتجارية والفلل للإيجار مع ضمان الجودة والمواقع المتميزة. 
+                    أكثر من 200 عقار متاح في أفضل الأحياء.
+                </p>
+                
+                <div class="hero-actions">
+                    <a href="../projects/index.html" class="btn btn-primary btn-lg premium-btn-primary">
+                        <div class="btn-icon-wrapper">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span>تصفح العقارات</span>
+                        <div class="btn-hover-effect"></div>
+                    </a>
+                    <a href="../inquiry/index.html" class="btn btn-outline btn-lg premium-btn-outline">
+                        <div class="btn-icon-wrapper">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <span>حجز معاينة</span>
+                        <div class="btn-hover-effect"></div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 🏆 قسم الإحصائيات البروفيشونال المبهر -->
+            <div class="hero-stats premium-stats">
+                <div class="stats-grid">
+                    <div class="stat-card premium-stat pulse-animation">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-building"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-projects">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عقار متاح</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-1">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-home"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-units">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عقار مؤجر</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-2">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-users"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-clients">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عميل راضٍ</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-3">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-city"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-cities">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">حي سكني</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- موجات تصميمية متطورة -->
+        <div class="hero-waves premium-waves">
+            <div class="wave wave-1"></div>
+            <div class="wave wave-2"></div>
+            <div class="wave wave-3"></div>
+            <div class="wave-glow"></div>
+        </div>
+        
+        <!-- زر التمرير للأسفل -->
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <div class="arrow arrow-1"></div>
+            <div class="arrow arrow-2"></div>
+            <div class="arrow arrow-3"></div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- 🏢 قسم العقارات المميزة (عرض شبكي) -->
+    <section class="featured-section premium-featured">
+        <div class="container">
+            <div class="section-header premium-header">
+                <div class="section-badge">
+                    <span class="badge badge-outline premium-outline-badge">
+                        <i class="fas fa-star"></i>
+                        <span>عقارات مميزة للإيجار</span>
+                    </span>
+                </div>
+                <h2 class="section-title premium-title">
+                    <span>عقاراتنا</span>
+                    <span class="highlight premium-highlight-text">المميزة</span>
+                </h2>
+                <p class="section-description premium-description">
+                    مجموعة مختارة من أفضل العقارات السكنية والتجارية والفلل المتاحة للإيجار
+                </p>
+            </div>
+            
+            <!-- عرض شبكي للعقارات -->
+            <div class="featured-projects-grid" id="featured-projects-grid">
+                <!-- العقارات المميزة سيتم تحميلها عبر JavaScript -->
+                <div class="loading-projects">
+                    <div class="loading-spinner premium-spinner"></div>
+                    <p>جاري تحميل العقارات المميزة...</p>
+                </div>
+            </div>
+            
+            <div class="section-footer">
+                <a href="../projects/index.html" class="btn btn-outline btn-lg premium-view-all">
+                    <span>عرض جميع العقارات</span>
+                    <i class="fas fa-arrow-left"></i>
+                    <div class="btn-hover-effect"></div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- خلفية زخرفية -->
+        <div class="featured-bg-pattern"></div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- 📊 قسم المزايا والخدمات -->
+    <section class="benefits-section premium-benefits">
+        <div class="container">
+            <div class="section-header text-center premium-header">
+                <h2 class="section-title premium-title">لماذا تختار <span class="highlight premium-highlight-text">ABH Holding Group؟</span></h2>
+                <p class="section-description premium-description">
+                    نقدم مزايا وخدمات استثنائية تجعل تجربة إيجار العقار سهلة وآمنة
+                </p>
+            </div>
+            
+            <div class="benefits-grid premium-grid">
+                <div class="benefit-card premium-benefit-card">
+                    <div class="benefit-icon premium-benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                        <div classicon-glow></div>
+                    </div>
+                    <h3 class="benefit-title">عقود إيجار موثقة</h3>
+                    <p class="benefit-description">
+                        عقود إيجار رسمية موثقة من الجهات المختصة مع كامل الضمانات القانونية لحمايتك.
+                    </p>
+                    <div class="benefit-overlay"></div>
+                </div>
+                
+                <div class="benefit-card premium-benefit-card">
+                    <div class="benefit-icon premium-benefit-icon">
+                        <i class="fas fa-home"></i>
+                        <div classicon-glow></div>
+                    </div>
+                    <h3 class="benefit-title">تنوع في الخيارات</h3>
+                    <p class="benefit-description">
+                        شقق سكنية، مكاتب تجارية، فلل، ومحلات تجارية في أفضل المواقع والأحياء.
+                    </p>
+                    <div class="benefit-overlay"></div>
+                </div>
+                
+                <div class="benefit-card premium-benefit-card">
+                    <div class="benefit-icon premium-benefit-icon">
+                        <i class="fas fa-headset"></i>
+                        <div classicon-glow></div>
+                    </div>
+                    <h3 class="benefit-title">دعم ومتابعة مستمرة</h3>
+                    <p class="benefit-description">
+                        فريق متخصص لخدمتك 24/7 لمتابعة صيانة العقار وتقديم الدعم خلال فترة الإيجار.
+                    </p>
+                    <div class="benefit-overlay"></div>
+                </div>
+                
+                <div class="benefit-card premium-benefit-card">
+                    <div class="benefit-icon premium-benefit-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <div classicon-glow></div>
+                    </div>
+                    <h3 class="benefit-title">مواقع استراتيجية</h3>
+                    <p class="benefit-description">
+                        عقاراتنا في أفضل المواقع الحيوية والقريبة من الخدمات والمرافق الأساسية.
+                    </p>
+                    <div class="benefit-overlay"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- خلفية متحركة -->
+        <div class="benefits-bg-animation"></div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- 📱 قسم حجز المعاينة -->
+    <section class="cta-section premium-cta">
+        <div class="container">
+            <div class="cta-card premium-cta-card">
+                <div class="cta-content">
+                    <h2 class="cta-title">هل تبحث عن <span class="highlight premium-highlight-text">عقار للإيجار؟</span></h2>
+                    <p class="cta-description">
+                        تواصل مع فريقنا الآن لحجز معاينة العقار المناسب لك والحصول على أفضل عروض الإيجار
+                        مع ضمان الجودة والموثوقية.
+                    </p>
+                    <div class="cta-actions">
+                        <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>اتصل لحجز معاينة</span>
+                            <div class="btn-hover-effect"></div>
+                        </a>
+                    </div>
+                </div>
+                <div class="cta-image">
+                    <div class="image-placeholder premium-image">
+                        <div class="floating-elements">
+                            <div class="float-element element-1">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="float-element element-2">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="float-element element-3">
+                                <i class="fas fa-key"></i>
+                            </div>
+                        </div>
+                        <div class="main-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="image-glow"></div>
+                    </div>
+                </div>
+                
+                <!-- عناصر زخرفية -->
+                <div class="cta-ornament ornament-1"></div>
+                <div class="cta-ornament ornament-2"></div>
+                <div class="cta-ornament ornament-3"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==============================================
+     الفوتر المبسط والاحترافي
+     ============================================== -->
+    <footer class="footer">
+        <div class="footer-main">
+            <div class="container">
+                <div class="footer-grid">
+                    <!-- العمود الأول: معلومات المجموعة -->
+                    <div class="footer-col footer-about">
+                        <div class="footer-logo">
+                            <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
+                        </div>
+                        <p class="footer-about-text">
+                            مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
+                        </p>
+                        <div class="footer-social">
+                            <a href="#" class="social-link" aria-label="Twitter">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M23 3.00005C22.0424 3.67552 20.9821 4.19216 19.86 4.53005C19.2577 3.83756 18.4573 3.34674 17.567 3.12397C16.6767 2.90121 15.7395 2.95724 14.8821 3.2845C14.0247 3.61176 13.2884 4.19445 12.773 4.95376C12.2575 5.71308 11.9877 6.61238 12 7.53005V8.53005C10.2426 8.57561 8.50127 8.18586 6.93101 7.39549C5.36074 6.60512 4.01032 5.43868 3 4.00005C3 4.00005 -1 13 8 17C5.94053 18.398 3.48716 19.099 1 19C10 24 21 19 21 7.50005C20.9991 7.2215 20.9723 6.94364 20.92 6.67005C21.9406 5.66354 22.6608 4.39276 23 3.00005Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link" aria-label="LinkedIn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Instagram">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 8.22768 13.4229 8.09402 12.5923C7.96035 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45418 8.79374 10.201 8.40624C10.9478 8.01875 11.7978 7.87659 12.63 8C13.4789 8.12588 14.2648 8.52146 14.8716 9.12831C15.4785 9.73515 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M17.5 6.5H17.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- العمود الثاني: معلومات الاتصال -->
+                    <div class="footer-col footer-contact">
+                        <h3 class="footer-title">تواصل معنا</h3>
+                        <ul class="footer-contact-list">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 16.92V19.92C22.001 20.198 21.944 20.473 21.832 20.728C21.721 20.983 21.557 21.212 21.352 21.402C21.146 21.592 20.903 21.738 20.639 21.832C20.375 21.925 20.095 21.964 19.815 21.945C16.743 21.746 13.847 20.538 11.57 18.5C9.455 16.603 7.936 14.189 7.18 11.54C6.943 10.699 6.823 9.831 6.82 8.958C6.82 8.679 6.872 8.402 6.975 8.142C7.077 7.882 7.228 7.643 7.42 7.44C7.611 7.237 7.838 7.073 8.09 6.957C8.341 6.841 8.612 6.776 8.887 6.765H12.057C12.572 6.747 13.069 6.962 13.412 7.354C13.754 7.746 13.909 8.276 13.837 8.798C13.726 9.593 13.726 10.4 13.837 11.195C13.914 11.706 14.22 12.156 14.674 12.434C15.129 12.712 15.687 12.79 16.21 12.65C18.079 12.185 19.815 21 21.68 21.5C22.206 21.645 22.775 21.57 23.24 21.292C23.706 21.014 24.027 20.56 24.127 20.045C24.227 19.53 24.098 18.999 23.773 18.58C23.448 18.162 22.956 17.894 22.437 17.84L19.437 17.5C19.158 17.469 18.891 17.376 18.657 17.229C18.423 17.082 18.228 16.885 18.088 16.653C17.948 16.421 17.867 16.16 17.852 15.892C17.836 15.624 17.887 15.356 18 15.11C18.245 14.546 18.452 13.967 18.62 13.378C18.769 12.864 18.677 12.311 18.366 11.871C18.055 11.431 17.557 11.151 17.012 11.105C16.21 11.038 15.407 11.038 14.605 11.105C14.061 11.149 13.566 11.426 13.256 11.863C12.947 12.3 12.854 12.852 13 13.365" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>+966 11 123 4567</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>info@ewa-realestate.com</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>المملكة العربية السعودية - الرياض، حي النخيل، شارع الملك فهد</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-content">
+                    <p class="copyright">&copy; 2024 ABH HOLDING GROUP. جميع الحقوق محفوظة.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="home.js"></script>
+    
+    <!-- Particles.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</body>
+</html>

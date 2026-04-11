@@ -1,0 +1,683 @@
+<!-- Frontend/public/pages/project-details/index.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تفاصيل العقار - نظام إدارة العقارات المؤسسي">
+    <title>تفاصيل العقار | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="project-details.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* أنماط إضافية لخيارات التواصل الحصرية */
+        .preference-option input[type="radio"] {
+            display: none;
+        }
+        .preference-option .preference-label {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(203, 205, 205, 0.03);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .preference-option input[type="radio"]:checked + .preference-label {
+            background: rgba(203, 205, 205, 0.1);
+        }
+        .preference-option input[type="radio"]:checked + .preference-label.whatsapp {
+            border-color: #25D366;
+            box-shadow: 0 0 0 2px #25D366;
+        }
+        .preference-option input[type="radio"]:checked + .preference-label.phone {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px #007bff;
+        }
+        /* حالة التحقق من رقم الجوال */
+        .form-input.valid {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
+        }
+        .form-input.invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+        }
+    </style>
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🎯 شريط التنقل الرئيسي البروفيشونال -->
+    <nav class="navbar premium-navbar">
+        <div class="container nav-container">
+            <!-- الشعار المميز -->
+            <div class="nav-brand">
+                <a href="../home/index.html" class="logo-link">
+                    <!-- REPLACE LOGO HERE -->
+                    <div class="upper-logo">
+                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
+                    </div>
+                </a>
+            </div>
+
+            <!-- قائمة التنقل البروفيشونالية -->
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../home/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <span class="nav-text">الرئيسية</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="../projects/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <span class="nav-text">العقارات</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../inquiry/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <span class="nav-text">طلب استفسار</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../about/index.html" class="nav-link premium-link">
+                        <div class="nav-icon-wrapper">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <span class="nav-text">من نحن</span>
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- زر القائمة المتنقلة المميز -->
+            <button class="mobile-toggle premium-toggle" id="mobile-toggle" aria-label="فتح القائمة">
+                <span class="toggle-bar"></span>
+                <span class="toggle-bar"></span>
+                <span class="toggle-bar"></span>
+            </button>
+        </div>
+        
+        <!-- خط تألق تحت النافبار -->
+        <div class="navbar-glow-line"></div>
+    </nav>
+
+    <!-- 🎪 قسم الهيدر البروفيشونال المبهر -->
+    <section class="page-header premium-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-badge premium-badge">
+                    <span class="badge badge-premium glow">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="badge-text">تفاصيل العقار</span>
+                    </span>
+                </div>
+                
+                <div class="breadcrumb">
+                    <a href="../home/index.html" class="breadcrumb-link">
+                        <i class="fas fa-home"></i>
+                        الرئيسية
+                    </a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a href="../projects/index.html" class="breadcrumb-link">
+                        العقارات
+                    </a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current" id="project-name-breadcrumb">
+                        جاري التحميل...
+                    </span>
+                </div>
+                
+                <h1 class="header-title">
+                    <span class="title-line animate-text" id="project-title">جاري تحميل العقار...</span>
+                </h1>
+                
+                <div class="header-actions">
+                    <a href="../projects/index.html" class="btn btn-outline premium-back-btn">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>العودة للعقارات</span>
+                    </a>
+                    <button class="btn btn-primary premium-share-btn" id="share-button">
+                        <i class="fas fa-share-alt"></i>
+                        <span>مشاركة</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- موجات تصميمية متطورة -->
+        <div class="header-waves premium-waves">
+            <div class="wave wave-1"></div>
+            <div class="wave wave-2"></div>
+            <div class="wave wave-3"></div>
+            <div class="wave-glow"></div>
+        </div>
+    </section>
+
+    <!-- 🏢 قسم المحتوى الرئيسي -->
+    <section class="project-details-section">
+        <div class="container">
+            <div class="details-grid">
+                <!-- العمود الأيمن: معرض الصور -->
+                <div class="gallery-column">
+                    <div class="gallery-card premium-card">
+                        <div class="gallery-header">
+                            <h3 class="gallery-title">
+                                <i class="fas fa-images"></i>
+                                <span>معرض الصور</span>
+                            </h3>
+                            <div class="gallery-count" id="image-count">0 صورة</div>
+                        </div>
+                        
+                        <!-- الصورة الرئيسية -->
+                        <div class="main-image-container" id="main-image-container">
+                            <img id="main-image" src="" alt="الصورة الرئيسية للعقار" class="main-image">
+                            <div class="image-overlay">
+                                <button class="btn-view-gallery" id="view-gallery-btn">
+                                    <i class="fas fa-images"></i>
+                                    <span>عرض المعرض</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- حالة عدم وجود صور -->
+                        <div class="no-images" id="no-images" style="display: none;">
+                            <div class="no-images-icon">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <h4>لا توجد صور متاحة</h4>
+                            <p>لا توجد صور متاحة لهذا العقار حالياً</p>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات العقار المهمة -->
+                    <div class="quick-info-card premium-card">
+                        <h3 class="info-title">
+                            <i class="fas fa-info-circle"></i>
+                            <span>معلومات سريعة</span>
+                        </h3>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">السعر</span>
+                                    <span class="info-value" id="quick-price">جاري التحميل...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">المساحة</span>
+                                    <span class="info-value" id="quick-area">جاري التحميل...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">الموقع</span>
+                                    <span class="info-value" id="quick-location">جاري التحميل...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">الحالة</span>
+                                    <span class="info-value" id="quick-status">جاري التحميل...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- العمود الأيسر: تفاصيل العقار -->
+                <div class="details-column">
+                    <!-- بطاقة التفاصيل الرئيسية -->
+                    <div class="details-card premium-card">
+                        <div class="details-header">
+                            <div class="property-badges" id="property-badges">
+                                <!-- الشارات سيتم إنشاؤها ديناميكياً -->
+                            </div>
+                            
+                            <div class="details-actions">
+                                <button class="btn btn-outline btn-sm" id="print-button">
+                                    <i class="fas fa-print"></i>
+                                    <span>طباعة</span>
+                                </button>
+                                <button class="btn btn-outline btn-sm" id="download-button">
+                                    <i class="fas fa-download"></i>
+                                    <span>تحميل التفاصيل</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- الوصف -->
+                        <div class="description-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-align-right"></i>
+                                <span>وصف العقار</span>
+                            </h3>
+                            <div class="description-content" id="project-description">
+                                <div class="loading-text">
+                                    <div class="loading-line"></div>
+                                    <div class="loading-line"></div>
+                                    <div class="loading-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- الميزات -->
+                        <div class="features-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-star"></i>
+                                <span>مميزات العقار</span>
+                            </h3>
+                            <div class="features-grid" id="features-grid">
+                                <!-- الميزات سيتم تحميلها عبر JavaScript -->
+                                <div class="loading-features">
+                                    <div class="loading-feature"></div>
+                                    <div class="loading-feature"></div>
+                                    <div class="loading-feature"></div>
+                                    <div class="loading-feature"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- التفاصيل التقنية -->
+                        <div class="specs-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-cogs"></i>
+                                <span>التفاصيل التقنية</span>
+                            </h3>
+                            <div class="specs-grid" id="specs-grid">
+                                <!-- التفاصيل سيتم تحميلها عبر JavaScript -->
+                                <div class="loading-specs">
+                                    <div class="loading-spec"></div>
+                                    <div class="loading-spec"></div>
+                                    <div class="loading-spec"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- الموقع -->
+                        <div class="location-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <span>الموقع</span>
+                            </h3>
+                            <div class="location-content">
+                                <div class="location-details" id="location-details">
+                                    <div class="loading-location">
+                                        <div class="loading-line"></div>
+                                        <div class="loading-line"></div>
+                                    </div>
+                                </div>
+                                <div class="location-map" id="location-map">
+                                    <div class="map-placeholder">
+                                        <i class="fas fa-map"></i>
+                                        <span>خريطة الموقع</span>
+                                        <p>يتم تحميل خريطة الموقع...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- نموذج الاستفسار (معدل بإضافة تفضيلات التواصل والوقت المناسب) -->
+                    <div class="inquiry-card premium-card">
+                        <h3 class="inquiry-title">
+                            <i class="fas fa-question-circle"></i>
+                            <span>استفسار عن هذا العقار</span>
+                        </h3>
+                        <p class="inquiry-description">
+                            مهتم بهذا العقار؟ املأ النموذج وسيتصل بك فريقنا في أقرب وقت
+                        </p>
+                        
+                        <form id="inquiry-form" class="inquiry-form">
+                            <input type="hidden" id="project-id" name="projectId">
+                            <input type="hidden" id="project-name-input" name="projectName">
+                            
+                            <div class="form-grid">
+                                <!-- البيانات الشخصية -->
+                                <div class="form-group">
+                                    <label for="customer-name" class="form-label">
+                                        <i class="fas fa-user"></i>
+                                        <span>الاسم الكامل *</span>
+                                    </label>
+                                    <input type="text" id="customer-name" name="customerName" 
+                                           class="form-input" required 
+                                           placeholder="أدخل اسمك الكامل">
+                                    <div class="form-error" id="name-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="customer-phone" class="form-label">
+                                        <i class="fas fa-phone"></i>
+                                        <span>رقم الجوال *</span>
+                                    </label>
+                                    <input type="tel" id="customer-phone" name="customerPhone" 
+                                           class="form-input" required 
+                                           placeholder="05XXXXXXXX">
+                                    <div class="form-error" id="phone-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="customer-email" class="form-label">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>البريد الإلكتروني *</span>
+                                    </label>
+                                    <input type="email" id="customer-email" name="customerEmail" 
+                                           class="form-input" required 
+                                           placeholder="example@email.com">
+                                    <div class="form-error" id="email-error"></div>
+                                </div>
+                                
+                                <!-- تفضيلات التواصل (اختيار واحد فقط) -->
+                                <div class="form-group full-width">
+                                    <label class="form-label">
+                                        <i class="fas fa-comments"></i>
+                                        <span>طريقة التواصل المفضلة *</span>
+                                    </label>
+                                    <div class="preference-options">
+                                        <div class="preference-option">
+                                            <input type="radio" id="prefPhone" name="contactPreference" value="phone" required>
+                                            <label for="prefPhone" class="preference-label phone">
+                                                <div class="preference-icon">
+                                                    <i class="fas fa-phone"></i>
+                                                </div>
+                                                <div class="preference-content">
+                                                    <span class="preference-title">مكالمة هاتفية</span>
+                                                    <span class="preference-desc">للإجابة على أسئلتك مباشرة</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="preference-option">
+                                            <input type="radio" id="prefWhatsApp" name="contactPreference" value="whatsapp">
+                                            <label for="prefWhatsApp" class="preference-label whatsapp">
+                                                <div class="preference-icon">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                </div>
+                                                <div class="preference-content">
+                                                    <span class="preference-title">واتساب</span>
+                                                    <span class="preference-desc">للرد السريع والصور</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-error" id="contactPref-error"></div>
+                                </div>
+                                
+                                <!-- الوقت المناسب للتواصل (اختياري) -->
+                                <div class="form-group full-width">
+                                    <label for="preferredTime" class="form-label">
+                                        <i class="fas fa-clock"></i>
+                                        <span>الوقت المناسب للتواصل (اختياري)</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <select id="preferredTime" name="preferredTime" class="form-select">
+                                            <option value="">أي وقت مناسب</option>
+                                            <option value="صباحاً (9 ص - 12 م)">صباحاً (9 ص - 12 م)</option>
+                                            <option value="ظهراً (12 م - 4 م)">ظهراً (12 م - 4 م)</option>
+                                            <option value="مساءً (4 م - 8 م)">مساءً (4 م - 8 م)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- رسالة الاستفسار -->
+                                <div class="form-group full-width">
+                                    <label for="inquiry-message" class="form-label">
+                                        <i class="fas fa-comment"></i>
+                                        <span>رسالتك *</span>
+                                    </label>
+                                    <textarea id="inquiry-message" name="message" 
+                                              class="form-textarea" rows="4" required 
+                                              placeholder="اكتب رسالتك هنا..."></textarea>
+                                    <div class="form-error" id="message-error"></div>
+                                </div>
+                                
+                                <!-- أزرار الإجراء -->
+                                <div class="form-group full-width">
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary" id="submit-inquiry">
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span>إرسال الاستفسار</span>
+                                            <div class="btn-loading" id="inquiry-loading" style="display: none;">
+                                                <div class="spinner"></div>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="btn btn-outline" id="reset-form">
+                                            <i class="fas fa-redo"></i>
+                                            <span>إعادة تعيين</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- رسالة النجاح -->
+                        <div class="inquiry-success" id="inquiry-success" style="display: none;">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h4>تم إرسال استفسارك بنجاح!</h4>
+                            <p class="success-message">شكراً لتواصلك معنا. سيتصل بك فريقنا في أقرب وقت.</p>
+                            <button class="btn btn-outline" id="new-inquiry">
+                                <i class="fas fa-plus"></i>
+                                <span>استفسار جديد</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- العقارات المشابهة - تصميم مشابه للعقارات المميزة -->
+            <div class="related-projects-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-building"></i>
+                        <span>عقارات مشابهة</span>
+                    </h2>
+                    <a href="../projects/index.html" class="btn btn-outline btn-sm">
+                        <i class="fas fa-eye"></i>
+                        <span>عرض جميع العقارات</span>
+                    </a>
+                </div>
+                
+                <div class="featured-projects-grid" id="related-projects">
+                    <div class="loading-projects">
+                        <div class="loading-project"></div>
+                        <div class="loading-project"></div>
+                        <div class="loading-project"></div>
+                    </div>
+                </div>
+
+                <div class="no-related-projects" id="no-related-projects" style="display: none;">
+                    <div class="no-projects-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4>لا توجد عقارات مشابهة حالياً</h4>
+                    <p>لا توجد عقارات أخرى من نفس النوع في نفس المدينة</p>
+                </div>
+            </div> 
+        </div>
+    </section>
+
+    <!-- 📞 قسم الدعوة للعمل -->
+    <section class="cta-section premium-cta">
+        <div class="container">
+            <div class="cta-card premium-cta-card">
+                <div class="cta-content">
+                    <h2 class="cta-title">هل لديك استفسارات أخرى؟</h2>
+                    <p class="cta-description">
+                        فريقنا جاهز لمساعدتك في العثور على العقار المثالي الذي يناسب احتياجاتك وميزانيتك.
+                        تواصل معنا الآن للحصول على استشارة عقارية مجانية.
+                    </p>
+                    <div class="cta-actions">
+                        <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
+                            <i class="fas fa-headset"></i>
+                            <span>التواصل المباشر</span>
+                            <div class="btn-hover-effect"></div>
+                        </a>
+                    </div>
+                </div>
+                <div class="cta-image">
+                    <div class="image-placeholder premium-image">
+                        <div class="floating-elements">
+                            <div class="float-element element-1">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="float-element element-2">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="float-element element-3">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                        </div>
+                        <div class="main-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="image-glow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==============================================
+     الفوتر المبسط والاحترافي
+     ============================================== -->
+<footer class="footer">
+    <div class="footer-main">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- العمود الأول: معلومات المجموعة -->
+                <div class="footer-col footer-about">
+                    <div class="footer-logo">
+                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
+                    </div>
+                    <p class="footer-about-text">
+                        مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M23 3.00005C22.0424 3.67552 20.9821 4.19216 19.86 4.53005C19.2577 3.83756 18.4573 3.34674 17.567 3.12397C16.6767 2.90121 15.7395 2.95724 14.8821 3.2845C14.0247 3.61176 13.2884 4.19445 12.773 4.95376C12.2575 5.71308 11.9877 6.61238 12 7.53005V8.53005C10.2426 8.57561 8.50127 8.18586 6.93101 7.39549C5.36074 6.60512 4.01032 5.43868 3 4.00005C3 4.00005 -1 13 8 17C5.94053 18.398 3.48716 19.099 1 19C10 24 21 19 21 7.50005C20.9991 7.2215 20.9723 6.94364 20.92 6.67005C21.9406 5.66354 22.6608 4.39276 23 3.00005Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 8.22768 13.4229 8.09402 12.5923C7.96035 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45418 8.79374 10.201 8.40624C10.9478 8.01875 11.7978 7.87659 12.63 8C13.4789 8.12588 14.2648 8.52146 14.8716 9.12831C15.4785 9.73515 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17.5 6.5H17.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- العمود الثاني: معلومات الاتصال -->
+                <div class="footer-col footer-contact">
+                    <h3 class="footer-title">تواصل معنا</h3>
+                    <ul class="footer-contact-list">
+                        <li>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 16.92V19.92C22.001 20.198 21.944 20.473 21.832 20.728C21.721 20.983 21.557 21.212 21.352 21.402C21.146 21.592 20.903 21.738 20.639 21.832C20.375 21.925 20.095 21.964 19.815 21.945C16.743 21.746 13.847 20.538 11.57 18.5C9.455 16.603 7.936 14.189 7.18 11.54C6.943 10.699 6.823 9.831 6.82 8.958C6.82 8.679 6.872 8.402 6.975 8.142C7.077 7.882 7.228 7.643 7.42 7.44C7.611 7.237 7.838 7.073 8.09 6.957C8.341 6.841 8.612 6.776 8.887 6.765H12.057C12.572 6.747 13.069 6.962 13.412 7.354C13.754 7.746 13.909 8.276 13.837 8.798C13.726 9.593 13.726 10.4 13.837 11.195C13.914 11.706 14.22 12.156 14.674 12.434C15.129 12.712 15.687 12.79 16.21 12.65C18.079 12.185 19.815 21 21.68 21.5C22.206 21.645 22.775 21.57 23.24 21.292C23.706 21.014 24.027 20.56 24.127 20.045C24.227 19.53 24.098 18.999 23.773 18.58C23.448 18.162 22.956 17.894 22.437 17.84L19.437 17.5C19.158 17.469 18.891 17.376 18.657 17.229C18.423 17.082 18.228 16.885 18.088 16.653C17.948 16.421 17.867 16.16 17.852 15.892C17.836 15.624 17.887 15.356 18 15.11C18.245 14.546 18.452 13.967 18.62 13.378C18.769 12.864 18.677 12.311 18.366 11.871C18.055 11.431 17.557 11.151 17.012 11.105C16.21 11.038 15.407 11.038 14.605 11.105C14.061 11.149 13.566 11.426 13.256 11.863C12.947 12.3 12.854 12.852 13 13.365" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>+966 11 123 4567</span>
+                        </li>
+                        <li>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>info@ewa-realestate.com</span>
+                        </li>
+                        <li>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>المملكة العربية السعودية - الرياض، حي النخيل، شارع الملك فهد</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="footer-bottom-content">
+                <p class="copyright">&copy; 2024 ABH HOLDING GROUP. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- معرض الصور Modal -->
+    <div class="gallery-modal" id="gallery-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-images"></i> معرض الصور</h3>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-images" id="gallery-images">
+                    <!-- ستتم إضافة الصور هنا -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    
+    <!-- ملف JavaScript الخاص بالصفحة -->
+    <script src="project-details.js"></script>
+</body>
+</html>

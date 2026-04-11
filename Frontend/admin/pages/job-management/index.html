@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="إدارة طلبات التوظيف والوظائف - نظام إدارة العقارات المؤسسي">
+    <title>إدارة التوظيف | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="job-management.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <style>
+        /* تصميم scrollbar داكن واحترافي */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(45, 45, 45, 0.3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(203, 205, 205, 0.5);
+            border-radius: 10px;
+            border: 2px solid rgba(45, 45, 45, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(203, 205, 205, 0.7);
+        }
+        
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(203, 205, 205, 0.5) rgba(45, 45, 45, 0.3);
+        }
+        
+        /* إصلاح عرض بطاقات الإحصائيات */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .overview-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .overview-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-users page-title-icon"></i>
+                        إدارة طلبات التوظيف والوظائف
+                    </h1>
+                    <p class="page-description">
+                        إدارة طلبات التوظيف المقدمة، وإضافة وظائف جديدة، ومتابعة المرشحين
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <!-- زر إضافة وظيفة جديدة (جوار زر التحديث) -->
+                    <button class="btn btn-primary" id="add-job-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>وظيفة جديدة</span>
+                    </button>
+                    <!-- زر التحديث -->
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">0</h3>
+                            <p class="overview-card-label">إجمالي الطلبات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-new">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-new">0</h3>
+                            <p class="overview-card-label">طلبات جديدة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-review">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-review">0</h3>
+                            <p class="overview-card-label">قيد المراجعة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-interview">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-interview">0</h3>
+                            <p class="overview-card-label">مقابلات مجدولة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-accepted">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-accepted">0</h3>
+                            <p class="overview-card-label">مقبولة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-rejected">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-rejected">0</h3>
+                            <p class="overview-card-label">مرفوضة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول طلبات التوظيف -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة طلبات التوظيف
+                        </h3>
+                        
+                        <div class="card-actions">
+                            <!-- بحث متقدم -->
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في الطلبات...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- زر التصدير -->
+                            <button class="btn btn-outline" id="export-btn">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+
+                            <!-- زر إجراء سريع -->
+                            <div class="quick-actions-dropdown">
+                                <button class="btn btn-primary" id="quick-actions-btn">
+                                    <i class="fas fa-bolt"></i>
+                                    <span>إجراءات سريعة</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="quick-actions-dropdown-content" id="quick-actions-dropdown">
+                                    <a href="#" class="dropdown-item" id="mark-reviewed">
+                                        <i class="fas fa-eye"></i>
+                                        <span>تعيين كتمت المراجعة</span>
+                                    </a>
+                                    <a href="#" class="dropdown-item" id="schedule-interview">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>جدولة مقابلة</span>
+                                    </a>
+                                    <a href="#" class="dropdown-item" id="send-rejection">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>إرسال رفض</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="#" class="dropdown-item" id="archive-selected">
+                                        <i class="fas fa-archive"></i>
+                                        <span>أرشفة المحدد</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- ========== شريط الفلاتر الاحترافي (كومبو بوكس) ========== -->
+                        <div class="filter-bar">
+                            <div class="filter-bar-inner">
+                                <!-- فلتر الحالة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="status">
+                                        <span>الحالة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="جديد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">جديد</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="قيد المراجعة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">قيد المراجعة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="للمقابلة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">للمقابلة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="مقابلة مجدولة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مقابلة مجدولة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="مقبولة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مقبولة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="مرفوضة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مرفوضة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="status" value="مؤرشفة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مؤرشفة</span>
+                                                <span class="filter-count">0</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر القسم -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="department">
+                                        <span>القسم</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="هندسة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">هندسة</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="مبيعات" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مبيعات</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="تسويق" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">تسويق</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="موارد بشرية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">موارد بشرية</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="مالية ومحاسبة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مالية ومحاسبة</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="تقنية معلومات" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">تقنية معلومات</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="department" value="إدارية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">إدارية</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر نوع الوظيفة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="job_type">
+                                        <span>نوع الوظيفة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="job_type" value="دوام كامل" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">دوام كامل</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="job_type" value="دوام جزئي" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">دوام جزئي</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="job_type" value="عن بعد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">عن بعد</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="job_type" value="تعاقد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">تعاقد</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الخبرة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="experience">
+                                        <span>الخبرة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="experience" value="خريج جديد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">خريج جديد</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="experience" value="1-3 سنوات" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">1-3 سنوات</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="experience" value="3-5 سنوات" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">3-5 سنوات</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="experience" value="5+ سنوات" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">5+ سنوات</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر المؤهل -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="education">
+                                        <span>المؤهل</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="education" value="ثانوي" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">ثانوي</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="education" value="دبلوم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">دبلوم</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="education" value="بكالوريوس" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">بكالوريوس</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="education" value="ماجستير" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">ماجستير</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="education" value="دكتوراه" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">دكتوراه</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الجنسية -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="nationality">
+                                        <span>الجنسية</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="سعودي" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">سعودي</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="مصري" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مصري</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="سوري" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">سوري</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="يمني" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">يمني</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="أردني" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أردني</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="nationality" value="أخرى" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أخرى</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر المدينة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="city">
+                                        <span>المدينة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="city" value="الرياض" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الرياض</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="city" value="جدة" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">جدة</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="city" value="الدمام" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الدمام</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="city" value="أبها" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أبها</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="city" value="خارج السعودية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">خارج السعودية</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الجنس -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="gender">
+                                        <span>الجنس</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="gender" value="ذكر" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">ذكر</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="gender" value="أنثى" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أنثى</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الإقامة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="residence">
+                                        <span>الإقامة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="residence" value="داخل السعودية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">داخل السعودية</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="residence" value="خارج السعودية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">خارج السعودية</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر المنطقة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="region">
+                                        <span>المنطقة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="region" value="الشرقية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الشرقية</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="region" value="الغربية" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الغربية</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="region" value="الشمال" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الشمال</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="region" value="الجنوب" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الجنوب</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="region" value="الوسطى" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">الوسطى</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الحالة الاجتماعية -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="marital">
+                                        <span>الحالة الاجتماعية</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="marital" value="أعزب" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أعزب</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="marital" value="متزوج" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">متزوج</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="marital" value="مطلق" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">مطلق</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الإعاقة -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="disability">
+                                        <span>الإعاقة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="disability" value="نعم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">ذوي إعاقة</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="disability" value="لا" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">غير ذوي إعاقة</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر حالة التوظيف -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="employment_status">
+                                        <span>حالة التوظيف</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="employment_status" value="موظف" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">موظف</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="employment_status" value="عاطل عن العمل" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">عاطل عن العمل</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="employment_status" value="خريج جديد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">خريج جديد</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر الإقامة القابلة للتحويل -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="transferable">
+                                        <span>الإقامة قابلة للتحويل</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="transferable" value="نعم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">قابلة للتحويل</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="transferable" value="لا" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">غير قابلة للتحويل</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر فترة الإشعار -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="notice_period">
+                                        <span>فترة الإشعار</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="notice_period" value="فوري" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">فوري</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="notice_period" value="شهر واحد" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">شهر واحد</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="notice_period" value="شهرين" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">شهرين</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="notice_period" value="ثلاثة أشهر" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">ثلاثة أشهر</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر التواصل السابق -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="previous_contact">
+                                        <span>التواصل السابق</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="previous_contact" value="نعم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">سبق التواصل</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="previous_contact" value="لا" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">لم يسبق التواصل</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- فلتر تاريخ التقديم -->
+                                <div class="filter-item">
+                                    <button class="filter-btn" data-filter="date">
+                                        <span>تاريخ التقديم</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-dropdown">
+                                        <div class="filter-options">
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="date" value="اليوم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">اليوم</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="date" value="أخر 7 أيام" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أخر 7 أيام</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="date" value="أخر 30 يوم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أخر 30 يوم</span>
+                                            </label>
+                                            <label class="filter-option">
+                                                <input type="checkbox" name="date" value="أقدم من 30 يوم" checked>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label">أقدم من 30 يوم</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-bar-actions">
+                                <button class="btn btn-primary btn-sm" id="apply-filters">تطبيق</button>
+                                <button class="btn btn-outline btn-sm" id="reset-filters">إعادة تعيين</button>
+                            </div>
+                        </div>
+                        <!-- ========== نهاية شريط الفلاتر ========== -->
+
+                        <!-- جدول الطلبات -->
+                        <div class="table-container">
+                            <table class="data-table" id="applications-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="120">رقم الطلب</th>
+                                        <th>المرشح</th>
+                                        <th width="120">القسم</th>
+                                        <th width="150">الوظيفة المطلوبة</th>
+                                        <th width="100">الخبرة</th>
+                                        <th width="100">المؤهل</th>
+                                        <th width="100">الراتب المتوقع</th>
+                                        <th width="100">الجنسية</th>
+                                        <th width="120">الحالة</th>
+                                        <th width="120">تاريخ التقديم</th>
+                                        <th width="180">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="applications-table-body">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                    <tr class="loading-row">
+                                        <td colspan="12">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل طلبات التوظيف...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- تذييل الجدول -->
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> طلب</span>
+                            </div>
+                            
+                            <div class="table-pagination" id="table-pagination">
+                                <!-- سيتم ملؤها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <!-- مخطط توزيع الطلبات -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع الطلبات حسب القسم
+                                    </h4>
+                                    <select class="period-select" id="chart-period">
+                                        <option value="all" selected>جميع الطلبات</option>
+                                        <option value="new">الطلبات الجديدة فقط</option>
+                                        <option value="accepted">الطلبات المقبولة</option>
+                                        <option value="rejected">الطلبات المرفوضة</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="applications-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- أحدث الطلبات -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-history"></i>
+                                        أحدث طلبات التوظيف
+                                    </h4>
+                                    <a href="#" class="view-all-link">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="recent-list" id="recent-applications">
+                                        <!-- سيتم ملؤها عبر JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2025 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل الطلب -->
+    <div class="modal" id="application-detail-modal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-application-title">تفاصيل طلب التوظيف</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-application-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-btn">تعديل الحالة</button>
+                    <button class="btn btn-outline" id="modal-download-cv-btn">
+                        <i class="fas fa-download"></i>
+                        تحميل السيرة الذاتية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتأكيد الحذف -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size: 1.1rem; text-align: center;">
+                        هل أنت متأكد من حذف هذا الطلب؟
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">تأكيد الحذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتعديل حالة الطلب -->
+    <div class="modal" id="application-status-modal">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تعديل حالة الطلب</h3>
+                    <button class="modal-close" id="status-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="status-form">
+                        <div class="form-group">
+                            <label for="status-select">الحالة الجديدة *</label>
+                            <select id="status-select" class="form-control" required>
+                                <option value="">اختر الحالة</option>
+                                <option value="جديد">جديد</option>
+                                <option value="قيد المراجعة">قيد المراجعة</option>
+                                <option value="للمقابلة">للمقابلة</option>
+                                <option value="مقابلة مجدولة">مقابلة مجدولة</option>
+                                <option value="مقبولة">مقبولة</option>
+                                <option value="مرفوضة">مرفوضة</option>
+                                <option value="مؤرشفة">مؤرشفة</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="interview-date-group" style="display: none;">
+                            <label for="interview-date">تاريخ المقابلة</label>
+                            <input type="datetime-local" id="interview-date" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status-notes">ملاحظات</label>
+                            <textarea id="status-notes" class="form-control" rows="3" placeholder="أضف ملاحظات حول حالة الطلب..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="status-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="status-save-btn">حفظ التغييرات</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لعرض السيرة الذاتية -->
+    <div class="modal" id="cv-view-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">عرض السيرة الذاتية</h3>
+                    <button class="modal-close" id="cv-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="cv-view-container">
+                        <iframe id="cv-preview" style="width: 100%; height: 500px; border: none;"></iframe>
+                        <div class="cv-actions" id="cv-actions">
+                            <!-- روابط التحميل -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cv-close-btn">إغلاق</button>
+                    <button class="btn btn-primary" id="cv-download-btn">
+                        <i class="fas fa-download"></i>
+                        تحميل السيرة الذاتية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لجدولة مقابلة -->
+    <div class="modal" id="schedule-interview-modal">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">جدولة مقابلة</h3>
+                    <button class="modal-close" id="schedule-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="schedule-form">
+                        <div class="form-group">
+                            <label for="interview-datetime">تاريخ ووقت المقابلة *</label>
+                            <input type="datetime-local" id="interview-datetime" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interview-type">نوع المقابلة *</label>
+                            <select id="interview-type" class="form-control" required>
+                                <option value="وجهاً لوجه">وجهاً لوجه</option>
+                                <option value="مكالمة فيديو">مكالمة فيديو</option>
+                                <option value="مكالمة هاتفية">مكالمة هاتفية</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interview-location">مكان المقابلة / الرابط</label>
+                            <input type="text" id="interview-location" class="form-control" placeholder="الموقع أو رابط الاجتماع">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interview-interviewers">المحاورون</label>
+                            <input type="text" id="interview-interviewers" class="form-control" placeholder="أسماء المحاورين">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interview-notes">ملاحظات إضافية</label>
+                            <textarea id="interview-notes" class="form-control" rows="3" placeholder="ملاحظات حول المقابلة..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="schedule-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="schedule-save-btn">حفظ وجدولة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL إضافة وظيفة جديدة (كونتينر بروفشنال) ==================== -->
+    <div class="modal" id="add-job-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-briefcase"></i>
+                        إضافة وظيفة جديدة
+                    </h3>
+                    <button class="modal-close" id="add-job-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-job-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-title">عنوان الوظيفة *</label>
+                                    <input type="text" id="job-title" class="form-control" required placeholder="مثال: مهندس برمجيات">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-department">القسم *</label>
+                                    <select id="job-department" class="form-control" required>
+                                        <option value="">اختر القسم</option>
+                                        <option value="هندسة">هندسة</option>
+                                        <option value="مبيعات">مبيعات</option>
+                                        <option value="تسويق">تسويق</option>
+                                        <option value="موارد بشرية">موارد بشرية</option>
+                                        <option value="مالية ومحاسبة">مالية ومحاسبة</option>
+                                        <option value="تقنية معلومات">تقنية معلومات</option>
+                                        <option value="إدارية">إدارية</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-location">الموقع *</label>
+                                    <input type="text" id="job-location" class="form-control" required placeholder="مثال: الرياض، جدة، عن بعد">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-type">نوع الوظيفة *</label>
+                                    <select id="job-type" class="form-control" required>
+                                        <option value="دوام كامل">دوام كامل</option>
+                                        <option value="دوام جزئي">دوام جزئي</option>
+                                        <option value="عن بعد">عن بعد</option>
+                                        <option value="تعاقد">تعاقد</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-badge">الشارة (اختياري)</label>
+                                    <input type="text" id="job-badge" class="form-control" placeholder="مثال: عاجل، متميز">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-sector">قطاع الشركة</label>
+                                    <input type="text" id="job-sector" class="form-control" placeholder="مثال: عقارات، تقنية">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-experience">سنوات الخبرة المطلوبة</label>
+                                    <select id="job-experience" class="form-control">
+                                        <option value="">غير محدد</option>
+                                        <option value="خريج جديد">خريج جديد</option>
+                                        <option value="1-3 سنوات">1-3 سنوات</option>
+                                        <option value="3-5 سنوات">3-5 سنوات</option>
+                                        <option value="5+ سنوات">5+ سنوات</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job-tags">الوسوم (مفصولة بفواصل)</label>
+                                    <input type="text" id="job-tags" class="form-control" placeholder="مثال: JavaScript, React, Node.js">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="job-description">وصف الوظيفة *</label>
+                            <textarea id="job-description" class="form-control" rows="6" required placeholder="اكتب وصفاً مفصلاً للوظيفة، المهام، المتطلبات..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="job-active" checked> 
+                                <span>نشطة (معروضة للجميع)</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="add-job-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="add-job-save-btn">
+                        <i class="fas fa-save"></i> حفظ الوظيفة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="job-management.js"></script>
+</body>
+</html>

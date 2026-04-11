@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="منصة التواصل الفوري - نظام إدارة العقارات المؤسسي">
+    <title data-i18n="appName">التواصل الفوري | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="chat.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl chat-page">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🎯 القائمة الجانبية (مطابقة للصفحات السابقة) -->
+    <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header">
+            <button class="sidebar-close" id="sidebar-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="main">الرئيسية</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../dashboard/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="dashboard">لوحة التحكم</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="propertyManagement">إدارة العقارات</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../projects-management/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="projects">المشاريع</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../contracts/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="contracts">العقود</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../payments/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="payments">المدفوعات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../bills/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="bills">الفواتير</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="customerManagement">إدارة العملاء</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../inquiries/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="inquiries">الاستفسارات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../leeds/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="clients">العملاء</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="administration">الإدارة</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../users/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="users">المستخدمين</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="instantMessaging">التواصل الفوري</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <div class="status-indicator active"></div>
+                <span class="status-text" data-i18n="systemActive">متصل</span>
+            </div>
+            <div class="system-time" id="system-time"></div>
+        </div>
+    </aside>
+
+    <!-- طبقة خلفية للقائمة الجانبية -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- 🎯 المحتوى الرئيسي للشات -->
+    <main class="chat-main">
+        <div class="chat-container">
+            <!-- القائمة الجانبية للمحادثات (الشريط الأيسر) -->
+            <div class="chats-sidebar" id="chats-sidebar">
+                <div class="chats-sidebar-header">
+                    <!-- البحث المتقدم عن الموظفين (يظهر فقط للمشرف العام) -->
+                    <div class="employee-search-container" id="employee-search-container" style="display: none;">
+                        <div class="employee-search-wrapper">
+                            <i class="fas fa-user-tie search-icon"></i>
+                            <input type="text" class="employee-search-input" id="employee-search-input" placeholder="ابحث عن موظف لعرض محادثاته..." data-i18n-placeholder="searchEmployee" autocomplete="off">
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </div>
+                        <div class="employee-search-results" id="employee-search-results"></div>
+                    </div>
+
+                    <!-- مؤشر عرض المحادثات (لمن نشاهد شاتاته حالياً) -->
+                    <div class="current-view-indicator" id="current-view-indicator" style="display: none;">
+                        <div class="view-info">
+                            <i class="fas fa-user-clock"></i>
+                            <span id="viewing-user-name"></span>
+                        </div>
+                        <button class="btn-icon reset-view-btn" id="reset-view-btn" title="العودة لشاتاتي" data-i18n-title="backToMyChats">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+
+                    <!-- أزرار الإجراءات -->
+                    <div class="chats-header-actions">
+                        <button class="btn-icon" id="new-chat-btn" title="محادثة جديدة" data-i18n-title="newChat">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" id="new-group-btn" title="مجموعة جديدة" data-i18n-title="newGroup">
+                            <i class="fas fa-users"></i>
+                        </button>
+                        <button class="btn-icon" id="global-search-btn" title="بحث عام" data-i18n-title="globalSearch">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- البحث العادي في المحادثات -->
+                    <div class="chats-search">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="chats-search-input" id="chats-search-input" placeholder="ابحث أو ابدأ محادثة جديدة" data-i18n-placeholder="searchPlaceholder">
+                    </div>
+                </div>
+
+                <div class="chats-list-container">
+                    <div class="chats-list" id="chats-list">
+                        <!-- سيتم تعبئتها عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- منطقة المحادثة النشطة -->
+            <div class="chat-area" id="chat-area">
+                <!-- شاشة الترحيب عند عدم تحديد محادثة -->
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h2 class="welcome-title" data-i18n="welcomeTitle">التواصل الفوري</h2>
+                    <p class="welcome-description" data-i18n="welcomeDescription">اختر محادثة من القائمة لبدء الدردشة</p>
+                    <button class="btn btn-primary" id="start-chat-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span data-i18n="startChat">بدء محادثة جديدة</span>
+                    </button>
+                </div>
+
+                <!-- رأس المحادثة النشطة (يظهر عند اختيار محادثة) -->
+                <div class="chat-header" id="chat-header" style="display: none;">
+                    <!-- زر الرجوع للجوال -->
+                    <button class="btn-icon mobile-back-btn" id="mobile-back-btn">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    
+                    <!-- معلومات المحادثة -->
+                    <div class="chat-header-info" id="chat-header-info" style="cursor: pointer;">
+                        <div class="chat-avatar">
+                            <img src="" alt="صورة" id="chat-avatar-img" style="display: none;">
+                            <div class="avatar-placeholder" id="chat-avatar-placeholder"></div>
+                        </div>
+                        <div class="chat-details">
+                            <h3 class="chat-name" id="chat-name"></h3>
+                            <span class="chat-status" id="chat-status"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- أزرار البحث المحلي -->
+                    <div class="chat-search-controls">
+                        <button class="btn-icon" id="local-search-btn" title="بحث في المحادثة">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button class="btn-icon" id="chat-info-btn" title="معلومات الشات">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- شريط البحث المحلي (مثل واتساب) -->
+                <div class="local-search-bar" id="local-search-bar" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="local-search-input" placeholder="ابحث في المحادثة..." data-i18n-placeholder="searchInChat">
+                    <span id="local-search-counter">0/0</span>
+                    <button id="local-search-prev" class="btn-icon-sm"><i class="fas fa-chevron-up"></i></button>
+                    <button id="local-search-next" class="btn-icon-sm"><i class="fas fa-chevron-down"></i></button>
+                    <button id="local-search-close" class="btn-icon-sm"><i class="fas fa-times"></i></button>
+                </div>
+
+                <!-- منطقة الرسائل -->
+                <div class="messages-container" id="messages-container" style="display: none;">
+                    <div class="messages-list" id="messages-list"></div>
+                    <!-- مؤشر التمرير للبحث (احتفظنا به للتنقل السريع) -->
+                    <div class="search-navigation" id="search-navigation" style="display: none;">
+                        <button class="nav-up" id="search-prev"><i class="fas fa-chevron-up"></i></button>
+                        <span id="search-counter">0/0</span>
+                        <button class="nav-down" id="search-next"><i class="fas fa-chevron-down"></i></button>
+                    </div>
+                </div>
+
+                <!-- شريط كتابة الرسالة مع رد -->
+                <div class="message-input-area" id="message-input-area" style="display: none;">
+                    <div class="reply-preview" id="reply-preview" style="display: none;">
+                        <div class="reply-content">
+                            <i class="fas fa-reply"></i>
+                            <span class="reply-text"></span>
+                        </div>
+                        <button class="cancel-reply" id="cancel-reply-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="message-input-wrapper">
+                        <button class="btn-icon emoji-btn" id="emoji-btn" title="إيموجي" data-i18n-title="emoji">
+                            <i class="far fa-smile"></i>
+                        </button>
+                        <input type="text" class="message-input" id="message-input" placeholder="اكتب رسالة..." data-i18n-placeholder="typeMessage">
+                        <button class="btn-icon voice-record-btn" id="voice-record-btn" title="تسجيل صوتي">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="btn-icon attach-btn" id="attach-btn" title="إرفاق" data-i18n-title="attachFile">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button class="btn-send" id="send-message-btn" title="إرسال" data-i18n-title="send">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <!-- منطقة التسجيل الصوتي المباشر (مثل واتساب) -->
+                    <div class="voice-recording-indicator" id="voice-recording-indicator" style="display: none;">
+                        <div class="recording-timer" id="recording-timer">00:00</div>
+                        <div class="recording-wave">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <button class="cancel-recording-btn" id="cancel-recording-btn"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <!-- لوحة الإيموجي -->
+                    <div class="emoji-panel" id="emoji-panel" style="display: none;">
+                        <div class="emoji-container">
+                            <span class="emoji-item">😊</span>
+                            <span class="emoji-item">😂</span>
+                            <span class="emoji-item">❤️</span>
+                            <span class="emoji-item">👍</span>
+                            <span class="emoji-item">😢</span>
+                            <span class="emoji-item">😎</span>
+                            <span class="emoji-item">🎉</span>
+                            <span class="emoji-item">🔥</span>
+                            <span class="emoji-item">✅</span>
+                            <span class="emoji-item">⭐</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🎪 Modal لعرض الصورة المكبرة (محسن بالكامل) -->
+    <div class="modal image-viewer-modal" id="image-viewer-modal">
+        <div class="modal-dialog image-viewer-dialog">
+            <div class="modal-content image-viewer-content">
+                <div class="modal-header image-viewer-header">
+                    <h3 class="modal-title" data-i18n="imageView">عرض الصورة</h3>
+                    <button class="modal-close" id="image-viewer-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body image-viewer-body" id="image-viewer-body">
+                    <img src="" alt="صورة" id="image-viewer-img">
+                </div>
+                <div class="modal-footer image-viewer-footer">
+                    <a href="#" download id="image-viewer-download" class="btn btn-primary" data-i18n="download">تحميل</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لبدء محادثة جديدة -->
+    <div class="modal" id="new-chat-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="newChat">محادثة جديدة</h3>
+                    <button class="modal-close" id="new-chat-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="new-chat-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="new-chat-search-input" placeholder="ابحث عن شخص..." data-i18n-placeholder="searchContacts" autocomplete="off">
+                    </div>
+                    <div class="contacts-list" id="contacts-list">
+                        <!-- سيتم تعبئتها عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإنشاء مجموعة جديدة -->
+    <div class="modal" id="new-group-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="newGroup">مجموعة جديدة</h3>
+                    <button class="modal-close" id="new-group-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="group-form">
+                        <div class="group-avatar-upload">
+                            <div class="group-avatar-preview">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <button class="btn btn-outline btn-sm" data-i18n="changePhoto">تغيير الصورة</button>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="groupName">اسم المجموعة</label>
+                            <input type="text" class="form-control" id="group-name-input" placeholder="أدخل اسم المجموعة" data-i18n-placeholder="enterGroupName">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="selectParticipants">اختر المشاركين</label>
+                            <div class="participants-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="participants-search-input" placeholder="ابحث عن أشخاص..." data-i18n-placeholder="searchPeople">
+                            </div>
+                            <div class="participants-list" id="participants-list">
+                                <!-- سيتم تعبئتها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancel-group-btn" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="create-group-btn" data-i18n="create">إنشاء المجموعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal عرض تفاصيل المجموعة وإدارتها (محسّن) -->
+    <div class="modal" id="group-info-modal">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="groupInfo">معلومات المجموعة</h3>
+                    <button class="modal-close" id="group-info-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="group-info-body">
+                    <!-- سيتم تعبئتها ديناميكياً -->
+                </div>
+                <div class="modal-footer" id="group-info-footer">
+                    <!-- سيتم تعبئتها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإضافة أعضاء للمجموعة (محسّن) -->
+    <div class="modal" id="add-participant-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="addParticipants">إضافة أعضاء</h3>
+                    <button class="modal-close" id="add-participant-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="participants-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="add-participant-search" placeholder="ابحث عن أشخاص...">
+                    </div>
+                    <div class="participants-list" id="add-participant-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancel-add-participant-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="confirm-add-participant-btn">إضافة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal تأكيد احترافي -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="confirm-title">تأكيد</h3>
+                    <button class="modal-close" id="confirm-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="confirm-message">
+                    هل أنت متأكد؟
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="confirm-cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="confirm-ok">تأكيد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal للبحث العام -->
+    <div class="modal" id="global-search-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="globalSearch">بحث عام</h3>
+                    <button class="modal-close" id="global-search-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="global-search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="global-search-query" placeholder="ابحث في جميع المحادثات..." data-i18n-placeholder="globalSearchPlaceholder">
+                    </div>
+                    <div class="global-search-results" id="global-search-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal معلومات الشات (وسائط، ملفات، صوتيات) -->
+    <div class="modal" id="chat-info-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="chatInfo">معلومات الشات</h3>
+                    <button class="modal-close" id="chat-info-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="chat-info-body">
+                    <div class="chat-info-tabs">
+                        <button class="tab-btn active" data-tab="media">الوسائط</button>
+                        <button class="tab-btn" data-tab="files">الملفات</button>
+                        <button class="tab-btn" data-tab="voice">الصوتيات</button>
+                        <button class="tab-btn" data-tab="members" id="members-tab-btn" style="display: none;">الأعضاء</button>
+                    </div>
+                    <div class="chat-info-content" id="chat-info-content">
+                        <!-- سيتم تعبئتها ديناميكياً -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="chat.js"></script>
+</body>
+</html>

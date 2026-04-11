@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="إدارة العقود - نظام إدارة العقارات المؤسسي">
+    <title>إدارة العقود | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة (تم تحديثه) -->
+    <link rel="stylesheet" href="contracts.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-file-contract page-title-icon"></i>
+                        إدارة العقود
+                    </h1>
+                    <p class="page-description">
+                        إدارة جميع عقود المشاريع العقارية، متابعة المدفوعات وتحديث حالات العقود
+                    </p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-primary" id="create-contract-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>عقد جديد</span>
+                    </button>
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                    <div class="quick-stats">
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">المجموع:</span>
+                            <span class="quick-stat-value" id="total-contracts">0</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">نشط:</span>
+                            <span class="quick-stat-value active" id="active-contracts">0</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="quick-stat-label">متأخر:</span>
+                            <span class="quick-stat-value overdue" id="overdue-contracts">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon"><i class="fas fa-file-contract"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">0</h3>
+                            <p class="overview-card-label">إجمالي العقود</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-active">
+                        <div class="overview-card-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-active">0</h3>
+                            <p class="overview-card-label">عقود نشطة</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-revenue">
+                        <div class="overview-card-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-revenue">0</h3>
+                            <p class="overview-card-label">إجمالي القيمة</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-pending">
+                        <div class="overview-card-icon"><i class="fas fa-clock"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-pending">0</h3>
+                            <p class="overview-card-label">مستحقات</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول العقود -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة العقود
+                        </h3>
+                        <div class="card-actions">
+                            <!-- بحث متقدم -->
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في العقود...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- التصفية -->
+                            <div class="filter-dropdown-table">
+                                <button class="btn btn-outline btn-sm filter-table-btn" id="filter-table-btn">
+                                    <i class="fas fa-filter"></i>
+                                    <span>تصفية</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="filter-dropdown-content-table" id="filter-dropdown-table">
+                                    <div class="filter-sections-scroll">
+                                        <div class="filter-section">
+                                            <h6>حالة العقد</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="نشط" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">نشط</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="معلق" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">معلق</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="منتهي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">منتهي</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="ملغي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">ملغي</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>نوع العقد</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="تأجير" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">تأجير</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="بيع" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">شراء</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="إيجار_تشغيلي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">إيجار تشغيلي</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>حالة الدفع</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="payment" value="مسدد" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مسدد</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="payment" value="متأخر" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">متأخر</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="payment" value="غير مدفوع" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">غير مدفوع</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="filter-actions">
+                                        <button class="btn btn-primary btn-sm" id="apply-filter-table">تطبيق</button>
+                                        <button class="btn btn-outline btn-sm" id="reset-filter-table">إعادة تعيين</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- فرز -->
+                            <div class="sort-dropdown-table">
+                                <button class="btn btn-outline btn-sm sort-table-btn" id="sort-table-btn">
+                                    <i class="fas fa-sort-amount-down"></i>
+                                    <span>الاحدث</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="sort-dropdown-content-table" id="sort-dropdown-table">
+                                    <a href="#" class="sort-option active" data-sort="newest">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>الأحدث</span>
+                                    </a>
+                                    <a href="#" class="sort-option" data-sort="oldest">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>الأقدم</span>
+                                    </a>
+                                    <a href="#" class="sort-option" data-sort="amount-high">
+                                        <i class="fas fa-sort-amount-up"></i>
+                                        <span>الأعلى قيمة</span>
+                                    </a>
+                                    <a href="#" class="sort-option" data-sort="amount-low">
+                                        <i class="fas fa-sort-amount-down-alt"></i>
+                                        <span>الأقل قيمة</span>
+                                    </a>
+                                    <a href="#" class="sort-option" data-sort="name">
+                                        <i class="fas fa-sort-alpha-down"></i>
+                                        <span>أ-ي</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- تصدير -->
+                            <button class="btn btn-outline btn-sm" id="export-btn">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table" id="contracts-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="100">رقم العقد</th>
+                                        <th>العميل</th>
+                                        <th width="120">المشروع</th>
+                                        <th width="100">نوع العقد</th>
+                                        <th width="100">طريقة الدفع</th>
+                                        <th width="120">القيمة الإجمالية</th>
+                                        <th width="120">المدفوع</th>
+                                        <th width="120">المتبقي</th>
+                                        <th width="100">حالة العقد</th>
+                                        <th width="100">حالة الدفع</th>
+                                        <th width="120">تاريخ البدء</th>
+                                        <th width="120">تاريخ الانتهاء</th>
+                                        <th width="120">ملف العقد</th>   <!-- العمود الجديد -->
+                                        <th width="120">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contracts-table-body">
+                                    <tr class="loading-row">
+                                        <td colspan="15">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل العقود...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> عقد</span>
+                            </div>
+                            <div class="table-pagination" id="table-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-line"></i>
+                                        إيرادات العقود خلال العام
+                                    </h4>
+                                    <select class="period-select" id="chart-period">
+                                        <option value="month" selected>هذا الشهر</option>
+                                        <option value="quarter">هذا الربع</option>
+                                        <option value="year">هذه السنة</option>
+                                        <option value="all">كل الفترة</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="revenue-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-calendar-times"></i>
+                                        عقود تنتهي قريباً
+                                    </h4>
+                                    <a href="#" class="view-all-link">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="upcoming-list" id="upcoming-contracts"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل العقد -->
+    <div class="modal" id="contract-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-contract-title">تفاصيل العقد</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-contract-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-btn">تعديل العقد</button>
+                    <button class="btn btn-outline" id="modal-print-btn">
+                        <i class="fas fa-print"></i>
+                        <span>طباعة</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإنشاء عقد جديد -->
+    <div class="modal" id="create-contract-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="create-modal-title">إنشاء عقد جديد</h3>
+                    <button class="modal-close" id="create-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-contract-form" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="contract-customer-search">البحث عن العميل *</label>
+                                    <div class="customer-search-container">
+                                        <input type="text" id="contract-customer-search" class="form-control" placeholder="ابحث بالاسم أو رقم الهاتف...">
+                                        <div class="search-results" id="customer-search-results"></div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline btn-sm" id="add-customer-btn" style="margin-top: 0.5rem;">
+                                        <i class="fas fa-user-plus"></i>
+                                        <span>إضافة عميل جديد</span>
+                                    </button>
+                                    <input type="hidden" id="contract-customer-id">
+                                    <input type="hidden" id="contract-customer-source">
+                                    <div class="selected-customer-info" id="selected-customer-info" style="display: none;">
+                                        <div class="customer-info-card">
+                                            <i class="fas fa-user"></i>
+                                            <div>
+                                                <strong id="selected-customer-name"></strong>
+                                                <small id="selected-customer-phone" style="display: block; color: #777;"></small>
+                                            </div>
+                                            <button type="button" class="btn-remove-customer" id="btn-remove-customer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract-project">المشروع *</label>
+                                    <select id="contract-project" class="form-control" required>
+                                        <option value="">-- اختر مشروع --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract-type">نوع العقد *</label>
+                                    <select id="contract-type" class="form-control" required>
+                                        <option value="تأجير">تأجير</option>
+                                        <option value="بيع">شراء</option>
+                                        <option value="إيجار_تشغيلي">إيجار تشغيلي</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract-start">تاريخ البدء *</label>
+                                    <input type="date" id="contract-start" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract-end">تاريخ الانتهاء *</label>
+                                    <input type="date" id="contract-end" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract-amount">القيمة الإجمالية (ريال) *</label>
+                                    <input type="number" id="contract-amount" class="form-control" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="payment-frequency">طريقة الدفع *</label>
+                                    <select id="payment-frequency" class="form-control" required>
+                                        <option value="شهري">شهري</option>
+                                        <option value="ربع سنوي">ربع سنوي</option>
+                                        <option value="نصف سنوي">نصف سنوي</option>
+                                        <option value="سنوي">سنوي</option>
+                                        <option value="دفعة واحدة">دفعة واحدة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-file">ملف العقد (PDF)</label>
+                            <input type="file" id="contract-file" class="form-control-file" accept=".pdf">
+                            <small class="form-text text-muted">يمكنك رفع ملف PDF للعقد (اختياري)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-notes">ملاحظات إضافية</label>
+                            <textarea id="contract-notes" class="form-control" rows="3" placeholder="أي ملاحظات إضافية حول العقد..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="create-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="create-submit-btn">إنشاء العقد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإضافة عميل جديد -->
+    <div class="modal" id="add-customer-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">إضافة عميل جديد</h3>
+                    <button class="modal-close" id="add-customer-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-customer-form">
+                        <div class="form-group">
+                            <label for="customer-name">اسم العميل *</label>
+                            <input type="text" id="customer-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-email">البريد الإلكتروني *</label>
+                            <input type="email" id="customer-email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-phone">رقم الهاتف *</label>
+                            <input type="tel" id="customer-phone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-national-id">رقم الهوية</label>
+                            <input type="text" id="customer-national-id" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="customer-address">العنوان</label>
+                            <textarea id="customer-address" class="form-control" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="add-customer-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="add-customer-submit-btn">إضافة العميل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتعديل العقد (مع إضافة حقل رفع ملف) -->
+    <div class="modal" id="edit-contract-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="edit-modal-title">تعديل العقد</h3>
+                    <button class="modal-close" id="edit-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-contract-form" enctype="multipart/form-data">
+                        <input type="hidden" id="edit-contract-id">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="edit-customer-search">البحث عن العميل *</label>
+                                    <div class="customer-search-container">
+                                        <input type="text" id="edit-customer-search" class="form-control" placeholder="ابحث بالاسم أو رقم الهاتف...">
+                                        <div class="search-results" id="edit-customer-search-results"></div>
+                                    </div>
+                                    <input type="hidden" id="edit-contract-customer-id">
+                                    <input type="hidden" id="edit-contract-customer-source">
+                                    <div class="selected-customer-info" id="edit-selected-customer-info" style="display: none;">
+                                        <div class="customer-info-card">
+                                            <i class="fas fa-user"></i>
+                                            <div>
+                                                <strong id="edit-selected-customer-name"></strong>
+                                                <small id="edit-selected-customer-phone" style="display: block; color: #777;"></small>
+                                            </div>
+                                            <button type="button" class="btn-remove-customer" id="edit-btn-remove-customer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-project">المشروع *</label>
+                                    <select id="edit-contract-project" class="form-control" required>
+                                        <option value="">-- اختر مشروع --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-type">نوع العقد *</label>
+                                    <select id="edit-contract-type" class="form-control" required>
+                                        <option value="تأجير">تأجير</option>
+                                        <option value="بيع">شراء</option>
+                                        <option value="إيجار_تشغيلي">إيجار تشغيلي</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-start">تاريخ البدء *</label>
+                                    <input type="date" id="edit-contract-start" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-end">تاريخ الانتهاء *</label>
+                                    <input type="date" id="edit-contract-end" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-amount">القيمة الإجمالية (ريال) *</label>
+                                    <input type="number" id="edit-contract-amount" class="form-control" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-payment-frequency">طريقة الدفع *</label>
+                                    <select id="edit-payment-frequency" class="form-control" required>
+                                        <option value="شهري">شهري</option>
+                                        <option value="ربع سنوي">ربع سنوي</option>
+                                        <option value="نصف سنوي">نصف سنوي</option>
+                                        <option value="سنوي">سنوي</option>
+                                        <option value="دفعة واحدة">دفعة واحدة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- حقل رفع ملف PDF في التعديل -->
+                        <div class="form-group">
+                            <label for="edit-contract-file">ملف العقد (PDF)</label>
+                            <input type="file" id="edit-contract-file" class="form-control-file" accept=".pdf">
+                            <small class="form-text text-muted">اتركه فارغاً إذا لم ترد تغيير الملف الحالي</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-contract-status">حالة العقد *</label>
+                                    <select id="edit-contract-status" class="form-control" required>
+                                        <option value="نشط">نشط</option>
+                                        <option value="معلق">معلق</option>
+                                        <option value="منتهي">منتهي</option>
+                                        <option value="ملغي">ملغي</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit-payment-status">حالة الدفع *</label>
+                                    <select id="edit-payment-status" class="form-control" required>
+                                        <option value="مسدد">مسدد</option>
+                                        <option value="متأخر">متأخر</option>
+                                        <option value="غير مدفوع">غير مدفوع</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-contract-notes">ملاحظات إضافية</label>
+                            <textarea id="edit-contract-notes" class="form-control" rows="3" placeholder="أي ملاحظات إضافية حول العقد..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="edit-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="edit-submit-btn">تحديث العقد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لإضافة دفعة -->
+    <div class="modal" id="add-payment-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">إضافة دفعة جديدة</h3>
+                    <button class="modal-close" id="payment-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-payment-form">
+                        <input type="hidden" id="payment-contract-id">
+                        <div class="form-group">
+                            <label for="payment-amount">المبلغ *</label>
+                            <input type="number" id="payment-amount" class="form-control" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-date">تاريخ الدفع *</label>
+                            <input type="date" id="payment-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-method">طريقة الدفع *</label>
+                            <select id="payment-method" class="form-control" required>
+                                <option value="تحويل_بنكي">تحويل بنكي</option>
+                                <option value="شيك">شيك</option>
+                                <option value="نقدي">نقدي</option>
+                                <option value="بطاقة_ائتمان">بطاقة ائتمان</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-reference">رقم المرجع</label>
+                            <input type="text" id="payment-reference" class="form-control" placeholder="رقم المرجع البنكي أو رقم الشيك">
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-notes">ملاحظات</label>
+                            <textarea id="payment-notes" class="form-control" rows="2" placeholder="ملاحظات إضافية حول الدفعة..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="payment-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="payment-submit-btn">إضافة الدفعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتأكيد الحذف -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size: 1.1rem; text-align: center;">
+                        هل أنت متأكد من حذف هذا العقد؟
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">تأكيد الحذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="contracts.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>

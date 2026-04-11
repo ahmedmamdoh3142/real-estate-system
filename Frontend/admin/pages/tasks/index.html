@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <meta name="description" content="إدارة المهام المتقدمة - نظام إدارة عقارات احترافي بمستوى Notion">
+    <title>TaskFlow Pro | إدارة المهام المتقدمة</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة (المحسن) -->
+    <link rel="stylesheet" href="tasks.css">
+    
+    <!-- Font Awesome 6 للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts - Tajawal (خط عصري ونظيف) -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- SortableJS للسحب والإفلات (احترافي) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <!-- Chart.js للتحليلات المتقدمة -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Moment.js لمعالجة التواريخ بسهولة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/ar.js"></script>
+    
+    <!-- flatpickr للتقويم المتقدم -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <!-- microtip للـ tooltips المتقدمة -->
+    <link rel="stylesheet" href="https://unpkg.com/microtip/microtip.css">
+    
+    <!-- SweetAlert2 للرسائل الاحترافية -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="dark-mode rtl" data-i18n-body>
+    <!-- 🔔 منطقة الإشعارات العائمة (محسنة جداً) -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة مع بحث متطور وإشعارات -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                <div class="admin-branding">
+                    <a href="../dashboard/index.html" class="admin-logo">
+                        <img src="../../../global/assets/images/logo.png" alt="شعار النظام" class="logo-img" >
+                    </a>
+                    
+                    <!-- بحث متقدم مع نتائج لحظية -->
+                    <div class="admin-search advanced-search">
+                        <div class="search-box-header">
+                            <input type="text" class="search-input-header" id="global-search" placeholder="ابحث عن مهمة، مشروع، تعليق، أو شخص..." autocomplete="off" data-i18n-placeholder="searchPlaceholder">
+                            <button class="search-btn-header" id="global-search-btn" aria-label="بحث">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <!-- نتائج البحث الفوري -->
+                        <div class="search-results-dropdown" id="search-results">
+                            <div class="search-results-header">
+                                <span data-i18n="searchResults">نتائج البحث</span>
+                                <span class="badge-now" id="search-count">0</span>
+                            </div>
+                            <div class="search-results-list" id="search-results-list">
+                                <div class="search-empty" data-i18n="searchEmpty">ابدأ الكتابة للبحث...</div>
+                            </div>
+                            <div class="search-results-footer">
+                                <button class="btn btn-sm btn-outline" id="advanced-search-btn" data-i18n="advancedSearch">بحث متقدم <i class="fas fa-sliders-h"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-user-area">
+                    <!-- زر تبديل اللغة (جديد) -->
+                    <div class="language-switcher">
+                        <button class="language-btn" id="language-toggle" aria-label="تغيير اللغة">
+                            <span class="language-icon"><i class="fas fa-globe"></i></span>
+                            <span class="language-text" id="current-language">العربية</span>
+                        </button>
+                    </div>
+
+                    <!-- إشعارات محسنة مع عداد وتصنيف -->
+                    <div class="notifications-dropdown">
+                        <button class="notifications-btn" id="notifications-btn" aria-label="الإشعارات">
+                            <i class="fas fa-bell"></i>
+                            <span class="notifications-badge" id="notifications-count">0</span>
+                        </button>
+                        <div class="notifications-content" id="notifications-content">
+                            <div class="notifications-header">
+                                <h4 data-i18n="notifications">الإشعارات</h4>
+                                <button class="mark-all-read" id="mark-all-read" data-i18n="markAllRead">تحديد الكل كمقروء</button>
+                            </div>
+                            <div class="notifications-list" id="notifications-list">
+                                <!-- تملأ بالجافاسكريبت -->
+                            </div>
+                            <div class="notifications-footer">
+                                <a href="#" id="view-all-notifications" data-i18n="viewAll">عرض كل الإشعارات</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- أيقونة الدردشة (جديد) -->
+                    <div class="chat-dropdown">
+                        <button class="chat-btn" id="chat-btn" aria-label="الدردشة">
+                            <a href="../chat/index.html" >
+                                <i class="fas fa-comment-dots"></i>
+                            </a>
+                        </button>
+                    </div>
+
+                    <!-- أيقونة الميل (جديد) -->
+                    <div class="chat-dropdown">
+                        <button class="chat-btn" id="chat-btn" aria-label="الميل">
+                            <a href="../email/index.html" >
+                                <i class="fas fa-paper-plane"></i>
+                            </a>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة مع إحصائيات سريعة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-tasks page-title-icon"></i>
+                        <span data-i18n="advancedTaskPlatform">منصة إدارة المهام المتقدمة</span>
+                    </h1>
+                    <p class="page-description" data-i18n="platformDescription">
+                        نظام متكامل لإدارة مهام الفرق والمشاريع مع تتبع دقيق، إشعارات ذكية، وتحليلات أداء لحظية.
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <!-- زر مهمة جديدة -->
+                    <button class="btn btn-primary" id="new-task-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span data-i18n="newTask">مهمة جديدة</span>
+                    </button>
+                    
+                    <!-- زر طلب جديد (جديد) -->
+                    <button class="btn btn-outline" id="new-request-btn">
+                        <i class="fas fa-file-alt"></i>
+                        <span data-i18n="newRequest">طلب جديد</span>
+                    </button>
+                    
+                    <!-- زر طلب شراء جديد -->
+                    <button class="btn btn-outline" id="new-purchase-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span data-i18n="newPurchase">طلب شراء</span>
+                    </button>
+                    
+                    <!-- زر معاد جديد (إضافة مواعيد) -->
+                    <button class="btn btn-outline" id="new-appointment-btn">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span data-i18n="newAppointment">معاد جديد</span>
+                    </button>
+                    
+                    <!-- زر جزاء جديد (يدوي) – يظهر فقط للمشرف العام -->
+                    <button class="btn btn-outline" id="new-manual-penalty-btn" style="display: none;">
+                        <i class="fas fa-gavel"></i>
+                        <span data-i18n="newManualPenalty">جزاء جديد</span>
+                    </button>
+                    
+                    <!-- طرق العرض المتعددة -->
+                    <div class="view-options">
+                        <button class="view-option active" data-view="board" title="عرض اللوحة (كانبان)" data-i18n-title="boardView">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-option" data-view="list" title="عرض القائمة" data-i18n-title="listView">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-option" data-view="calendar" title="عرض التقويم" data-i18n-title="calendarView">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 📊 بطاقات الإحصائيات السريعة والمتقدمة (مقسمة يمين/يسار) -->
+            <div class="stats-grid">
+                <!-- العمود الأيسر (مرسل) -->
+                <div class="stats-column sent-stats">
+                    <h3 class="stats-column-title">المهام المرسلة</h3>
+                    <div class="stats-cards">
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-sent-total">0</span>
+                                <span class="stat-label" data-i18n="totalTasksSent">إجمالي المهام</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-check-circle" style="color: #2ecc71;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-sent-completed">0</span>
+                                <span class="stat-label" data-i18n="completedSent">مكتملة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-spinner" style="color: #f39c12;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-sent-progress">0</span>
+                                <span class="stat-label" data-i18n="inProgressSent">قيد التنفيذ</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-sent-overdue">0</span>
+                                <span class="stat-label" data-i18n="overdueSent">متأخرة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-file-alt" style="color: #f1c40f;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-requests-sent">0</span>
+                                <span class="stat-label" data-i18n="requestsSent">الطلبات المرسلة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-shopping-cart" style="color: #e67e22;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-purchases-sent">0</span>
+                                <span class="stat-label" data-i18n="purchasesSent">طلبات شراء مرسلة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- العمود الأيمن (مستلم) -->
+                <div class="stats-column received-stats">
+                    <h3 class="stats-column-title">المهام المستلمة</h3>
+                    <div class="stats-cards">
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-received-total">0</span>
+                                <span class="stat-label" data-i18n="totalTasksReceived">إجمالي المهام</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-check-circle" style="color: #2ecc71;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-received-completed">0</span>
+                                <span class="stat-label" data-i18n="completedReceived">مكتملة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-spinner" style="color: #f39c12;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-received-progress">0</span>
+                                <span class="stat-label" data-i18n="inProgressReceived">قيد التنفيذ</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-received-overdue">0</span>
+                                <span class="stat-label" data-i18n="overdueReceived">متأخرة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-file-alt" style="color: #f1c40f;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-requests-received">0</span>
+                                <span class="stat-label" data-i18n="requestsReceived">الطلبات المستلمة</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-icon"><i class="fas fa-shopping-cart" style="color: #e67e22;"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-purchases-received">0</span>
+                                <span class="stat-label" data-i18n="purchasesReceived">طلبات شراء مستلمة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الصف الثاني: الإحصائيات الأخرى -->
+            <div class="stats-cards other-stats">
+                <div class="stat-card-small">
+                    <div class="stat-icon"><i class="fas fa-calendar-check" style="color: #3498db;"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-total-appointments">0</span>
+                        <span class="stat-label" data-i18n="totalAppointments">إجمالي المواعيد</span>
+                    </div>
+                </div>
+                <div class="stat-card-small">
+                    <div class="stat-icon"><i class="fas fa-users" style="color: #9b59b6;"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-team">0</span>
+                        <span class="stat-label" data-i18n="teamMembers">أعضاء الفريق</span>
+                    </div>
+                </div>
+                <div class="stat-card-small">
+                    <div class="stat-icon"><i class="fas fa-gavel" style="color: #e74c3c;"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="stat-penalties">0</span>
+                        <span class="stat-label" data-i18n="penalties">الجزاءات</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔍 شريط الفلاتر المتقدم مع فلاتر ذكية محفوظة -->
+            <div class="filters-bar">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label><i class="fas fa-tag"></i> <span data-i18n="status">الحالة</span></label>
+                        <select id="filter-status" class="filter-select">
+                            <option value="all" data-i18n="all">الكل</option>
+                            <option value="todo" data-i18n="todo">بانتظار</option>
+                            <option value="in-progress" data-i18n="inProgress">قيد التنفيذ</option>
+                            <option value="review" data-i18n="review">مراجعة</option>
+                            <option value="done" data-i18n="done">مكتمل</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-flag"></i> <span data-i18n="priority">الأولوية</span></label>
+                        <select id="filter-priority" class="filter-select">
+                            <option value="all" data-i18n="all">الكل</option>
+                            <option value="urgent" data-i18n="urgent">عاجل</option>
+                            <option value="high" data-i18n="high">مرتفع</option>
+                            <option value="medium" data-i18n="medium">متوسط</option>
+                            <option value="low" data-i18n="low">منخفض</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-user"></i> <span data-i18n="assignee">المسؤول</span></label>
+                        <select id="filter-assignee" class="filter-select">
+                            <option value="all" data-i18n="all">الكل</option>
+                            <option value="me" data-i18n="assignedToMe">مخصص لي</option>
+                            <option value="1">أحمد محمد</option>
+                            <option value="2">سارا العلي</option>
+                            <option value="3">خالد الحربي</option>
+                            <option value="4">فاطمة السعد</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar"></i> <span data-i18n="dueDate">تاريخ الاستحقاق</span></label>
+                        <select id="filter-due" class="filter-select">
+                            <option value="all" data-i18n="all">الكل</option>
+                            <option value="today" data-i18n="today">اليوم</option>
+                            <option value="tomorrow" data-i18n="tomorrow">غداً</option>
+                            <option value="week" data-i18n="thisWeek">هذا الأسبوع</option>
+                            <option value="overdue" data-i18n="overdue">متأخر</option>
+                            <option value="no-date" data-i18n="noDate">بدون تاريخ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-project-diagram"></i> <span data-i18n="project">المشروع</span></label>
+                        <select id="filter-project" class="filter-select">
+                            <option value="all" data-i18n="allProjects">جميع المشاريع</option>
+                            <option value="1">مشروع النخيل</option>
+                            <option value="2">أبراج الأعمال</option>
+                            <option value="3">شقق السفير</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-outline btn-sm" id="clear-filters" title="مسح جميع الفلاتر" data-i18n-title="clearFilters">
+                        <i class="fas fa-times"></i> <span data-i18n="clear">مسح</span>
+                    </button>
+                    
+                    <button class="btn btn-outline btn-sm" id="save-filter" title="حفظ الفلتر الحالي" data-i18n-title="saveFilter">
+                        <i class="fas fa-save"></i> <span data-i18n="save">حفظ</span>
+                    </button>
+                </div>
+                
+                <!-- الفلاتر المحفوظة (سريعة الوصول) -->
+                <div class="saved-filters">
+                    <span class="saved-filter-tag active" data-i18n="allTasks">كل المهام</span>
+                    <span class="saved-filter-tag" data-i18n="assignedToMe">مخصص لي</span>
+                    <span class="saved-filter-tag" data-i18n="highPriority">عالية الأولوية</span>
+                    <span class="saved-filter-tag" data-i18n="overdueTasks">المتأخرة</span>
+                    <span class="saved-filter-tag" data-i18n="needsReview">تتطلب مراجعة</span>
+                    <span class="saved-filter-tag add-filter" id="add-filter-btn">
+                        <i class="fas fa-plus"></i> <span data-i18n="saveFilter">حفظ الفلتر</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 🎯 الأقسام الرئيسية للكروت (Horizontal Scrolling Layout) - مرتبة حسب الطلب -->
+            <div class="tasks-board" id="tasks-board">
+                <!-- القسم 1: المهام التي بعتها (Tasks I Sent) -->
+                <div class="board-section" data-section="sent">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-paper-plane" style="color: #3498db;"></i>
+                                <span data-i18n="tasksSent">المهام المرسلة</span>
+                            </h2>
+                            <span class="tasks-count" id="sent-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="sent">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="todo"><span data-i18n="todo">بانتظار</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="in-progress"><span data-i18n="inProgress">قيد التنفيذ</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="review"><span data-i18n="review">مراجعة</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="done"><span data-i18n="done">مكتمل</span> <span class="count">0</span></button>
+                            </div>
+                            <span class="section-status-badge" data-i18n="overdueTasksShort">متأخرة: 0</span>
+                            <span class="section-status-badge success" data-i18n="completedTasksShort">منجزة: 0</span>
+                            <button class="section-add-btn" title="إضافة مهمة جديدة" data-i18n-title="addNewTask">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-container horizontal-scroll" id="sent-tasks" data-status="sent">
+                        <!-- سيتم تعبئة المهام بواسطة الجافاسكريبت -->
+                        <div class="quick-add-task">
+                            <i class="fas fa-plus"></i>
+                            <span data-i18n="quickAddTask">إضافة مهمة جديدة</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 2: المهام المستلمة (Tasks Assigned to Me) -->
+                <div class="board-section" data-section="received">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-inbox" style="color: #2ecc71;"></i>
+                                <span data-i18n="tasksReceived">المهام المستلمة</span>
+                            </h2>
+                            <span class="tasks-count" id="received-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="received">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="todo"><span data-i18n="todo">بانتظار</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="in-progress"><span data-i18n="inProgress">قيد التنفيذ</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="review"><span data-i18n="review">مراجعة</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="done"><span data-i18n="done">مكتمل</span> <span class="count">0</span></button>
+                            </div>
+                            <span class="section-status-badge warning" data-i18n="urgentTasksShort">مستعجلة: 0</span>
+                            <span class="section-status-badge" data-i18n="newTasksShort">جديدة: 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-container horizontal-scroll" id="received-tasks" data-status="received">
+                        <!-- سيتم تعبئة المهام بواسطة الجافاسكريبت -->
+                    </div>
+                </div>
+
+                <!-- القسم 3: المهام الفرعية (Sub Tasks) - جديد -->
+                <div class="board-section" data-section="subtasks">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-list-ul" style="color: #9b59b6;"></i>
+                                <span data-i18n="subtasks">المهام الفرعية</span>
+                            </h2>
+                            <span class="tasks-count" id="subtasks-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="subtasks">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="todo"><span data-i18n="todo">بانتظار</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="in-progress"><span data-i18n="inProgress">قيد التنفيذ</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="review"><span data-i18n="review">مراجعة</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="done"><span data-i18n="done">مكتمل</span> <span class="count">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="subtasks-tasks" data-status="subtasks">
+                        <!-- سيتم تعبئة المهام الفرعية هنا -->
+                    </div>
+                </div>
+
+                <!-- القسم 4: الطلبات المرسلة -->
+                <div class="board-section" data-section="requests-sent">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-paper-plane" style="color: #3498db;"></i>
+                                <span data-i18n="requestsSent">الطلبات المرسلة</span>
+                            </h2>
+                            <span class="tasks-count" id="requests-sent-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="requests-sent">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                            <button class="section-add-btn" title="إضافة طلب جديد" data-i18n-title="addNewRequest">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="requests-sent-tasks" data-status="requests-sent">
+                        <div class="quick-add-task">
+                            <i class="fas fa-plus"></i>
+                            <span data-i18n="addNewRequest">إضافة طلب جديد</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 5: الطلبات المستلمة -->
+                <div class="board-section" data-section="requests-received">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-file-alt" style="color: #f1c40f;"></i>
+                                <span data-i18n="requestsReceived">الطلبات المستلمة</span>
+                            </h2>
+                            <span class="tasks-count" id="requests-received-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="requests-received">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="requests-received-tasks" data-status="requests-received">
+                        <!-- سيتم تعبئة الطلبات المستلمة هنا -->
+                    </div>
+                </div>
+
+                <!-- القسم 6: طلبات الشراء المرسلة -->
+                <div class="board-section" data-section="purchases-sent">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-shopping-cart" style="color: #e67e22;"></i>
+                                <span data-i18n="purchasesSent">طلبات الشراء المرسلة</span>
+                            </h2>
+                            <span class="tasks-count" id="purchases-sent-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="purchases-sent">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                            <button class="section-add-btn" title="إضافة طلب شراء جديد" data-i18n-title="addNewPurchase">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="purchases-sent-tasks" data-status="purchases-sent">
+                        <div class="quick-add-task">
+                            <i class="fas fa-plus"></i>
+                            <span data-i18n="addNewPurchase">إضافة طلب شراء جديد</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 7: طلبات الشراء المستلمة -->
+                <div class="board-section" data-section="purchases-received">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-shopping-cart" style="color: #e67e22;"></i>
+                                <span data-i18n="purchasesReceived">طلبات الشراء المستلمة</span>
+                            </h2>
+                            <span class="tasks-count" id="purchases-received-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="purchases-received">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="purchases-received-tasks" data-status="purchases-received">
+                        <!-- سيتم تعبئة طلبات الشراء المستلمة هنا -->
+                    </div>
+                </div>
+
+                <!-- القسم 8: الجزاءات (تلقائية) -->
+                <div class="board-section" data-section="penalties">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-gavel" style="color: #e74c3c;"></i>
+                                <span data-i18n="penalties">الجزاءات (تلقائية)</span>
+                            </h2>
+                            <span class="tasks-count" id="penalties-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="penalties">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                            <button class="section-clear-btn" title="إزالة الكل" data-i18n-title="clearAllPenalties">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-container horizontal-scroll" id="penalties-tasks" data-status="penalties">
+                        <!-- سيتم تعبئة الجزاءات هنا عبر الجافاسكريبت -->
+                        <div class="quick-add-task">
+                            <i class="fas fa-info-circle"></i>
+                            <span data-i18n="penaltiesAuto">الجزاءات تظهر تلقائياً</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 9: الجزاءات اليدوية (جديد) -->
+                <div class="board-section" data-section="manual-penalties">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-gavel" style="color: #e67e22;"></i>
+                                <span data-i18n="manualPenalties">الجزاءات اليدوية</span>
+                            </h2>
+                            <span class="tasks-count" id="manual-penalties-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="manual-penalties">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                            </div>
+                            <button class="section-add-btn" title="إضافة جزاء يدوي" data-i18n-title="addManualPenalty">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="manual-penalties-tasks" data-status="manual-penalties">
+                        <div class="quick-add-task">
+                            <i class="fas fa-gavel"></i>
+                            <span data-i18n="addManualPenalty">إضافة جزاء يدوي</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 10: المؤرشفة (Archived Tasks) -->
+                <div class="board-section" data-section="archived">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-archive" style="color: #95a5a6;"></i>
+                                <span data-i18n="archivedTasks">المؤرشفة والمكتملة نهائياً</span>
+                            </h2>
+                            <span class="tasks-count" id="archived-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="archived">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="archived"><span data-i18n="archived">مؤرشف</span> <span class="count">0</span></button>
+                            </div>
+                            <span class="section-status-badge" data-i18n="thisWeekShort">هذا الأسبوع: 0</span>
+                            <button class="section-clear-btn" title="تفريغ الأرشفة" data-i18n-title="clearArchive">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-container horizontal-scroll" id="archived-tasks" data-status="archived">
+                        <!-- تم حذف كرت استعادة المهمة من الأرشيف -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- إضافة عرض القائمة (يتم التحكم فيه عبر الصنف list-view على tasks-board) -->
+            
+            <!-- عرض التقويم (خاص بالمواعيد والمهام المستحقة) - تم تعديله لدعم التبديل -->
+            <div class="calendar-view" id="calendar-view" style="display: none;">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="calendar-prev"><i class="fas fa-chevron-right"></i></button>
+                    <h3 class="calendar-month-year" id="calendar-month-year">مارس 2026</h3>
+                    <button class="calendar-nav" id="calendar-next"><i class="fas fa-chevron-left"></i></button>
+                </div>
+                <div class="calendar-mode-switch">
+                    <button class="calendar-mode-btn active" data-mode="appointments"><i class="fas fa-calendar-check"></i> <span data-i18n="appointments">المواعيد</span></button>
+                    <button class="calendar-mode-btn" data-mode="tasks"><i class="fas fa-tasks"></i> <span data-i18n="tasksDue">المهام المستحقة</span></button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div data-i18n="sun">الأحد</div><div data-i18n="mon">الإثنين</div><div data-i18n="tue">الثلاثاء</div><div data-i18n="wed">الأربعاء</div><div data-i18n="thu">الخميس</div><div data-i18n="fri">الجمعة</div><div data-i18n="sat">السبت</div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- يتم تعبئتها بالجافاسكريبت -->
+                </div>
+            </div>
+
+            <!-- 📊 قسم التحليلات والإحصائيات المتقدم (محسن جداً) -->
+            <div class="analytics-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-pie"></i>
+                        <span data-i18n="analyticsReports">تحليلات الأداء والتقارير</span>
+                    </h3>
+                    <div class="section-actions">
+                        <select class="period-select" id="analytics-period">
+                            <option value="week" data-i18n="last7Days">آخر 7 أيام</option>
+                            <option value="month" selected data-i18n="last30Days">آخر 30 يوم</option>
+                            <option value="quarter" data-i18n="last3Months">آخر 3 شهور</option>
+                            <option value="year" data-i18n="lastYear">آخر سنة</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" id="refresh-charts">
+                            <i class="fas fa-sync-alt"></i> <span data-i18n="refresh">تحديث</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h4 data-i18n="tasksByStatus">توزيع المهام حسب الحالة</h4>
+                        <div class="chart-container small">
+                            <canvas id="tasks-status-chart"></canvas>
+                        </div>
+                        <div class="chart-legend" id="status-legend"></div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h4 data-i18n="tasksByPriority">توزيع المهام حسب الأولوية</h4>
+                        <div class="chart-container small">
+                            <canvas id="tasks-priority-chart"></canvas>
+                        </div>
+                        <div class="chart-legend" id="priority-legend"></div>
+                    </div>
+                    
+                    <!-- الشارت الجديد للإحصائيات الخمس -->
+                    <div class="chart-card">
+                        <h4 data-i18n="statsSummary">ملخص الإحصائيات (المهام، الطلبات، الشراء، الجزاءات، الأرشفة)</h4>
+                        <div class="chart-container small">
+                            <canvas id="stats-summary-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- القسم المطلوب: أداء الفريق (حمل العمل) مع الأقسام وزر عرض التفاصيل -->
+                    <div class="stats-card-wide">
+                        <div class="card-header-with-button">
+                            <h4 data-i18n="teamPerformance">📊 أداء الفريق (حمل العمل) - حسب الأقسام</h4>
+                            <a href="../stats/index.html" class="btn btn-outline btn-sm" id="view-team-details">
+                                <i class="fas fa-chart-simple"></i>
+                                <span data-i18n="viewDetails">عرض التفاصيل</span>
+                            </a>
+                        </div>
+                        
+                        <div class="team-progress-list" id="team-workload">
+                            <!-- سيتم تعبئة أداء الفريق بواسطة الجافاسكريبت -->
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل الصفحة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2026 <span data-i18n="realEstateSystem">نظام إدارة العقارات المتكامل</span> | TaskFlow Pro v3.5</p>
+                    <p class="footer-version" data-i18n="lastUpdate">آخر تحديث: 1 مارس 2026 | جميع الحقوق محفوظة</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link" data-i18n="helpSupport">المساعدة والدعم</a>
+                    <a href="#" class="footer-link" data-i18n="guide">الدليل التعريفي</a>
+                    <a href="#" class="footer-link" data-i18n="privacy">سياسة الخصوصية</a>
+                    <a href="#" class="footer-link" data-i18n="terms">شروط الاستخدام</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal: تفاصيل المهمة (محسن جداً) - تم إزالة checklist -->
+    <div class="modal" id="task-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-task-title" data-i18n="taskDetails">تفاصيل المهمة</h3>
+                    <button class="modal-close" id="modal-close-btn" aria-label="إغلاق">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-task-body">
+                    <div class="task-detail-loading" data-i18n="loading">جاري تحميل التفاصيل...</div>
+                </div>
+                <div class="modal-footer" id="modal-task-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2" data-i18n="close">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-task-btn" data-i18n="editTask">تعديل المهمة</button>
+                    <button class="btn btn-outline" id="modal-add-subtask-btn" data-i18n="addSubtask">إضافة مهمة فرعية</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: مهمة جديدة / تعديل مهمة (محسن) - تم إزالة حقل المشروع وإضافة حقل التذكير -->
+    <div class="modal" id="new-task-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="createNewTask">إنشاء مهمة جديدة</h3>
+                    <button class="modal-close" id="new-task-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-task-form">
+                        <!-- حقل مخفي لتحديد المهمة الأم -->
+                        <input type="hidden" id="task-parent-id" value="">
+                        
+                        <div class="form-group">
+                            <label><span data-i18n="taskTitle">عنوان المهمة</span> <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="task-title" placeholder="أدخل عنوان المهمة" required data-i18n-placeholder="taskTitlePlaceholder">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label data-i18n="status">الحالة</label>
+                                <select class="form-control" id="task-status">
+                                    <option value="todo" data-i18n="todo">بانتظار</option>
+                                    <option value="in-progress" data-i18n="inProgress">قيد التنفيذ</option>
+                                    <option value="review" data-i18n="review">مراجعة</option>
+                                    <option value="done" data-i18n="done">مكتمل</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label data-i18n="priority">الأولوية</label>
+                                <select class="form-control" id="task-priority">
+                                    <option value="low" data-i18n="low">منخفضة</option>
+                                    <option value="medium" selected data-i18n="medium">متوسطة</option>
+                                    <option value="high" data-i18n="high">مرتفعة</option>
+                                    <option value="urgent" data-i18n="urgent">عاجلة</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label data-i18n="dueDate">تاريخ الاستحقاق</label>
+                                <input type="date" class="form-control" id="task-due-date">
+                            </div>
+                            <!-- حقل التذكير -->
+                            <div class="form-group col-md-6">
+                                <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
+                                <input type="datetime-local" class="form-control" id="task-reminder-datetime">
+                            </div>
+                        </div>
+                        
+                        <!-- قسم المهام الفرعية (جديد) -->
+                        <div class="form-group">
+                            <label data-i18n="subtasks">المهام الفرعية (اختياري)</label>
+                            <div class="subtasks-builder" id="subtasks-builder">
+                                <div class="subtask-row" id="subtask-row-template" style="display: none;">
+                                    <input type="text" class="form-control form-control-sm subtask-title" placeholder="عنوان المهمة الفرعية">
+                                    <select class="form-control form-control-sm subtask-assignee">
+                                        <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
+                                        <option value="1">أحمد محمد</option>
+                                        <option value="2">سارا العلي</option>
+                                        <option value="3">خالد الحربي</option>
+                                        <option value="4">فاطمة السعد</option>
+                                        <option value="5">عمر الحمادي</option>
+                                    </select>
+                                    <button type="button" class="btn-icon remove-subtask"><i class="fas fa-times"></i></button>
+                                </div>
+                                <!-- سيتم إضافة الصفوف هنا -->
+                                <button type="button" class="btn btn-outline btn-sm" id="add-subtask-row"><i class="fas fa-plus"></i> <span data-i18n="addSubtask">إضافة مهمة فرعية</span></button>
+                            </div>
+                            <small data-i18n="subtaskHint">يمكنك إضافة عدة مهام فرعية، وسيتم تعيين كل منها لشخص محدد.</small>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-task-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="new-task-submit" data-i18n="createTask">إنشاء مهمة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: طلب جديد (طلبات بدون مهام فرعية ولا تواريخ) مع إدخال صوتي وإضافة تذكير -->
+    <div class="modal" id="new-request-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="createNewRequest">إنشاء طلب جديد</h3>
+                    <button class="modal-close" id="new-request-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-request-form">
+                        <div class="form-group">
+                            <label><span data-i18n="requestTitle">عنوان الطلب</span> <span class="required">*</span></label>
+                            <div class="input-with-voice">
+                                <input type="text" class="form-control" id="request-title" placeholder="أدخل عنوان الطلب" required data-i18n-placeholder="requestTitlePlaceholder">
+                                <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="request-title"><i class="fas fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="description">الوصف</label>
+                            <div class="input-with-voice">
+                                <textarea class="form-control" id="request-description" rows="3" placeholder="تفاصيل الطلب..." data-i18n-placeholder="descriptionPlaceholder"></textarea>
+                                <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="request-description"><i class="fas fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="assignTo">تعيين إلى</label>
+                            <select class="form-control" id="request-assignee">
+                                <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
+                                <option value="1">أحمد محمد</option>
+                                <option value="2">سارا العلي</option>
+                                <option value="3">خالد الحربي</option>
+                                <option value="4">فاطمة السعد</option>
+                                <option value="5">عمر الحمادي</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
+                            <input type="datetime-local" class="form-control" id="request-reminder-datetime">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-request-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="new-request-submit" data-i18n="create">إنشاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: طلب شراء جديد مع إدخال صوتي وإضافة تذكير -->
+    <div class="modal" id="new-purchase-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="createNewPurchase">إنشاء طلب شراء جديد</h3>
+                    <button class="modal-close" id="new-purchase-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-purchase-form">
+                        <div class="form-group">
+                            <label><span data-i18n="purchaseItem">العنصر المراد شراؤه</span> <span class="required">*</span></label>
+                            <div class="input-with-voice">
+                                <input type="text" class="form-control" id="purchase-item" placeholder="مثال: طابعة، كرسي مكتب، ..." required data-i18n-placeholder="purchaseItemPlaceholder">
+                                <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="purchase-item"><i class="fas fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label data-i18n="quantity">الكمية</label>
+                                <input type="number" class="form-control" id="purchase-quantity" min="1" value="1">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label data-i18n="urgency">الأولوية</label>
+                                <select class="form-control" id="purchase-urgency">
+                                    <option value="normal" data-i18n="normal">عادي</option>
+                                    <option value="urgent" data-i18n="urgent">عاجل</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="description">الوصف / ملاحظات</label>
+                            <div class="input-with-voice">
+                                <textarea class="form-control" id="purchase-description" rows="3" placeholder="مواصفات إضافية..." data-i18n-placeholder="purchaseDescriptionPlaceholder"></textarea>
+                                <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="purchase-description"><i class="fas fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="assignTo">تعيين إلى</label>
+                            <select class="form-control" id="purchase-assignee">
+                                <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
+                                <option value="1">أحمد محمد</option>
+                                <option value="2">سارا العلي</option>
+                                <option value="3">خالد الحربي</option>
+                                <option value="4">فاطمة السعد</option>
+                                <option value="5">عمر الحمادي</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
+                            <input type="datetime-local" class="form-control" id="purchase-reminder-datetime">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-purchase-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="new-purchase-submit" data-i18n="create">إنشاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: معاد جديد (لإضافة المواعيد) مع إضافة تذكير -->
+    <div class="modal" id="new-appointment-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="newAppointment">معاد جديد</h3>
+                    <button class="modal-close" id="new-appointment-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-appointment-form">
+                        <div class="form-group">
+                            <label><span data-i18n="appointmentTitle">عنوان المعاد</span> <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="appointment-title" required data-i18n-placeholder="appointmentTitlePlaceholder" placeholder="أدخل عنوان المعاد">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label data-i18n="appointmentDate">التاريخ</label>
+                                <input type="date" class="form-control" id="appointment-date" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label data-i18n="appointmentTime">الوقت</label>
+                                <input type="time" class="form-control" id="appointment-time" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label data-i18n="appointmentLocation">المكان</label>
+                                <input type="text" class="form-control" id="appointment-location" placeholder="مكتب المبيعات، أونلاين، ...">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label data-i18n="appointmentType">نوع المعاد</label>
+                                <select class="form-control" id="appointment-type">
+                                    <option value="meeting" data-i18n="meeting">اجتماع</option>
+                                    <option value="call" data-i18n="call">مكالمة</option>
+                                    <option value="visit" data-i18n="visit">زيارة</option>
+                                    <option value="other" data-i18n="other">أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="appointmentAttendees">الحضور</label>
+                            <div class="multi-select-container">
+                                <select class="form-control enhanced-multi" id="appointment-attendees" multiple size="4">
+                                    <option value="1">أحمد محمد</option>
+                                    <option value="2">سارا العلي</option>
+                                    <option value="3">خالد الحربي</option>
+                                    <option value="4">فاطمة السعد</option>
+                                    <option value="5">عمر الحمادي</option>
+                                </select>
+                                <small data-i18n="multiSelectHint">يمكنك اختيار أكثر من شخص</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="notes">ملاحظات</label>
+                            <textarea class="form-control" id="appointment-notes" rows="3" placeholder="أضف أي تفاصيل إضافية..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
+                            <input type="datetime-local" class="form-control" id="appointment-reminder-datetime">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-appointment-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="new-appointment-submit" data-i18n="create">إنشاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: إضافة جزاء يدوي (جديد) -->
+    <div class="modal" id="new-manual-penalty-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="addManualPenalty">إضافة جزاء يدوي</h3>
+                    <button class="modal-close" id="new-manual-penalty-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-manual-penalty-form">
+                        <div class="form-group">
+                            <label data-i18n="selectEmployee">اختر الموظف</label>
+                            <select class="form-control" id="manual-penalty-user" required>
+                                <option value="" data-i18n="selectEmployee">-- اختر موظف --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="discountPercentage">نسبة الخصم (%)</label>
+                            <input type="number" class="form-control" id="manual-penalty-percentage" step="0.01" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="reason">السبب</label>
+                            <textarea class="form-control" id="manual-penalty-reason" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-manual-penalty-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="new-manual-penalty-submit" data-i18n="add">إضافة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: عرض تفاصيل الجزاء اليدوي وحذفه -->
+    <div class="modal" id="manual-penalty-detail-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="manualPenaltyDetails">تفاصيل الجزاء اليدوي</h3>
+                    <button class="modal-close" id="manual-penalty-detail-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="manual-penalty-detail-body">
+                    <!-- تعبأ بالجافاسكريبت -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" id="delete-manual-penalty-btn" data-i18n="removePenalty">مسح الجزاء</button>
+                    <button class="btn btn-secondary" id="manual-penalty-detail-close-btn" data-i18n="close">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: تحديث النسبة المئوية -->
+    <div class="modal" id="update-progress-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="updateProgress">تحديث نسبة الإنجاز</h3>
+                    <button class="modal-close" id="progress-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-progress-form">
+                        <div class="form-group">
+                            <label data-i18n="progressPercentage">نسبة الإنجاز %</label>
+                            <input type="range" class="progress-slider" id="progress-slider" min="0" max="100" value="50">
+                            <div class="progress-value-display">
+                                <span id="progress-value">50</span>%
+                            </div>
+                        </div>
+                        
+                        <!-- إضافة تحديث الحالة تلقائياً -->
+                        <div class="form-group">
+                            <label data-i18n="autoStatusUpdate">تحديث الحالة تلقائياً</label>
+                            <div id="auto-status-message">
+                                <span id="suggested-status" data-i18n="statusSuggestion">عند 0%: بانتظار، 100%: مكتمل</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="noteOptional">ملاحظة (اختياري)</label>
+                            <textarea class="form-control" id="progress-note" rows="2" placeholder="ماذا أنجزت?" data-i18n-placeholder="progressNotePlaceholder"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="attachFile">إرفاق صورة أو ملف</label>
+                            <input type="file" class="form-control" id="progress-attachment" accept="image/*,.pdf,.doc,.docx">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="progress-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="progress-submit" data-i18n="update">تحديث</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: التعليقات والمحادثة (Thread) - تم تعديل شريط الأدوات -->
+    <div class="modal" id="comments-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="commentsThread">المحادثة والتعليقات</h3>
+                    <button class="modal-close" id="comments-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="comments-modal-body">
+                    <div class="comments-thread" id="comments-thread">
+                        <!-- التعليقات ستظهر هنا -->
+                    </div>
+                    <div class="add-comment">
+                        <textarea class="form-control" id="new-comment" rows="2" placeholder="اكتب تعليقك..." data-i18n-placeholder="writeComment"></textarea>
+                        <div class="comment-toolbar">
+                            <button class="btn btn-primary btn-sm" id="send-comment" data-i18n="send">إرسال</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: عرض المرفقات (جديد) -->
+    <div class="modal" id="attachments-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-paperclip"></i> <span data-i18n="attachments">المرفقات</span></h3>
+                    <button class="modal-close" id="attachments-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="attachments-list" id="attachments-list">
+                        <!-- سيتم تعبئتها بالجافاسكريبت -->
+                    </div>
+                    <div class="add-attachment">
+                        <button class="btn btn-outline btn-sm btn-block" id="upload-attachment-btn"><i class="fas fa-upload"></i> <span data-i18n="uploadNewFile">رفع ملف جديد</span></button>
+                        <input type="file" id="attachment-file-input" style="display:none" accept="image/*,.pdf,.doc,.docx">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: عرض التقويم السريع (خاص بالمواعيد) -->
+    <div class="modal" id="calendar-quick-view">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-calendar-alt"></i> <span data-i18n="calendarView">عرض التقويم</span></h3>
+                    <button class="modal-close" id="calendar-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mini-calendar" id="mini-calendar">
+                        <!-- سيتم تعبئتها بالجافاسكريبت -->
+                    </div>
+                    <div class="upcoming-tasks">
+                        <h4 data-i18n="upcomingTasks">المهام القادمة</h4>
+                        <div class="upcoming-list" id="upcoming-list">
+                            <!-- سيتم تعبئتها بالجافاسكريبت -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: عرض مواعيد اليوم (جديد) -->
+    <div class="modal" id="appointment-day-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-calendar-day"></i> <span data-i18n="appointmentsForDay">مواعيد اليوم</span></h3>
+                    <button class="modal-close" id="appointment-day-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="appointment-day-body">
+                    <div class="appointments-list" id="appointments-list">
+                        <!-- تعبأ بالجافاسكريبت -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="appointment-day-close-btn" data-i18n="close">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: تفاصيل معاد (جديد) -->
+    <div class="modal" id="appointment-detail-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-calendar-check"></i> <span data-i18n="appointmentDetails">تفاصيل المعاد</span></h3>
+                    <button class="modal-close" id="appointment-detail-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="appointment-detail-body">
+                    <div class="appointment-detail">
+                        <!-- تعبأ بالجافاسكريبت -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="appointment-detail-close-btn" data-i18n="close">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: إزالة جزاء (يظهر عند النقر على بطاقة جزاء تلقائي) -->
+    <div class="modal" id="remove-penalty-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" data-i18n="removePenalty">إزالة الجزاء</h3>
+                    <button class="modal-close" id="remove-penalty-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p data-i18n="confirmRemovePenalty">هل أنت متأكد من إزالة هذا الجزاء؟ (لن يؤثر على المهمة الأصلية)</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="remove-penalty-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="remove-penalty-confirm" data-i18n="confirmRemove">إزالة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال عرض تفاصيل الطلب -->
+    <div class="modal" id="request-detail-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تفاصيل الطلب</h3>
+                    <button class="modal-close" id="request-detail-close">&times;</button>
+                </div>
+                <div class="modal-body" id="request-detail-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="request-detail-close-btn">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال عرض تفاصيل طلب الشراء -->
+    <div class="modal" id="purchase-detail-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تفاصيل طلب الشراء</h3>
+                    <button class="modal-close" id="purchase-detail-close">&times;</button>
+                </div>
+                <div class="modal-body" id="purchase-detail-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="purchase-detail-close-btn">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal: تقييم المهمة (جديد) -->
+    <div class="modal" id="rate-task-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-star"></i> <span data-i18n="rateTask">تقييم المهمة</span></h3>
+                    <button class="modal-close" id="rate-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="rate-task-form">
+                        <div class="form-group">
+                            <label data-i18n="qualityScore">جودة التنفيذ (1-10)</label>
+                            <select class="form-control" id="rate-quality">
+                                <option value="10">10 - ممتاز</option>
+                                <option value="9">9 - جيد جداً</option>
+                                <option value="8">8 - جيد</option>
+                                <option value="6">6 - يحتاج تعديل</option>
+                                <option value="4">4 - سيء</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="difficultyWeight">صعوبة المهمة</label>
+                            <select class="form-control" id="rate-difficulty">
+                                <option value="1.0">سهلة (1.0)</option>
+                                <option value="1.5">متوسطة (1.5)</option>
+                                <option value="2.0">صعبة (2.0)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="notes">ملاحظات (اختياري)</label>
+                            <textarea class="form-control" id="rate-notes" rows="3" placeholder="أضف أي ملاحظات إضافية..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="rate-cancel" data-i18n="cancel">إلغاء</button>
+                    <button class="btn btn-primary" id="rate-submit" data-i18n="submitRating">تقييم</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="tasks.js"></script>
+</body>
+</html>

@@ -1,0 +1,3514 @@
+/* ===== لوحة التحكم الإدارية - تصميم بروفيشونال متكامل ===== */
+body {
+    /* صورة خلفية احترافية تعبر عن البريد الإلكتروني والتواصل (مكتب، حاسوب، رسائل) */
+    background-image: url('../../../global/assets/images/cover.webp');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* طبقة شفافة فوق الخلفية - نفس مستوى الشفافية في الشات (0.6 مع blur 3px) */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+    z-index: -1;
+}
+/* إعدادات عامة للصفحة */
+
+
+/* 🎛️ شريط الأدوات العلوي */
+.dashboard-header {
+    background: rgba(15, 15, 15, 0.4);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(203, 205, 205, 0.08);
+    padding: 0.8rem 0;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1000;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 2rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+}
+
+.logo-image {
+    width: 70px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.menu-toggle {
+    width: 40px;
+    height: 40px;
+    background: rgba(10, 39, 39, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    border-radius: 10px;
+    color: var(--color-text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none; /* مخفي على الديسكتوب */
+}
+
+.menu-toggle:hover {
+    background: rgba(203, 205, 205, 0.08);
+    border-color: rgba(203, 205, 205, 0.2);
+    transform: translateY(-1px);
+}
+
+.header-tools {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-right: auto;
+}
+
+.date-display {
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 160px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-left : 15px;
+}
+
+.btn-refresh {
+    width: 40px;
+    height: 40px;
+    background: rgba(203, 205, 205, 0.1);
+    border: 1px solid rgba(203, 205, 205, 0.2);
+    border-radius: 10px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    
+}
+
+.btn-refresh:hover {
+    background: rgba(203, 205, 205, 0.15);
+    border-color: rgba(203, 205, 205, 0.3);
+    transform: rotate(45deg);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-refresh.loading i {
+    animation: spin 1s linear infinite;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: rgba(203, 205, 205, 0.03);
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    width: 300px;
+    transition: var(--transition-smooth);
+}
+
+.search-box:focus-within {
+    border-color: rgba(203, 205, 205, 0.2);
+    background: rgba(203, 205, 205, 0.05);
+    box-shadow: 0 0 0 2px rgba(203, 205, 205, 0.1);
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    padding: 0.5rem;
+    flex: 1;
+    outline: none;
+    width: 100%;
+}
+
+.search-input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+.search-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: var(--transition-smooth);
+}
+
+.search-btn:hover {
+    color: var(--color-text-primary);
+}
+
+.notifications-dropdown {
+    position: relative;
+}
+
+.notifications-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(203, 205, 205, 0.03);
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    border-radius: 10px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notifications-btn:hover {
+    background: rgba(203, 205, 205, 0.08);
+    border-color: rgba(203, 205, 205, 0.2);
+    color: var(--color-text-primary);
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-black);
+}
+
+.notifications-dropdown-content {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: -200px;
+    width: 350px;
+    background: rgba(20, 20, 20, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition-smooth);
+    z-index: 1001;
+}
+
+.notifications-dropdown:hover .notifications-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.notifications-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notifications-header h4 {
+    color: var(--color-text-primary);
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.mark-all-read {
+    background: transparent;
+    border: none;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.mark-all-read:hover {
+    color: var(--color-text-primary);
+}
+
+.notifications-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.03);
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background: rgba(203, 205, 205, 0.03);
+}
+
+.notification-item.unread {
+    background: rgba(203, 205, 205, 0.02);
+    border-right: 3px solid var(--color-primary);
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(203, 205, 205, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.notification-details {
+    flex: 1;
+}
+
+.notification-title {
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    margin: 0 0 0.3rem 0;
+    font-weight: 500;
+}
+
+.notification-message {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.notification-time {
+    color: var(--color-text-tertiary);
+    font-size: 0.8rem;
+}
+
+.user-profile-dropdown {
+    position: relative;
+}
+
+.user-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 10px;
+    transition: var(--transition-smooth);
+}
+
+.user-profile-btn:hover {
+    background: rgba(203, 205, 205, 0.05);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #cbcdcd 0%, #999 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a1a;
+    font-size: 1.2rem;
+}
+
+.user-info {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.user-name {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-role {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+}
+
+.user-profile-btn i:last-child {
+    color: var(--color-text-tertiary);
+    font-size: 0.9rem;
+}
+
+.user-dropdown-content {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 220px;
+    background: rgba(20, 20, 20, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition-smooth);
+    z-index: 1001;
+}
+
+.user-profile-dropdown:hover .user-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 1.2rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    border-bottom: 1px solid rgba(203, 205, 205, 0.03);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: rgba(203, 205, 205, 0.05);
+    color: var(--color-text-primary);
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(203, 205, 205, 0.05);
+    margin: 0.5rem 0;
+}
+
+.dropdown-item.logout {
+    color: #FF6B6B;
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.header-progress {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    transition: width 0.3s ease;
+}
+
+/* 🎯 القائمة الجانبية */
+.dashboard-sidebar {
+    position: fixed;
+    top: 70px;
+    right: 0;
+    width: 280px;
+    height: calc(100vh - 70px);
+    background: rgba(15, 15, 15, 0.4);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(203, 205, 205, 0.08);
+    padding: 1.5rem 0;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-header {
+    padding: 0 1.5rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.sidebar-close {
+    width: 32px;
+    height: 32px;
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.sidebar-close:hover {
+    background: rgba(203, 205, 205, 0.08);
+    border-color: rgba(203, 205, 205, 0.2);
+    color: var(--color-text-primary);
+}
+
+.sidebar-nav {
+    padding: 1rem 0;
+}
+
+.nav-section {
+    margin-bottom: 2rem;
+    padding: 0 1.5rem;
+}
+
+.nav-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    color: var(--color-text-tertiary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 0.5rem;
+}
+
+.nav-item:last-child {
+    margin-bottom: 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.nav-link:hover {
+    background: rgba(203, 205, 205, 0.05);
+    color: var(--color-text-primary);
+}
+
+.nav-item.active .nav-link {
+    background: rgba(203, 205, 205, 0.08);
+    color: var(--color-text-primary);
+    border-right: 3px solid var(--color-primary);
+}
+
+.nav-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(203, 205, 205, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    transition: var(--transition-smooth);
+}
+
+.nav-link:hover .nav-icon,
+.nav-item.active .nav-icon {
+    background: rgba(203, 205, 205, 0.1);
+    color: var(--color-primary);
+}
+
+.nav-text {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.nav-badge {
+    background: #C0C0C0; /* لون سلفر */
+    color: #1a1a1a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    min-width: 22px;
+    text-align: center;
+    border: 1px solid rgba(192, 192, 192, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(203, 205, 205, 0.05);
+    margin-top: auto;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    background: #28A745;
+    border-radius: 50%;
+    position: relative;
+}
+
+.status-indicator.active::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    left: -2px;
+    background: #28A745;
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.2); opacity: 0.2; }
+}
+
+.status-text {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.system-time {
+    color: var(--color-text-tertiary);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* 🎪 المحتوى الرئيسي */
+.dashboard-main {
+    margin-top: 70px;
+    margin-right: 280px;
+    padding: 2rem;
+    transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-container {
+    max-width: 100%;
+    padding: 0 1rem;
+}
+
+/* 📊 بطاقات الإحصائيات الرئيسية - إعادة تصميم كاملة */
+.stats-cards-section {
+    margin-bottom: 3rem;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+}
+
+.section-header .section-title {
+    color: var(--color-text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+}
+
+.section-subtitle {
+    color: var(--color-text-tertiary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ===== بطاقات الإحصائيات - تصميم احترافي مع الحفاظ على البنية ===== */
+
+.stats-cards-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 1.5rem;
+}
+
+.stat-card {
+background: linear-gradient(135deg,
+rgba(30, 30, 30, 0.4) 0%,
+rgba(20, 20, 20, 0.5) 100%
+);
+border-radius: 20px;
+padding: 1.8rem;
+position: relative;
+overflow: hidden;
+transition: var(--transition-smooth);
+border: 1px solid rgba(203, 205, 205, 0.08);
+box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+display: flex;
+flex-direction: column;
+min-height: 220px;
+}
+
+.stat-card:hover {
+transform: translateY(-5px);
+border-color: rgba(203, 205, 205, 0.15);
+box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card::before {
+content: '';
+position: absolute;
+top: 0;
+right: 0;
+width: 100%;
+height: 100%;
+background: linear-gradient(45deg,
+rgba(203, 205, 205, 0.03) 0%,
+transparent 50%,
+rgba(203, 205, 205, 0.01) 100%
+);
+pointer-events: none;
+}
+
+.stat-content {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+margin-bottom: 1.5rem;
+position: relative;
+z-index: 1;
+}
+
+.stat-info {
+flex: 1;
+}
+
+.stat-value {
+font-size: 2.2rem;
+font-weight: 800;
+color: var(--color-text-primary);
+margin-bottom: 0.5rem;
+line-height: 1;
+}
+
+.stat-value small {
+font-size: 1rem;
+font-weight: 600;
+color: var(--color-text-secondary);
+}
+
+.stat-label {
+color: var(--color-text-secondary);
+font-size: 0.95rem;
+font-weight: 500;
+}
+
+.stat-icon {
+width: 60px;
+height: 60px;
+background: linear-gradient(135deg,
+rgba(203, 205, 205, 0.12) 0%,
+rgba(203, 205, 205, 0.04) 100%
+);
+border-radius: 15px;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+flex-shrink: 0;
+}
+
+.stat-icon i {
+font-size: 1.8rem;
+background: linear-gradient(135deg, #fff 0%, #cbcdcd 100%);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
+}
+
+.icon-glow {
+position: absolute;
+top: 50%;
+right: 50%;
+transform: translate(50%, -50%);
+width: 50px;
+height: 50px;
+background: linear-gradient(135deg, #fff 0%, #cbcdcd 100%);
+border-radius: 50%;
+opacity: 0.05;
+filter: blur(10px);
+z-index: 0;
+}
+
+.stat-footer {
+margin-top: auto;
+padding-top: 1.5rem;
+border-top: 1px solid rgba(203, 205, 205, 0.05);
+position: relative;
+z-index: 1;
+}
+
+.stat-details {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+/* ✅ التعديل المطلوب: عرض التسمية والرقم في سطر واحد */
+.stat-detail {
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+width: 100%;
+gap: 0.5rem;
+}
+
+.detail-label {
+color: var(--color-text-tertiary);
+font-size: 0.85rem;
+font-weight: 500;
+white-space: nowrap; /* لمنع التفاف النص */
+}
+
+.detail-value {
+color: var(--color-text-primary);
+font-size: 0.95rem;
+font-weight: 600;
+white-space: nowrap;
+}
+
+/* الأنماط الأخرى كما هي */
+.stat-trend {
+display: flex;
+align-items: center;
+gap: 0.3rem;
+padding: 0.4rem 0.8rem;
+border-radius: 20px;
+font-size: 0.85rem;
+font-weight: 600;
+}
+
+.stat-trend.up {
+background: rgba(40, 167, 69, 0.15);
+color: #28A745;
+border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.stat-trend.down {
+background: rgba(220, 53, 69, 0.15);
+color: #DC3545;
+border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.stat-link {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 0.5rem;
+color: #C0C0C0;
+text-decoration: none;
+font-size: 0.9rem;
+font-weight: 500;
+transition: var(--transition-smooth);
+padding: 0.7rem 1.2rem;
+background: rgba(192, 192, 192, 0.1);
+border-radius: 10px;
+border: 1px solid rgba(192, 192, 192, 0.15);
+width: 100%;
+}
+
+.stat-link:hover {
+background: rgba(192, 192, 192, 0.15);
+border-color: rgba(192, 192, 192, 0.25);
+transform: translateX(-3px);
+}
+
+/* 📈 قسم الرسوم البيانية */
+.charts-section {
+    margin-bottom: 2.5rem;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-card {
+    background: linear-gradient(135deg, 
+        rgba(25, 25, 25, 0.4) 0%, 
+        rgba(20, 20, 20, 0.5) 100%
+    );
+    border-radius: 20px;
+    padding: 1.8rem;
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    color: var(--color-text-primary);
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.chart-filter {
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    color: var(--color-text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+.chart-filter:hover {
+    border-color: rgba(203, 205, 205, 0.2);
+    background: rgba(203, 205, 205, 0.08);
+}
+
+.chart-filter option {
+    background: #111111;
+    color: var(--color-admin-text);
+}
+
+.chart-container {
+    height: 250px;
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.chart-footer {
+    border-top: 1px solid rgba(203, 205, 205, 0.05);
+    padding-top: 1.2rem;
+}
+
+.chart-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.summary-label {
+    color: var(--color-text-tertiary);
+    font-size: 0.9rem;
+}
+
+.summary-value {
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-label {
+    color: var(--color-text-secondary);
+}
+
+/* 📋 قسم الجداول الموحدة - تبويبات متساوية */
+.tables-section {
+    margin-bottom: 2.5rem;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.unified-table {
+    background: linear-gradient(135deg, 
+        rgba(25, 25, 25, 0.4) 0%, 
+        rgba(20, 20, 20, 0.5) 100%
+    );
+    border-radius: 20px;
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.unified-table-header {
+    padding: 1.5rem 1.8rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-tabs {
+    display: flex;
+    gap: 0;
+    flex: 1;
+    background: rgba(203, 205, 205, 0.03);
+    border-radius: 12px;
+    padding: 0.25rem;
+    border: 1px solid rgba(203, 205, 205, 0.08);
+}
+
+.table-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+}
+
+.table-tab:hover {
+    background: rgba(203, 205, 205, 0.05);
+    color: var(--color-text-primary);
+}
+
+.table-tab.active {
+    background: rgba(203, 205, 205, 0.1);
+    color: var(--color-text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-tab.active::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--color-primary);
+    border-radius: 0 0 10px 10px;
+}
+
+.tab-badge {
+    background: #C0C0C0;
+    color: #1a1a1a;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.table-actions-container {
+    display: flex;
+    align-items: center;
+}
+
+.table-action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    padding: 0.5rem 1rem;
+    background: rgba(203, 205, 205, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(203, 205, 205, 0.1);
+}
+
+.table-action:hover {
+    background: rgba(203, 205, 205, 0.1);
+    border-color: rgba(203, 205, 205, 0.2);
+    transform: translateX(-3px);
+}
+
+.table-container {
+    padding: 0;
+}
+
+.table-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.table-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    border-bottom: 1px solid rgba(203, 205, 205, 0.08);
+}
+
+.data-table th {
+    padding: 1.2rem 1rem;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    background: rgba(203, 205, 205, 0.02);
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid rgba(203, 205, 205, 0.03);
+    transition: var(--transition-smooth);
+}
+
+.data-table tbody tr:hover {
+    background: rgba(203, 205, 205, 0.03);
+}
+
+.data-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.data-table td {
+    padding: 1.2rem 1rem;
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+    text-align: right;
+    vertical-align: middle;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 70px;
+}
+
+.status-active {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28A745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.15);
+    color: #FFC107;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.status-completed {
+    background: rgba(0, 123, 255, 0.15);
+    color: #007BFF;
+    border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.status-new {
+    background: rgba(111, 66, 193, 0.15);
+    color: #6F42C1;
+    border: 1px solid rgba(111, 66, 193, 0.2);
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    border-radius: 6px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.action-btn:hover {
+    background: rgba(203, 205, 205, 0.1);
+    border-color: rgba(203, 205, 205, 0.2);
+    color: var(--color-text-primary);
+}
+
+.loading-row td {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(203, 205, 205, 0.1);
+    border-top: 3px solid rgba(203, 205, 205, 0.5);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.loading-spinner.small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+    margin: 0;
+}
+
+/* 🔔 قسم النشاطات الحديثة - محسن بشكل بروفيشونال */
+.activity-section {
+    margin-bottom: 2.5rem;
+}
+
+.activity-card {
+    background: linear-gradient(135deg, 
+        rgba(25, 25, 25, 0.8) 0%, 
+        rgba(20, 20, 20, 0.95) 100%
+    );
+    border-radius: 20px;
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.activity-header {
+    padding: 1.8rem 2rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    background: rgba(203, 205, 205, 0.02);
+}
+
+.activity-title {
+    color: var(--color-text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.activity-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--color-primary);
+    border-radius: 2px;
+}
+
+.activity-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.6rem 1.2rem;
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    border-radius: 30px;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-btn:hover {
+    background: rgba(203, 205, 205, 0.08);
+    border-color: rgba(203, 205, 205, 0.2);
+    color: var(--color-text-primary);
+    transform: translateY(-1px);
+}
+
+.filter-btn.active {
+    background: rgba(203, 205, 205, 0.12);
+    border-color: var(--color-primary);
+    color: var(--color-text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.activity-list {
+    padding: 0;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(203, 205, 205, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.activity-item:hover {
+    background: rgba(203, 205, 205, 0.03);
+    padding-right: 2.5rem;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: transparent;
+    transition: var(--transition-smooth);
+}
+
+.activity-item:hover::before {
+    background: var(--color-primary);
+}
+
+.activity-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(203, 205, 205, 0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.activity-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(203, 205, 205, 0.1) 0%, 
+        transparent 100%
+    );
+}
+
+.activity-item:hover .activity-icon {
+    transform: scale(1.1);
+    background: rgba(203, 205, 205, 0.12);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-message {
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.activity-time {
+    color: var(--color-text-tertiary);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.activity-time i {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* ⚡ أدوات سريعة عائمة */
+.quick-actions-floating {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    z-index: 1000;
+}
+
+.quick-action-btn {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #cbcdcd 0%, #999 100%);
+    border: none;
+    border-radius: 50%;
+    color: #1a1a1a;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.quick-action-btn:hover::after {
+    opacity: 1;
+}
+
+.quick-action-btn:active {
+    transform: scale(0.95);
+}
+
+/* ==================== تحسينات الجوال - محسنة بشكل احترافي ==================== */
+
+/* إخفاء القائمة الجانبية افتراضياً في الجوال */
+@media (max-width: 1200px) {
+    .dashboard-sidebar {
+        transform: translateX(100%);
+        width: 280px;
+        top: 60px;
+        height: calc(100vh - 60px);
+        z-index: 1005;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+        border-left: 2px solid rgba(203, 205, 205, 0.1);
+    }
+    
+    .dashboard-sidebar.active {
+        transform: translateX(0);
+        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .dashboard-main {
+        margin-right: 0;
+        padding: 1.2rem;
+        margin-top: 60px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar-close {
+        display: flex;
+    }
+    
+    .chart-row {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+    
+    .header-tools {
+        display: none;
+    }
+    
+    /* تحسين الشريط العلوي للجوال */
+    .dashboard-header {
+        height: 60px;
+        padding: 0.5rem 0;
+    }
+    
+    .header-container {
+        padding: 0 1rem;
+    }
+    
+    .menu-toggle {
+        display: flex;
+        margin-left: 0.5rem;
+        background: rgba(203, 205, 205, 0.08);
+        border-color: rgba(203, 205, 205, 0.15);
+    }
+    
+    /* تحسين بطاقات الإحصائيات للجوال */
+    .stats-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        min-height: 180px;
+        padding: 1.2rem;
+        border-radius: 16px;
+    }
+    
+    .stat-value {
+        font-size: 1.6rem;
+    }
+    
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.3rem;
+    }
+    
+    .stat-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* أجهزة لوحية صغيرة والموبايل الكبير */
+@media (max-width: 992px) {
+    .header-container {
+        padding: 0 0.8rem;
+    }
+    
+    .header-left {
+        gap: 0.8rem;
+    }
+    
+    .search-box {
+        width: 200px;
+        display: none; /* إخفاء البحث في الجوال */
+    }
+    
+    .stats-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .chart-card {
+        padding: 1.2rem;
+        border-radius: 16px;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .section-header .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .section-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    /* تحسين الجداول للجوال */
+    .unified-table-header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .table-tabs {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.3rem;
+        background: rgba(203, 205, 205, 0.05);
+    }
+    
+    .table-tab {
+        padding: 0.8rem 0.6rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        min-width: auto;
+    }
+    
+    .table-action {
+        width: 100%;
+        justify-content: center;
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+    
+    /* تحسين قسم النشاطات للجوال */
+    .activity-header {
+        padding: 1.2rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .activity-title {
+        font-size: 1.2rem;
+    }
+    
+    .activity-filters {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+}
+
+/* موبايل متوسط */
+@media (max-width: 768px) {
+    .dashboard-header {
+        height: 56px;
+        padding: 0.4rem 0;
+    }
+    
+    .menu-toggle {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .header-logo .logo-title {
+        font-size: 1rem;
+    }
+    
+    .header-logo .logo-subtitle {
+        display: none;
+    }
+    
+    .header-logo .logo-image {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .search-box {
+        display: none; /* مخفي تماماً في الجوال */
+    }
+    
+    .header-right {
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        display: none; /* إخفاء معلومات المستخدم في الجوال */
+    }
+    
+    .notifications-btn,
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .dashboard-main {
+        padding: 1rem;
+        margin-top: 56px;
+    }
+    
+    .main-container {
+        padding: 0;
+    }
+    
+    .stats-cards-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .stat-card {
+        min-height: 160px;
+        padding: 1rem;
+        border-radius: 14px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.2rem;
+    }
+    
+    .stat-details {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .section-header .section-title {
+        font-size: 1.2rem;
+    }
+    
+    /* تحسين الرسوم البيانية للجوال */
+    .chart-row {
+        gap: 1rem;
+    }
+    
+    .chart-card {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+    
+    .chart-header {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-title {
+        font-size: 1.1rem;
+    }
+    
+    .chart-filter {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .chart-container {
+        height: 180px;
+        margin-bottom: 1rem;
+    }
+    
+    /* تحسين الجداول بشكل احترافي للجوال */
+    .unified-table {
+        border-radius: 14px;
+    }
+    
+    .unified-table-header {
+        padding: 0.8rem;
+    }
+    
+    .table-tabs {
+        flex-direction: column;
+        background: transparent;
+        border: 1px solid rgba(203, 205, 205, 0.1);
+        border-radius: 10px;
+        padding: 0.5rem;
+    }
+    
+    .table-tab {
+        justify-content: flex-start;
+        padding: 0.8rem;
+        border-radius: 8px;
+        margin-bottom: 0.3rem;
+    }
+    
+    .table-tab:last-child {
+        margin-bottom: 0;
+    }
+    
+    .table-tab.active {
+        background: rgba(203, 205, 205, 0.1);
+    }
+    
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.8rem 0.6rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        min-width: 60px;
+    }
+    
+    /* تحسين قسم النشاطات بشكل احترافي */
+    .activity-card {
+        border-radius: 14px;
+    }
+    
+    .activity-header {
+        padding: 1rem;
+    }
+    
+    .activity-title {
+        font-size: 1.1rem;
+    }
+    
+    .activity-filters {
+        justify-content: flex-start;
+    }
+    
+    .activity-item {
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+    
+    .activity-item:hover {
+        padding-right: 1rem;
+    }
+    
+    .activity-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .activity-message {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .activity-time {
+        font-size: 0.8rem;
+    }
+    
+    .activity-list {
+        max-height: 400px;
+    }
+    
+    /* تحسين الأدوات السريعة للجوال */
+    .quick-actions-floating {
+        bottom: 1rem;
+        left: 1rem;
+        gap: 0.6rem;
+    }
+    
+    .quick-action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* تحسين القوائم المنسدلة للجوال */
+    .notifications-dropdown-content {
+        width: 300px;
+        left: -150px;
+        position: fixed;
+        top: 56px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    
+    .notifications-dropdown-content.show {
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    .user-dropdown-content {
+        width: 200px;
+        left: -80px;
+        position: fixed;
+        top: 56px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    
+    .user-dropdown-content.show {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* موبايل صغير */
+@media (max-width: 480px) {
+    .dashboard-main {
+        padding: 0.8rem;
+    }
+    
+    .main-container {
+        padding: 0;
+    }
+    
+    .stats-cards-section {
+        margin-bottom: 1.2rem;
+    }
+    
+    .stat-card {
+        padding: 0.9rem;
+        border-radius: 12px;
+        min-height: 150px;
+    }
+    
+    .stat-value {
+        font-size: 1.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .stat-detail {
+        font-size: 0.75rem;
+    }
+    
+    .stat-trend {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .chart-card,
+    .activity-card {
+        padding: 0.9rem;
+        border-radius: 12px;
+    }
+    
+    .chart-container {
+        height: 160px;
+    }
+    
+    .unified-table-header,
+    .activity-header {
+        padding: 0.8rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .activity-item {
+        padding: 0.8rem;
+        gap: 0.6rem;
+    }
+    
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .activity-message {
+        font-size: 0.85rem;
+    }
+    
+    .header-logo .logo-image {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .menu-toggle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .notifications-btn,
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .notifications-dropdown-content {
+        width: 280px;
+    }
+    
+    .user-dropdown-content {
+        width: 180px;
+    }
+    
+    .quick-actions-floating {
+        bottom: 0.8rem;
+        left: 0.8rem;
+    }
+    
+    .quick-action-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 0.9rem;
+    }
+    
+    .badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+        top: -3px;
+        left: -3px;
+    }
+}
+
+/* تحسينات خاصة للشاشات الدوارة */
+@media (max-height: 600px) and (orientation: landscape) {
+    .dashboard-sidebar {
+        height: 100vh;
+        top: 0;
+        padding-top: 60px;
+    }
+    
+    .sidebar-footer {
+        display: none;
+    }
+    
+    .activity-list {
+        max-height: 300px;
+    }
+}
+
+/* أنيميشن للقائمة الجانبية */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* ظل خلفي عند فتح القائمة */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1004;
+    animation: fadeIn 0.3s ease;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* تحسين شريط التمرير للجوال */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(203, 205, 205, 0.05);
+        border-radius: 2px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(203, 205, 205, 0.2);
+        border-radius: 2px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(203, 205, 205, 0.3);
+    }
+}
+
+/* تحسين أزرار التبويبات للجوال */
+@media (max-width: 768px) {
+    .table-tab {
+        transition: all 0.2s ease;
+    }
+    
+    .table-tab:active {
+        transform: scale(0.98);
+    }
+}
+
+/* تحسين الأدوات السريعة للجوال */
+@media (max-width: 768px) {
+    .quick-action-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .quick-action-btn:active {
+        transform: scale(0.9);
+    }
+}
+
+/* تحسين القوائم المنسدلة للجوال */
+@media (max-width: 768px) {
+    .notifications-dropdown-content,
+    .user-dropdown-content {
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+}
+
+/* إضافة تأثيرات اللمس للجوال */
+@media (max-width: 768px) {
+    .nav-link,
+    .dropdown-item,
+    .filter-btn,
+    .action-btn {
+        -webkit-tap-highlight-color: rgba(203, 205, 205, 0.1);
+    }
+    
+    .stat-card:active {
+        transform: scale(0.99);
+    }
+}
+
+/* =========================================== */
+/* تحسينات احترافية لفيو الجوال فقط - V2 */
+/* =========================================== */
+
+/* إعادة تعيين شاملة للجوال */
+@media (max-width: 1200px) {
+    /* هيدر مختصر للجوال */
+    .dashboard-header {
+        height: 60px;
+        padding: 0;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(203, 205, 205, 0.1);
+    }
+    
+    .header-container {
+        padding: 0 1rem;
+        height: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* تحسين اللوجو للجوال */
+    .header-left {
+        gap: 1rem;
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .header-logo {
+        gap: 0.6rem;
+    }
+    
+    .logo-image {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+    }
+    
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .logo-title {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    
+    .logo-subtitle {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+    
+    /* زر القائمة في الجوال - أكثر وضوحاً ووضعه في أقصى اليمين */
+    .menu-toggle {
+        display: flex !important;
+        width: 36px;
+        height: 36px;
+        background: rgba(203, 205, 205, 0.12);
+        border: 1px solid rgba(203, 205, 205, 0.2);
+        border-radius: 8px;
+        color: var(--color-text-primary);
+        font-size: 1.1rem;
+        margin-right: 0;
+        margin-left: auto; /* هذا يدفع الزر لليمين */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        order: 3; /* يجعل الزر آخر عنصر */
+    }
+    
+    .menu-toggle:hover {
+        background: rgba(203, 205, 205, 0.18);
+        transform: scale(1.05);
+    }
+    
+    .menu-toggle:active {
+        transform: scale(0.95);
+    }
+    
+    /* إخفاء التاريخ والأدوات في الجوال */
+    .header-tools {
+        display: none;
+    }
+    
+    /* تحسين شريط البحث للجوال */
+    .search-box {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 1rem;
+        width: calc(100% - 2rem);
+        background: rgba(20, 20, 20, 0.98);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(203, 205, 205, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        z-index: 1002;
+    }
+    
+    .search-box.active {
+        display: flex;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* تحسين الجزء الأيمن في الجوال */
+    .header-right {
+        gap: 0.8rem;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* تحسين الأزرار في الجوال */
+    .notifications-btn,
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        background: rgba(203, 205, 205, 0.08);
+        border: 1px solid rgba(203, 205, 205, 0.15);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .notifications-btn:hover,
+    .user-avatar:hover {
+        background: rgba(203, 205, 205, 0.12);
+        border-color: rgba(203, 205, 205, 0.25);
+    }
+    
+    .badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+        top: -3px;
+        right: -3px;
+        border: 2px solid var(--color-black);
+    }
+    
+    /* إخفاء معلومات المستخدم في الجوال */
+    .user-info {
+        display: none;
+    }
+    
+    /* تحسين القوائم المنسدلة في الجوال */
+    .notifications-dropdown-content,
+    .user-dropdown-content {
+        position: fixed;
+        top: 60px;
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(203, 205, 205, 0.15);
+    }
+    
+    /* ===== الشريط الجانبي المحسن للجوال مع إمكانية التمرير ===== */
+    .dashboard-sidebar {
+        transform: translateX(100%);
+        width: 280px;
+        top: 60px;
+        height: calc(100vh - 60px);
+        background: rgba(15, 15, 15, 0.98);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-left: 1px solid rgba(203, 205, 205, 0.1);
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        z-index: 1005;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* إخفاء التمرير الخارجي */
+    }
+    
+    .dashboard-sidebar.active {
+        transform: translateX(0);
+        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(203, 205, 205, 0.05);
+        background: rgba(203, 205, 205, 0.02);
+        flex-shrink: 0; /* منع التقلص */
+    }
+    
+    .sidebar-close {
+        display: flex;
+        width: 32px;
+        height: 32px;
+        background: rgba(203, 205, 205, 0.1);
+        border: 1px solid rgba(203, 205, 205, 0.2);
+        color: var(--color-text-primary);
+    }
+    
+    .sidebar-close:hover {
+        background: rgba(203, 205, 205, 0.15);
+    }
+    
+    /* تحسين القائمة الجانبية للجوال مع إمكانية التمرير */
+    .sidebar-nav {
+        flex: 1; /* يأخذ المساحة المتبقية */
+        overflow-y: auto; /* إضافة التمرير */
+        -webkit-overflow-scrolling: touch; /* تمرير سلس للجوال */
+        padding-bottom: 1rem;
+    }
+    
+    .nav-section {
+        padding: 0 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .nav-link {
+        padding: 0.8rem 0.9rem;
+        border-radius: 8px;
+        margin-bottom: 0.3rem;
+    }
+    
+    .nav-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .nav-text {
+        font-size: 0.9rem;
+    }
+    
+    .sidebar-footer {
+        flex-shrink: 0; /* منع التقلص */
+        border-top: 1px solid rgba(203, 205, 205, 0.05);
+        padding: 1rem 1.5rem;
+        background: rgba(203, 205, 205, 0.02);
+    }
+    
+    /* ===== المحتوى الرئيسي للجوال ===== */
+    .dashboard-main {
+        margin-top: 60px;
+        margin-right: 0;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    
+    .main-container {
+        padding: 0;
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* ===== تحسينات سكشن الإحصائيات ليكون كامل العرض ===== */
+    .stats-cards-section {
+        margin-bottom: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0;
+        overflow: visible;
+    }
+    
+    .section-header {
+        margin-bottom: 1rem;
+        text-align: center;
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0 0.5rem;
+    }
+    
+    .section-header .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(203, 205, 205, 0.1);
+        display: inline-block;
+        width: auto;
+    }
+    
+    .section-subtitle {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        width: 100%;
+    }
+    
+    .stats-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* تعديل خاص لجعل البطاقات تأخذ العرض الكامل بدون تجاوز */
+    .stat-card {
+        min-height: 140px;
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(203, 205, 205, 0.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    /* إصلاح لضمان أن البطاقات لا تتجاوز العرض */
+    .stat-card * {
+        max-width: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        margin-bottom: 0.3rem;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .stat-value small {
+        font-size: 0.9rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    
+    .stat-icon i {
+        font-size: 1.2rem;
+    }
+    
+    .stat-footer {
+        padding-top: 1rem;
+        margin-top: auto;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .stat-details {
+        margin-bottom: 0.8rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    
+    .stat-detail {
+        flex: 1;
+        min-width: 50%;
+        margin-bottom: 0.3rem;
+        box-sizing: border-box;
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+    
+    .detail-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .stat-trend {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    .stat-link {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* الرسوم البيانية في الجوال */
+    .charts-section {
+        margin-bottom: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    
+    .chart-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .chart-card {
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(203, 205, 205, 0.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+    
+    .chart-header {
+        margin-bottom: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .chart-filter {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        align-self: flex-end;
+    }
+    
+    .chart-container {
+        height: 200px;
+        margin-bottom: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .chart-summary {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .summary-item {
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    /* الجداول في الجوال */
+    .tables-section {
+        margin-bottom: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    
+    .unified-table {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(203, 205, 205, 0.08);
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .unified-table-header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.8rem;
+        background: rgba(203, 205, 205, 0.02);
+    }
+    
+    .table-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.3rem;
+        background: rgba(203, 205, 205, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(203, 205, 205, 0.1);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .table-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .table-tab {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 120px;
+        border-radius: 6px;
+    }
+    
+    .table-action {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+    
+    /* تحسين الجداول للتمرير الأفقي */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .data-table {
+        min-width: 600px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.8rem 0.6rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        min-width: 65px;
+    }
+    
+    /* قسم النشاطات في الجوال */
+    .activity-section {
+        margin-bottom: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .activity-card {
+        border-radius: 12px;
+        border: 1px solid rgba(203, 205, 205, 0.08);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .activity-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+        background: rgba(203, 205, 205, 0.02);
+    }
+    
+    .activity-title {
+        font-size: 1.1rem;
+        padding-right: 0.5rem;
+        border-right: 3px solid var(--color-primary);
+    }
+    
+    .activity-filters {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        gap: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        border-radius: 20px;
+    }
+    
+    .activity-list {
+        max-height: 300px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .activity-item {
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+    
+    .activity-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    .activity-message {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .activity-time {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    /* الأدوات السريعة في الجوال */
+    .quick-actions-floating {
+        bottom: 1rem;
+        left: 1rem;
+        gap: 0.6rem;
+    }
+    
+    .quick-action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .quick-action-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Overlay للقائمة الجانبية */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 1004;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .overlay.active {
+        display: block;
+    }
+    
+    /* منع التمرير الأفقي في الجوال */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+    
+    /* تحسين شريط التمرير في الجوال */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(203, 205, 205, 0.05);
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(203, 205, 205, 0.2);
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(203, 205, 205, 0.3);
+    }
+}
+
+/* ===== تحسينات إضافية للجوال الصغير ===== */
+@media (max-width: 768px) {
+    .dashboard-header {
+        height: 56px;
+    }
+    
+    .menu-toggle {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        margin-left: auto;
+        margin-right: 0;
+        order: 3;
+    }
+    
+    .logo-image {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .logo-title {
+        font-size: 0.95rem;
+    }
+    
+    .logo-subtitle {
+        font-size: 0.7rem;
+    }
+    
+    .notifications-btn,
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+    }
+    
+    .dashboard-sidebar {
+        top: 56px;
+        height: calc(100vh - 56px);
+    }
+    
+    .dashboard-main {
+        margin-top: 56px;
+        width: 100%;
+        overflow-x: hidden;
+        padding: 0.8rem;
+    }
+    
+    /* بطاقات الإحصائيات في الجوال الصغير - عمود واحد فقط */
+    .stats-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .stat-card {
+        min-height: 130px;
+        padding: 0.9rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+    }
+    
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.1rem;
+    }
+    
+    /* الرسوم البيانية */
+    .chart-container {
+        height: 180px;
+    }
+    
+    .chart-title {
+        font-size: 1rem;
+    }
+    
+    /* الجداول */
+    .unified-table-header {
+        padding: 0.8rem;
+    }
+    
+    .table-tab {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+        min-width: 110px;
+    }
+    
+    .data-table {
+        min-width: 550px;
+    }
+    
+    /* النشاطات */
+    .activity-header {
+        padding: 0.8rem;
+    }
+    
+    .activity-title {
+        font-size: 1rem;
+    }
+    
+    .filter-btn {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    
+    .activity-item {
+        padding: 0.8rem;
+    }
+    
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    /* الأدوات السريعة */
+    .quick-action-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== تحسينات للجوال الصغير جداً ===== */
+@media (max-width: 480px) {
+    .dashboard-header {
+        height: 52px;
+    }
+    
+    .header-container {
+        padding: 0 0.5rem;
+    }
+    
+    .menu-toggle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        margin-left: auto;
+        margin-right: 0;
+        order: 3;
+    }
+    
+    .logo-image {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .logo-title {
+        font-size: 0.9rem;
+    }
+    
+    .logo-subtitle {
+        display: none;
+    }
+    
+    .notifications-btn,
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .badge {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+    }
+    
+    .dashboard-sidebar {
+        width: 260px;
+        top: 52px;
+        height: calc(100vh - 52px);
+    }
+    
+    .dashboard-main {
+        margin-top: 52px;
+        padding: 0.6rem;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .section-header .section-title {
+        font-size: 1.2rem;
+    }
+    
+    .stat-card {
+        min-height: 120px;
+        padding: 0.8rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .stat-value {
+        font-size: 1.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .stat-icon i {
+        font-size: 1rem;
+    }
+    
+    .stat-details {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .stat-detail {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .chart-container {
+        height: 160px;
+    }
+    
+    .unified-table-header {
+        padding: 0.7rem;
+    }
+    
+    .table-tab {
+        min-width: 100px;
+        padding: 0.5rem 0.7rem;
+        font-size: 0.75rem;
+    }
+    
+    .table-action {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .activity-header {
+        padding: 0.7rem;
+    }
+    
+    .activity-title {
+        font-size: 0.95rem;
+    }
+    
+    .filter-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .activity-message {
+        font-size: 0.85rem;
+    }
+    
+    .quick-actions-floating {
+        bottom: 0.8rem;
+        left: 0.8rem;
+    }
+    
+    .quick-action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+    
+    /* تحسين الشريط الجانبي للجوال الصغير */
+    .nav-section {
+        padding: 0 0.8rem;
+    }
+    
+    .nav-link {
+        padding: 0.7rem 0.8rem;
+    }
+    
+    .nav-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .nav-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* ===== تحسينات للوضع الأفقي في الجوال ===== */
+@media (max-height: 600px) and (orientation: landscape) {
+    .dashboard-sidebar {
+        height: 100vh;
+        top: 0;
+        padding-top: 60px;
+        overflow-y: auto;
+    }
+    
+    .sidebar-footer {
+        position: sticky;
+        bottom: 0;
+        background: rgba(15, 15, 15, 0.98);
+        padding: 1rem 0;
+        border-top: 1px solid rgba(203, 205, 205, 0.1);
+    }
+    
+    .activity-list {
+        max-height: 200px;
+    }
+}
+
+/* أنيميشن للقائمة الجانبية */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+/* زر البحث للجوال */
+.search-toggle {
+    display: none;
+    width: 36px;
+    height: 36px;
+    background: rgba(203, 205, 205, 0.08);
+    border: 1px solid rgba(203, 205, 205, 0.15);
+    border-radius: 8px;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+    .search-toggle {
+        display: flex;
+    }
+    
+    .search-toggle:active {
+        transform: scale(0.95);
+        background: rgba(203, 205, 205, 0.12);
+    }
+}
+
+/* =========================================== */
+/* ===== تحسينات إضافية للجوال - الشارت والجدول ===== */
+/* =========================================== */
+
+@media (max-width: 768px) {
+    /* تحسين عرض الشارت ليكون أكبر وأوضح */
+    .chart-container {
+        height: 200px; /* زيادة ارتفاع الشارت قليلاً */
+        padding: 0.5rem;
+        background: rgba(20, 20, 20, 0.5);
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* جعل عناوين وأرقام الشارت مقروءة */
+    .chart-container canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+    
+    /* تحسين عرض الجدول بحيث يكون التمرير سلس والخطوط واضحة */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -0.5rem; /* تعويض padding */
+        padding: 0 0.5rem;
+        width: calc(100% + 1rem);
+    }
+    
+    .data-table {
+        min-width: 550px; /* عرض مناسب للتمرير */
+        font-size: 0.8rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.6rem 0.5rem;
+        white-space: nowrap;
+    }
+    
+    /* تحسين تنسيق الخلايا */
+    .data-table td {
+        color: var(--color-text-secondary);
+    }
+    
+    /* إضافة ظل خفيف للجدول أثناء التمرير */
+    .table-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(to left, rgba(0,0,0,0.2), transparent);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .table-container.scrolling::after {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container {
+        height: 180px; /* تعديل ليتناسب مع الشاشات الصغيرة */
+    }
+    
+    .data-table {
+        min-width: 500px;
+        font-size: 0.75rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem 0.3rem;
+    }
+}
+
+/* إضافة تأثير للجدول عند التمرير */
+.table-container {
+    position: relative;
+}
+
+/* ===== القسم الترحيبي - توسيط مثالي ===== */
+
+
+.welcome-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    min-height: 70vh;
+}
+
+.welcome-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.welcome-icon {
+    font-size: 5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    animation: wave 2s infinite;
+}
+
+.welcome-icon i {
+    filter: drop-shadow(0 0 20px rgba(203, 205, 205, 0.5));
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.welcome-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+}
+
+.welcome-features {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.feature-item i {
+    color: var(--success-color);
+    font-size: 1.1rem;
+}
+
+.feature-item span {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.welcome-actions p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 auto;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    75% { transform: rotate(-10deg); }
+}
+
+/* تحسين الموبايل */
+@media (max-width: 768px) {
+    .welcome-container {
+        min-height: auto;
+        margin: 0.5rem;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+    
+    .feature-item {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,792 @@
+/*
+===========================================
+📁 المسار: Frontend/global/css/animations.css
+🔗 الاتصال: يتم استيراده بعد utilities.css
+🎨 الغرض: الرسوم المتحركة المعيارية
+===========================================
+*/
+
+/* ===========================================
+   الرسوم المتحركة للدخول
+=========================================== */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s var(--transition-bounce) forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s var(--transition-bounce) forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-up {
+  animation: slideInUp 0.6s var(--transition-bounce) forwards;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-down {
+  animation: slideInDown 0.6s var(--transition-bounce) forwards;
+}
+
+/* ===========================================
+   الرسوم المتحركة للخروج
+=========================================== */
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-right {
+  animation: slideOutRight 0.4s ease-in forwards;
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-left {
+  animation: slideOutLeft 0.4s ease-in forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* ===========================================
+   الرسوم المتحركة للاهتزاز
+=========================================== */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes headShake {
+  0% { transform: translateX(0); }
+  6.5% { transform: translateX(-6px) rotateY(-9deg); }
+  18.5% { transform: translateX(5px) rotateY(7deg); }
+  31.5% { transform: translateX(-3px) rotateY(-5deg); }
+  43.5% { transform: translateX(2px) rotateY(3deg); }
+  50% { transform: translateX(0); }
+}
+
+.head-shake {
+  animation: headShake 2s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للارتداد
+=========================================== */
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-20px);
+  }
+  70% {
+    transform: translateY(-10px);
+  }
+  90% {
+    transform: translateY(-4px);
+  }
+}
+
+.bounce {
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.8s var(--transition-bounce) forwards;
+}
+
+/* ===========================================
+   الرسوم المتحركة للدوران
+=========================================== */
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotate {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotateIn {
+  from {
+    transform: rotate(-180deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0);
+    opacity: 1;
+  }
+}
+
+.rotate-in {
+  animation: rotateIn 0.8s var(--transition-bounce) forwards;
+}
+
+/* ===========================================
+   الرسوم المتحركة للتكبير
+=========================================== */
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.zoom-in {
+  animation: zoomIn 0.5s var(--transition-bounce) forwards;
+}
+
+@keyframes zoomOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+.zoom-out {
+  animation: zoomOut 0.5s ease-in forwards;
+}
+
+/* ===========================================
+   الرسوم المتحركة للنبض
+=========================================== */
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للوميض
+=========================================== */
+
+@keyframes flash {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.5;
+  }
+}
+
+.flash {
+  animation: flash 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.flicker {
+  animation: flicker 1.5s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للتأرجح
+=========================================== */
+
+@keyframes swing {
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.swing {
+  transform-origin: top center;
+  animation: swing 1s ease-in-out;
+}
+
+@keyframes wobble {
+  0%, 100% {
+    transform: translateX(0%);
+  }
+  15% {
+    transform: translateX(-10%) rotate(-5deg);
+  }
+  30% {
+    transform: translateX(8%) rotate(3deg);
+  }
+  45% {
+    transform: translateX(-6%) rotate(-3deg);
+  }
+  60% {
+    transform: translateX(4%) rotate(2deg);
+  }
+  75% {
+    transform: translateX(-2%) rotate(-1deg);
+  }
+}
+
+.wobble {
+  animation: wobble 1s ease-in-out;
+}
+
+/* ===========================================
+   الرسوم المتحركة للارتداد الداخلي
+=========================================== */
+
+@keyframes rubberBand {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  40% {
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  50% {
+    transform: scale3d(1.15, 0.85, 1);
+  }
+  65% {
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  75% {
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.rubber-band {
+  animation: rubberBand 1s ease-in-out;
+}
+
+/* ===========================================
+   الرسوم المتحركة للاهتزاز العمودي
+=========================================== */
+
+@keyframes jello {
+  from, 11.1%, to {
+    transform: translate3d(0, 0, 0);
+  }
+  22.2% {
+    transform: skewX(-12.5deg) skewY(-12.5deg);
+  }
+  33.3% {
+    transform: skewX(6.25deg) skewY(6.25deg);
+  }
+  44.4% {
+    transform: skewX(-3.125deg) skewY(-3.125deg);
+  }
+  55.5% {
+    transform: skewX(1.5625deg) skewY(1.5625deg);
+  }
+  66.6% {
+    transform: skewX(-0.78125deg) skewY(-0.78125deg);
+  }
+  77.7% {
+    transform: skewX(0.390625deg) skewY(0.390625deg);
+  }
+  88.8% {
+    transform: skewX(-0.1953125deg) skewY(-0.1953125deg);
+  }
+}
+
+.jello {
+  animation: jello 1s ease-in-out;
+}
+
+/* ===========================================
+   الرسوم المتحركة للضوء
+=========================================== */
+
+@keyframes lightSpeedInRight {
+  from {
+    transform: translate3d(100%, 0, 0) skewX(-30deg);
+    opacity: 0;
+  }
+  60% {
+    transform: skewX(20deg);
+    opacity: 1;
+  }
+  80% {
+    transform: skewX(-5deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.light-speed-in-right {
+  animation: lightSpeedInRight 1s ease-out;
+}
+
+@keyframes lightSpeedInLeft {
+  from {
+    transform: translate3d(-100%, 0, 0) skewX(30deg);
+    opacity: 0;
+  }
+  60% {
+    transform: skewX(-20deg);
+    opacity: 1;
+  }
+  80% {
+    transform: skewX(5deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.light-speed-in-left {
+  animation: lightSpeedInLeft 1s ease-out;
+}
+
+/* ===========================================
+   الرسوم المتحركة للمطر
+=========================================== */
+
+@keyframes rain {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100vh;
+  }
+}
+
+.rain {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 100% 10px;
+  animation: rain 2s linear infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للموجة
+=========================================== */
+
+@keyframes wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+}
+
+.wave {
+  animation: wave 2s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+
+/* ===========================================
+   الرسوم المتحركة للتدفق
+=========================================== */
+
+@keyframes flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.flow {
+  background: linear-gradient(45deg, 
+    var(--color-gray-dark), 
+    var(--color-gray-medium), 
+    var(--color-gray-dark));
+  background-size: 400% 400%;
+  animation: flow 8s ease infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للتوهج
+=========================================== */
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(203, 205, 205, 0.3),
+                0 0 10px rgba(203, 205, 205, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(203, 205, 205, 0.6),
+                0 0 30px rgba(203, 205, 205, 0.4),
+                0 0 40px rgba(203, 205, 205, 0.2);
+  }
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للطفو
+=========================================== */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للمسح
+=========================================== */
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: sweep 2s ease-in-out infinite;
+}
+
+/* ===========================================
+   الرسوم المتحركة للارتعاش
+=========================================== */
+
+@keyframes tremble {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translate(-1px, -1px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translate(1px, 1px);
+  }
+}
+
+.tremble {
+  animation: tremble 0.5s ease-in-out;
+}
+
+/* ===========================================
+   التأخيرات
+=========================================== */
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+.delay-900 { animation-delay: 0.9s; }
+.delay-1000 { animation-delay: 1s; }
+
+/* ===========================================
+   التوقيتات
+=========================================== */
+
+.duration-100 { animation-duration: 0.1s; }
+.duration-200 { animation-duration: 0.2s; }
+.duration-300 { animation-duration: 0.3s; }
+.duration-400 { animation-duration: 0.4s; }
+.duration-500 { animation-duration: 0.5s; }
+.duration-600 { animation-duration: 0.6s; }
+.duration-700 { animation-duration: 0.7s; }
+.duration-800 { animation-duration: 0.8s; }
+.duration-900 { animation-duration: 0.9s; }
+.duration-1000 { animation-duration: 1s; }
+.duration-2000 { animation-duration: 2s; }
+.duration-3000 { animation-duration: 3s; }
+
+/* ===========================================
+   التكرار
+=========================================== */
+
+.iteration-1 { animation-iteration-count: 1; }
+.iteration-2 { animation-iteration-count: 2; }
+.iteration-3 { animation-iteration-count: 3; }
+.iteration-infinite { animation-iteration-count: infinite; }
+
+/* ===========================================
+   أوضاع التعبئة
+=========================================== */
+
+.fill-mode-none { animation-fill-mode: none; }
+.fill-mode-forwards { animation-fill-mode: forwards; }
+.fill-mode-backwards { animation-fill-mode: backwards; }
+.fill-mode-both { animation-fill-mode: both; }
+
+/* ===========================================
+   توقيتات الانتقال المخصصة
+=========================================== */
+
+.transition-delay-100 { transition-delay: 0.1s; }
+.transition-delay-200 { transition-delay: 0.2s; }
+.transition-delay-300 { transition-delay: 0.3s; }
+.transition-delay-400 { transition-delay: 0.4s; }
+.transition-delay-500 { transition-delay: 0.5s; }
+
+.transition-duration-100 { transition-duration: 0.1s; }
+.transition-duration-200 { transition-duration: 0.2s; }
+.transition-duration-300 { transition-duration: 0.3s; }
+.transition-duration-400 { transition-duration: 0.4s; }
+.transition-duration-500 { transition-duration: 0.5s; }
+.transition-duration-1000 { transition-duration: 1s; }
+
+/* ===========================================
+   أوضاع التوقيت
+=========================================== */
+
+.timing-linear { animation-timing-function: linear; }
+.timing-ease { animation-timing-function: ease; }
+.timing-ease-in { animation-timing-function: ease-in; }
+.timing-ease-out { animation-timing-function: ease-out; }
+.timing-ease-in-out { animation-timing-function: ease-in-out; }
+.timing-bounce { animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+/* ===========================================
+   الفئات المساعدة للرسوم المتحركة
+=========================================== */
+
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-all {
+  will-change: transform, opacity;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* ===========================================
+   الإيقاف والبدء
+=========================================== */
+
+.pause-animation {
+  animation-play-state: paused;
+}
+
+.running-animation {
+  animation-play-state: running;
+}
+
+/* ===========================================
+   التحكم في الحركة
+=========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===========================================
+   نهاية ملف الرسوم المتحركة
+=========================================== */

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="إدارة المشاريع - نظام إدارة العقارات المؤسسي">
+    <title>إدارة المشاريع | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="projects-management.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <!-- شريط الإدارة العلوي -->
+            <div class="admin-topbar">
+                    
+                <!-- الشعار - تم وضعه في المنتصف -->
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-building page-title-icon"></i>
+                        إدارة المشاريع
+                    </h1>
+                    <p class="page-description">
+                        إدارة المشاريع العقارية وإضافة مشاريع جديدة وتعديل وتحديث المشاريع الحالية
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <!-- زر إضافة مشروع جديد -->
+                    <button class="btn btn-primary" id="add-project-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>إضافة مشروع جديد</span>
+                    </button>
+                    <!-- زر التحديث -->
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">5</h3>
+                            <p class="overview-card-label">إجمالي المشاريع</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-units">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-units">215</h3>
+                            <p class="overview-card-label">إجمالي الوحدات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-featured">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-featured">4</h3>
+                            <p class="overview-card-label">مشاريع مميزة</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-rented">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-rented">82</h3>
+                            <p class="overview-card-label">وحدات مؤجرة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول المشاريع -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة المشاريع
+                        </h3>
+                        
+                        <div class="card-actions">
+                            <!-- بحث متقدم -->
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في المشاريع...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- زر التصفية الجديد -->
+                            <div class="filter-dropdown-table">
+                                <button class="btn btn-outline btn-sm filter-table-btn" id="filter-table-btn">
+                                    <i class="fas fa-filter"></i>
+                                    <span>تصفية</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="filter-dropdown-content-table" id="filter-dropdown-table">
+                                    <div class="filter-scroll-container">
+                                        <div class="filter-section">
+                                            <h6>حالة المشروع</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="جاهز_للتسليم" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">جاهز للتسليم</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="نشط" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">نشط</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مكتمل" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مكتمل</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="قيد_الإنشاء" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">قيد الإنشاء</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مباع" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مباع</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>نوع المشروع</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="سكني" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">سكني</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="تجاري" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">تجاري</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="صناعي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">صناعي</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="فندقي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">فندقي</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>الميزات</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="featured" value="true">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مشاريع مميزة فقط</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="available" value="true">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">وحدات متاحة فقط</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="filter-actions">
+                                        <button class="btn btn-primary btn-sm" id="apply-filter-table">تطبيق</button>
+                                        <button class="btn btn-outline btn-sm" id="reset-filter-table">إعادة تعيين</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- فرز -->
+                            <div class="sort-dropdown-table">
+                                <button class="btn btn-outline btn-sm sort-table-btn" id="sort-table-btn">
+                                    <i class="fas fa-sort-amount-down"></i>
+                                    <span>ترتيب حسب</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="sort-dropdown-content-table" id="sort-dropdown-table">
+                                    <a href="#" class="sort-option" data-sort="newest">الأحدث أولاً</a>
+                                    <a href="#" class="sort-option" data-sort="oldest">الأقدم أولاً</a>
+                                    <a href="#" class="sort-option" data-sort="name">بالاسم (أ-ي)</a>
+                                    <a href="#" class="sort-option" data-sort="price-high">السعر (مرتفع إلى منخفض)</a>
+                                    <a href="#" class="sort-option" data-sort="price-low">السعر (منخفض إلى مرتفع)</a>
+                                </div>
+                            </div>
+                            
+                            <!-- تصدير -->
+                            <button class="btn btn-outline btn-sm" id="export-btn">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- جدول المشاريع -->
+                        <div class="table-container">
+                            <table class="data-table" id="projects-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="120">رمز المشروع</th>
+                                        <th>اسم المشروع</th>
+                                        <th width="120">النوع</th>
+                                        <th width="150">الموقع</th>
+                                        <th width="100">السعر</th>
+                                        <th width="100">المساحة</th>
+                                        <th width="110">الوحدات</th>
+                                        <th width="100">الغرف</th>
+                                        <th width="120">الحالة</th>
+                                        <th width="120">تاريخ الإنشاء</th>
+                                        <th width="150">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projects-table-body">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                    <tr class="loading-row">
+                                        <td colspan="12">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل المشاريع...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- تذييل الجدول -->
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> مشروع</span>
+                            </div>
+                            
+                            <div class="table-pagination" id="table-pagination">
+                                <!-- سيتم ملؤها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <!-- مخطط توزيع المشاريع -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع المشاريع حسب النوع
+                                    </h4>
+                                    <select class="period-select" id="chart-period">
+                                        <option value="all" selected>كل المشاريع</option>
+                                        <option value="active">المشاريع النشطة فقط</option>
+                                        <option value="featured">المشاريع المميزة</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="projects-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- أحدث المشاريع -->
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-history"></i>
+                                        أحدث المشاريع المضافة
+                                    </h4>
+                                    <a href="#" class="view-all-link">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="recent-list" id="recent-projects">
+                                        <!-- سيتم ملؤها عبر JavaScript -->
+                                        <div class="recent-item">
+                                            <div class="recent-item-icon">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div class="recent-item-content">
+                                                <div class="recent-item-header">
+                                                    <h5 class="recent-item-title">فيلات النخيل الراقية</h5>
+                                                    <span class="recent-item-time">قبل 5 أيام</span>
+                                                </div>
+                                                <p class="recent-item-message">الرياض - النخيل | 20 وحدة</p>
+                                                <span class="recent-item-status status-ready">جاهز للتسليم</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="recent-item">
+                                            <div class="recent-item-icon">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div class="recent-item-content">
+                                                <div class="recent-item-header">
+                                                    <h5 class="recent-item-title">أبراج الأعمال التجارية</h5>
+                                                    <span class="recent-item-time">قبل 2 أسبوع</span>
+                                                </div>
+                                                <p class="recent-item-message">الرياض - المركز | 50 وحدة</p>
+                                                <span class="recent-item-status status-completed">مكتمل</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل المشروع -->
+    <div class="modal" id="project-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-project-title">تفاصيل المشروع</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-project-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-btn">تعديل المشروع</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- 🎪 Modal لإضافة/تعديل مشروع -->
+    <div class="modal" id="project-form-modal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="project-form-title">إضافة مشروع جديد</h3>
+                    <button class="modal-close" id="project-form-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="project-form">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="project-name">اسم المشروع *</label>
+                                <input type="text" id="project-name" class="form-control" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="project-code">رمز المشروع *</label>
+                                <input type="text" id="project-code" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="project-type">نوع المشروع *</label>
+                                <select id="project-type" class="form-control" required>
+                                    <option value="">اختر النوع</option>
+                                    <option value="سكني">سكني</option>
+                                    <option value="تجاري">تجاري</option>
+                                    <option value="صناعي">صناعي</option>
+                                    <option value="فندقي">فندقي</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="project-status">حالة المشروع *</label>
+                                <select id="project-status" class="form-control" required>
+                                    <option value="نشط">نشط</option>
+                                    <option value="جاهز_للتسليم">جاهز للتسليم</option>
+                                    <option value="مكتمل">مكتمل</option>
+                                    <option value="قيد_الإنشاء">قيد الإنشاء</option>
+                                    <option value="مباع">مباع</option>
+                                    <option value="معلق">معلق</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="completion-date">تاريخ الإكمال</label>
+                                <input type="date" id="completion-date" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="location">الموقع *</label>
+                                <input type="text" id="location" class="form-control" required>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="city">المدينة *</label>
+                                <input type="text" id="city" class="form-control" required>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="district">الحي</label>
+                                <input type="text" id="district" class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- إضافة رابط الموقع (الخريطة) -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="locationLink">رابط الموقع على الخريطة</label>
+                                <input type="url" id="locationLink" class="form-control" placeholder="https://maps.google.com/...">
+                            </div>
+                            <!-- حذف حقل رفع العقد PDF -->
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="total-units">إجمالي الوحدات *</label>
+                                <input type="number" id="total-units" class="form-control" required min="1">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="available-units">الوحدات المتاحة *</label>
+                                <input type="number" id="available-units" class="form-control" required min="0">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="price">السعر (ر.س) *</label>
+                                <input type="number" id="price" class="form-control" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="price-type">نوع السعر</label>
+                                <select id="price-type" class="form-control">
+                                    <option value="شراء">شراء</option>
+                                    <option value="تأجير">تأجير</option>
+                                    <option value="إيجار تشغيلي">إيجار تشغيلي</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="area">المساحة *</label>
+                                <input type="number" id="area" class="form-control" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="area-unit">وحدة المساحة</label>
+                                <select id="area-unit" class="form-control">
+                                    <option value="متر_مربع">متر مربع</option>
+                                    <option value="قدم_مربع">قدم مربع</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="bedrooms">عدد الغرف</label>
+                                <input type="number" id="bedrooms" class="form-control" min="0">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="bathrooms">عدد الحمامات</label>
+                                <input type="number" id="bathrooms" class="form-control" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">وصف المشروع</label>
+                            <textarea id="description" class="form-control" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="is-featured" class="form-check-input">
+                                <label for="is-featured" class="form-check-label">مشروع مميز</label>
+                            </div>
+                        </div>
+                        
+                        <!-- قسم الميزات -->
+                        <div class="form-group">
+                            <label>ميزات المشروع (أضف ميزة ثم انقر إضافة)</label>
+                            <div class="features-container">
+                                <div class="input-group">
+                                    <input type="text" id="feature-name" class="form-control" placeholder="اسم الميزة">
+                                    <input type="text" id="feature-value" class="form-control" placeholder="قيمة الميزة">
+                                    <button type="button" class="btn btn-secondary" id="add-feature-btn">
+                                        <i class="fas fa-plus"></i> إضافة
+                                    </button>
+                                </div>
+                                <div id="features-list" class="features-list">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- قسم الصور -->
+                        <div class="form-group">
+                            <label>صور المشروع</label>
+                            <div class="images-section">
+                                <!-- تحميل الصور -->
+                                <div class="image-upload-container">
+                                    <div class="image-upload-box" id="image-upload-box">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <p class="upload-text">اسحب وأفلت الصور هنا أو انقر للتحميل</p>
+                                        <p class="upload-subtext">JPEG, PNG, JPG - الحد الأقصى 5MB</p>
+                                        <input type="file" id="image-upload-input" accept="image/*" multiple style="display: none;">
+                                        <button type="button" class="btn btn-outline btn-sm" id="browse-images-btn">
+                                            <i class="fas fa-folder-open"></i> استعراض الصور
+                                        </button>
+                                    </div>
+                                    <div class="upload-progress-container" id="upload-progress-container">
+                                        <!-- تقدم الرفع يظهر هنا -->
+                                    </div>
+                                </div>
+                                
+                                <!-- قائمة الصور المرفوعة -->
+                                <div class="images-list-container">
+                                    <h6 class="images-list-title">
+                                        <i class="fas fa-images"></i>
+                                        صور المشروع (<span id="images-count">0</span>)
+                                    </h6>
+                                    <div class="images-instructions">
+                                        <p><i class="fas fa-info-circle"></i> الصورة الأولى ستكون الصورة الرئيسية للمشروع</p>
+                                        <p><i class="fas fa-arrows-alt-v"></i> اسحب وأفلت لترتيب الصور حسب الأهمية</p>
+                                    </div>
+                                    <div class="images-list" id="images-list">
+                                        <!-- سيتم ملؤها عبر JavaScript -->
+                                        <div class="empty-images">
+                                            <i class="fas fa-image"></i>
+                                            <p>لم يتم تحميل أي صور بعد</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- أنواع الصور -->
+                                <div class="image-types-info">
+                                    <h6><i class="fas fa-tags"></i> أنواع الصور الموصى بها:</h6>
+                                    <div class="image-types-grid">
+                                        <div class="image-type-tag">
+                                            <i class="fas fa-home"></i>
+                                            <span>صورة رئيسية</span>
+                                        </div>
+                                        <div class="image-type-tag">
+                                            <i class="fas fa-couch"></i>
+                                            <span>داخلية</span>
+                                        </div>
+                                        <div class="image-type-tag">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>موقع</span>
+                                        </div>
+                                        <div class="image-type-tag">
+                                            <i class="fas fa-drafting-compass"></i>
+                                            <span>مخطط</span>
+                                        </div>
+                                        <div class="image-type-tag">
+                                            <i class="fas fa-swimming-pool"></i>
+                                            <span>مرافق</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="project-form-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="project-form-submit-btn">حفظ المشروع</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لحذف المشروع -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذا المشروع؟</p>
+                    <p class="text-danger"><small>هذا الإجراء لا يمكن التراجع عنه.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal عرض الصورة -->
+    <div class="modal" id="image-view-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">عرض الصورة</h3>
+                    <button class="modal-close" id="image-view-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="image-view-container">
+                        <img id="modal-view-image" src="" alt="صورة المشروع" class="modal-image">
+                        <div class="image-view-info" id="image-view-info">
+                            <!-- معلومات الصورة -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="image-view-close-btn">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="projects-management.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>

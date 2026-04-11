@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="إدارة المدفوعات - نظام إدارة العقارات المؤسسي">
+    <title>إدارة المدفوعات | نظام إدارة العقارات</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="payments.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- 🔐 هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <!-- شريط الإدارة العلوي -->
+            <div class="admin-topbar">
+
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🎯 المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-credit-card page-title-icon"></i>
+                        إدارة المدفوعات
+                    </h1>
+                    <p class="page-description">
+                        إدارة وتتبع جميع المدفوعات والعقود والأقساط المستحقة
+                    </p>
+                </div>
+                
+                <div class="page-header-actions">
+                    <!-- زر تسجيل دفعة جديدة -->
+                    <button class="btn btn-primary" id="new-payment-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>دفعة جديدة</span>
+                    </button>
+
+                    <!-- زر التحديث -->
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                    
+                </div>
+            </div>
+
+            <!-- 📊 محتوى الصفحة الرئيسي -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة (تم إزالة رمز العملة) -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-total">175,000</h3>
+                            <p class="overview-card-label">إجمالي مستحقات الشهر</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-paid">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-paid">47,000</h3>
+                            <p class="overview-card-label">المسدد</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-pending">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-pending">378,000</h3>
+                            <p class="overview-card-label">المستحق</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card card-overdue">
+                        <div class="overview-card-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="overview-overdue">0</h3>
+                            <p class="overview-card-label">المتأخر</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول المدفوعات -->
+                <div class="main-content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list card-title-icon"></i>
+                            قائمة المدفوعات
+                        </h3>
+                        
+                        <div class="card-actions">
+                            <!-- بحث متقدم -->
+                            <div class="table-search">
+                                <div class="table-search-box">
+                                    <input type="text" class="table-search-input" id="table-search" placeholder="ابحث في المدفوعات...">
+                                    <button class="table-search-btn" id="table-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- زر التصفية الجديد -->
+                            <div class="filter-dropdown-table">
+                                <button class="btn btn-outline btn-sm filter-table-btn" id="filter-table-btn">
+                                    <i class="fas fa-filter"></i>
+                                    <span>تصفية</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="filter-dropdown-content-table" id="filter-dropdown-table">
+                                    <div class="filter-sections-scroll">
+                                        <div class="filter-section">
+                                            <h6>حالة الدفعة</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مؤكد" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مؤكد</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="مستحق" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">مستحق</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="متأخر">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">متأخر</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="status" value="ملغي">
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">ملغي</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>طريقة الدفع</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="method" value="تحويل بنكي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">تحويل بنكي</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="method" value="شيك" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">شيك</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="method" value="نقدي" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">نقدي</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="method" value="بطاقة ائتمان" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">بطاقة ائتمان</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section">
+                                            <h6>نوع الدفعة</h6>
+                                            <div class="filter-options">
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="دفعة عقد" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">دفعة عقد</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="قسط شهري" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">قسط شهري</span>
+                                                </label>
+                                                <label class="filter-option">
+                                                    <input type="checkbox" name="type" value="دفعة أولى" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span class="filter-label">دفعة أولى</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="filter-actions">
+                                        <button class="btn btn-primary btn-sm" id="apply-filter-table">تطبيق</button>
+                                        <button class="btn btn-outline btn-sm" id="reset-filter-table">إعادة تعيين</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- تصدير -->
+                            <button class="btn btn-outline btn-sm" id="export-btn">
+                                <i class="fas fa-download"></i>
+                                <span>تصدير</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- جدول المدفوعات -->
+                        <div class="table-container">
+                            <table class="data-table" id="payments-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <label class="checkbox-cell">
+                                                <input type="checkbox" id="select-all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
+                                        <th width="100">رقم الدفعة</th>
+                                        <th>العقد</th>
+                                        <th>العميل</th>
+                                        <th width="120">المشروع</th>
+                                        <th width="100">المبلغ</th>
+                                        <th width="120">تاريخ الاستحقاق</th>
+                                        <th width="120">تاريخ الدفع</th>
+                                        <th width="120">طريقة الدفع</th>
+                                        <th width="100">الحالة</th>
+                                        <th width="120">آخر تحديث</th>
+                                        <th width="100">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payments-table-body">
+                                    <!-- سيتم ملؤها عبر JavaScript -->
+                                    <tr class="loading-row">
+                                        <td colspan="12">
+                                            <div class="loading-content">
+                                                <div class="loading-spinner"></div>
+                                                <span>جاري تحميل المدفوعات...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- تذييل الجدول -->
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span>عرض</span>
+                                <select class="page-size-select" id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>عنصر في الصفحة</span>
+                                <span class="items-count">من أصل <span id="total-items">0</span> دفعة</span>
+                            </div>
+                            
+                            <div class="table-pagination" id="table-pagination">
+                                <!-- سيتم ملؤها عبر JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 مخطط الإحصائيات (مخطط دائري) -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع حالات الدفعات
+                                    </h4>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="payments-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📈 قسم التوقعات المالية الجديد -->
+                <div class="financial-forecast-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            التوقعات المالية للشهور القادمة
+                        </h3>
+                        <div class="section-subtitle">
+                            تحليل تفصيلي للمدفوعات المتوقعة في الأشهر القادمة مع تفاصيل كل عميل
+                        </div>
+                        <div class="section-actions">
+                            <select class="period-select" id="forecast-period">
+                                <option value="3">3 أشهر</option>
+                                <option value="6" selected>6 أشهر</option>
+                                <option value="9">9 أشهر</option>
+                                <option value="12">12 شهر</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- بطاقات التوقعات الشهرية -->
+                    <div class="forecast-monthly-cards" id="forecast-monthly-cards">
+                        <!-- البطاقات ستتم إضافتها ديناميكيًا -->
+                        <div class="forecast-skeleton">
+                            <div class="skeleton-loader"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 🦶 تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة العقارات. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 🎪 Modal لعرض تفاصيل الدفعة -->
+    <div class="modal" id="payment-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-payment-title">تفاصيل الدفعة</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-payment-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-btn">تعديل الدفعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتسجيل دفعة جديدة -->
+    <div class="modal" id="new-payment-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تسجيل دفعة جديدة</h3>
+                    <button class="modal-close" id="new-payment-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-payment-form">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="contract-select">العقد *</label>
+                                <select id="contract-select" class="form-control" required>
+                                    <option value="">-- اختر العقد --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="payment-amount">المبلغ (ريال سعودي) *</label>
+                                <input type="number" 
+                                    id="payment-amount" 
+                                    class="form-control" 
+                                    placeholder="أدخل المبلغ" 
+                                    min="1" 
+                                    step="0.01"
+                                    required>
+                            </div>
+                        </div>
+                        
+                        
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="payment-date">تاريخ الدفع *</label>
+                                <input type="date" 
+                                       id="payment-date" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                            
+                            <div class="form-group col-md-6">
+                                <label for="payment-method">طريقة الدفع *</label>
+                                <select id="payment-method" class="form-control" required>
+                                    <option value="تحويل بنكي">تحويل بنكي</option>
+                                    <option value="شيك">شيك</option>
+                                    <option value="نقدي">نقدي</option>
+                                    <option value="بطاقة ائتمان">بطاقة ائتمان</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="bank-info-group" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="bank-name">اسم البنك</label>
+                                    <input type="text" 
+                                           id="bank-name" 
+                                           class="form-control" 
+                                           placeholder="أدخل اسم البنك">
+                                </div>
+                                
+                                <div class="form-group col-md-6">
+                                    <label for="reference-number">رقم المرجع</label>
+                                    <input type="text" 
+                                           id="reference-number" 
+                                           class="form-control" 
+                                           placeholder="رقم العملية">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="receipt-number">رقم الإيصال</label>
+                            <input type="text" 
+                                   id="receipt-number" 
+                                   class="form-control" 
+                                   placeholder="رقم الإيصال (إن وجد)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-notes">ملاحظات</label>
+                            <textarea 
+                                id="payment-notes" 
+                                class="form-control" 
+                                rows="3" 
+                                placeholder="ملاحظات إضافية..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="new-payment-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="new-payment-submit-btn">تسجيل الدفعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لتعديل حالة الدفعة -->
+    <div class="modal" id="update-status-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تحديث حالة الدفعة</h3>
+                    <button class="modal-close" id="update-status-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-status-form">
+                        <div class="form-group">
+                            <label for="update-status">الحالة الجديدة *</label>
+                            <select id="update-status" class="form-control" required>
+                                <option value="مستحق">مستحق</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="update-reason">سبب التحديث (اختياري)</label>
+                            <textarea 
+                                id="update-reason" 
+                                class="form-control" 
+                                rows="3" 
+                                placeholder="سبب تغيير الحالة..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="update-status-cancel-btn">إلغاء</button>
+                    <button class="btn btn-primary" id="update-status-submit-btn">تحديث الحالة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal لعرض تفاصيل التوقعات المالية -->
+    <div class="modal" id="forecast-detail-modal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-forecast-title">تفاصيل التوقعات الشهرية</h3>
+                    <button class="modal-close" id="forecast-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-forecast-body">
+                    <!-- سيتم ملؤها عبر JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="forecast-close-btn">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎪 Modal تأكيد الحذف (تمت إضافته) -->
+    <div class="modal" id="delete-confirm-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">تأكيد الحذف</h3>
+                    <button class="modal-close" id="delete-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذه الدفعة؟</p>
+                    <p class="text-muted">لا يمكن التراجع عن هذا الإجراء.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="delete-cancel-btn">إلغاء</button>
+                    <button class="btn btn-danger" id="delete-confirm-btn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="payments.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>

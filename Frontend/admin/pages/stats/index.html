@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="إدارة الأقسام والموظفين - نظام إدارة المؤسسة">
+    <title>الأقسام والموظفين | نظام الإدارة</title>
+    
+    <!-- نظام التصميم العالمي -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css">
+    <link rel="stylesheet" href="../../../global/css/animations.css">
+    
+    <!-- CSS الخاص بالصفحة -->
+    <link rel="stylesheet" href="stats.css">
+    
+    <!-- Font Awesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode rtl">
+    <!-- منطقة الإشعارات العائمة -->
+    <div id="notification-area" class="notification-container"></div>
+
+    <!-- هيدر لوحة الإدارة -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-topbar">
+                <a href="../dashboard/index.html" class="admin-logo">
+                    <img src="../../../global/assets/images/logo.png" alt="شعار الإدارة" class="logo-img">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="admin-main">
+        <div class="container">
+            <!-- عنوان الصفحة -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-users-cog page-title-icon"></i>
+                        إدارة الأقسام والموظفين
+                    </h1>
+                    <p class="page-description">
+                        عرض إحصائيات شاملة عن الأقسام والموظفين، متابعة أداء المهام وتقييم الموظفين
+                    </p>
+                </div>
+                <div class="page-header-actions">
+                    <!-- فلاتر التاريخ -->
+                    <div class="date-filter-wrapper">
+                        <div class="date-input-group">
+                            <label for="start-date">من تاريخ</label>
+                            <input type="date" id="start-date" class="date-input">
+                        </div>
+                        <div class="date-input-group">
+                            <label for="end-date">إلى تاريخ</label>
+                            <input type="date" id="end-date" class="date-input">
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="apply-date-filter">
+                            <i class="fas fa-filter"></i>
+                            <span>تطبيق</span>
+                        </button>
+                        <button class="btn btn-outline btn-sm" id="clear-date-filter">
+                            <i class="fas fa-times"></i>
+                            <span>مسح</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary btn-refresh" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>تحديث</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- محتوى الصفحة -->
+            <div class="page-content">
+                <!-- بطاقات نظرة عامة سريعة -->
+                <div class="overview-cards">
+                    <div class="overview-card card-total">
+                        <div class="overview-card-icon"><i class="fas fa-users"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="total-employees">0</h3>
+                            <p class="overview-card-label">إجمالي الموظفين</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-active">
+                        <div class="overview-card-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="total-tasks-ontime">0</h3>
+                            <p class="overview-card-label">مهام في موعدها</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-pending">
+                        <div class="overview-card-icon"><i class="fas fa-clock"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="total-tasks-progress">0</h3>
+                            <p class="overview-card-label">قيد التنفيذ</p>
+                        </div>
+                    </div>
+                    <div class="overview-card card-revenue">
+                        <div class="overview-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="overview-card-content">
+                            <h3 class="overview-card-value" id="total-tasks-overdue">0</h3>
+                            <p class="overview-card-label">مهام متأخرة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- بطاقات الأقسام -->
+                <div class="departments-grid" id="departments-grid">
+                    <!-- سيتم تعبئتها عبر JS -->
+                </div>
+
+                <!-- قسم تفاصيل القسم المحدد والموظفين -->
+                <div class="main-content-card department-details-card" id="department-details-card" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title" id="selected-department-title">
+                            <i class="fas fa-users card-title-icon"></i>
+                            موظفو القسم
+                        </h3>
+                        <div class="card-actions">
+                            <button class="btn btn-outline btn-sm" id="close-department-details">
+                                <i class="fas fa-times"></i>
+                                <span>إغلاق</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table" id="employees-table">
+                                <thead>
+                                    <tr>
+                                        <th>الموظف</th>
+                                        <th>المسمى الوظيفي</th>
+                                        <th>التقييم</th>
+                                        <th>الجزاءات</th>
+                                        <th>نسبة الخصم (%)</th>
+                                        <th>المهام في موعدها</th>
+                                        <th>المهام المتأخرة</th>
+                                        <th>قيد التنفيذ</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employees-table-body">
+                                    <!-- سيتم تعبئتها عبر JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الرسوم البيانية -->
+                <div class="statistics-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        توزيع المهام حسب الحالة
+                                    </h4>
+                                    <select class="period-select" id="chart-department-select">
+                                        <option value="all">جميع الأقسام</option>
+                                    </select>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="tasks-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-card-header">
+                                    <h4 class="stat-card-title">
+                                        <i class="fas fa-chart-bar"></i>
+                                        أداء الموظفين (أعلى تقييم)
+                                    </h4>
+                                    <a href="#" class="view-all-link" id="view-top-employees">عرض الكل</a>
+                                </div>
+                                <div class="stat-card-body">
+                                    <div class="top-employees-list" id="top-employees-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- تذييل لوحة الإدارة -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <div class="footer-copyright">
+                    <p>© 2024 نظام إدارة المؤسسة. جميع الحقوق محفوظة.</p>
+                    <p class="footer-version">الإصدار 4.0.0 | آخر تحديث: اليوم 10:30 ص</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">المساعدة</a>
+                    <a href="#" class="footer-link">الدعم الفني</a>
+                    <a href="#" class="footer-link">الشروط والأحكام</a>
+                    <a href="#" class="footer-link">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal تفاصيل الموظف (تصميم احترافي) -->
+    <div class="modal" id="employee-detail-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-employee-name">تفاصيل الموظف</h3>
+                    <button class="modal-close" id="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-employee-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modal-close-btn-2">إغلاق</button>
+                    <button class="btn btn-primary" id="modal-edit-employee-btn">تعديل البيانات</button>
+                    <button class="btn btn-outline" id="modal-print-employee-btn">
+                        <i class="fas fa-print"></i> طباعة التقرير
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ملفات JavaScript -->
+    <script src="../../../global/js/core.js"></script>
+    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/auth-manager.js"></script>
+    <script src="stats.js"></script>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</body>
+</html>
