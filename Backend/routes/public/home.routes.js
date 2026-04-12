@@ -504,7 +504,7 @@ module.exports = function(app) {
                     contracts: contractsCount[0].count,
                     featuredProjects: featuredProjects.length,
                     featuredProjectsList: featuredProjects,
-                    database: 'RealEstateDB',
+                    database: 'abh',
                     server: 'localhost,1433',
                     time: new Date().toLocaleString('ar-SA'),
                 },

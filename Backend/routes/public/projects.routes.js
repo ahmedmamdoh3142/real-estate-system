@@ -670,7 +670,7 @@ module.exports = function(app) {
             res.status(200).json({
                 success: true,
                 data: {
-                    database: 'RealEstateDB',
+                    database: 'abh',
                     server: 'localhost,1433',
                     time: new Date().toLocaleString('ar-SA'),
                     
