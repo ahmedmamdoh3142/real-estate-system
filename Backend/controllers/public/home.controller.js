@@ -1,4 +1,4 @@
-const homeService = require('../../services/public/home.service');
+const homeService = require('/services/public/home.service');
 
 /**
  * @desc    جلب إحصائيات الصفحة الرئيسية

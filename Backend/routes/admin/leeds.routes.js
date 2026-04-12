@@ -1,7 +1,7 @@
 // 📁 Backend/routes/admin/leeds.routes.js
 const express = require('express');
 const router = express.Router();
-const leedsController = require('../../controllers/admin/leeds.controller');
+const leedsController = require('/controllers/admin/leeds.controller');
 
 // التحقق من صحة الـ API
 router.get('/health', (req, res) => {

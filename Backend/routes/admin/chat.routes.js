@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const chatController = require('../../controllers/admin/chat.controller');
+const chatController = require('/controllers/admin/chat.controller');
 const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 
@@ -10,7 +10,7 @@ const JWT_SECRET = 'real_estate_system_secret_key_2024';
 
 // الحصول على pool من app.locals
 function getPool() {
-    const app = require('../../app');
+    const app = require('/app');
     if (!app.locals.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة');
     }

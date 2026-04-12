@@ -5,7 +5,7 @@
  */
 
 const sql = require('mssql');
-const config = require('../../config/database.config');
+const config = require('/config/database.config');
 
 /**
  * خدمة التدقيق

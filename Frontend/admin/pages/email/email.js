@@ -296,7 +296,7 @@
                 if (user && user.id) {
                     this.currentUser = user;
                 } else {
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                     return;
                 }
                 this.updateUserInfo();

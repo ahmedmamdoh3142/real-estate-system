@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/projects.controller.js - النسخة المصححة مع إضافة locationLink و contractPdfUrl
-const projectsService = require('../../services/admin/projects.service');
+const projectsService = require('/services/admin/projects.service');
 
 /**
  * @desc    جلب جميع المشاريع مع الفلترة والترتيب

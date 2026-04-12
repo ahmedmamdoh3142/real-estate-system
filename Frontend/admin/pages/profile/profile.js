@@ -623,7 +623,7 @@
                     this.currentUser = user;
                 } else {
                     console.warn('⚠️ No user found, redirecting to login...');
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                     return;
                 }
                 this.updateUserInfo();
@@ -1627,11 +1627,11 @@
                             <div class="nav-section">
                                 <h3 class="section-title">${translations[currentLang].main || 'الرئيسية'}</h3>
                                 <ul class="nav-links">
-                                    <li class="nav-item"><a href="../dashboard/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-chart-pie"></i></span><span class="nav-text">${translations[currentLang].dashboard || 'لوحة التحكم'}</span></a></li>
-                                    <li class="nav-item"><a href="../projects/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-building"></i></span><span class="nav-text">${translations[currentLang].projects || 'المشاريع'}</span></a></li>
-                                    <li class="nav-item"><a href="../contracts/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-file-contract"></i></span><span class="nav-text">${translations[currentLang].contracts || 'العقود'}</span></a></li>
+                                    <li class="nav-item"><a href="/dashboard/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-chart-pie"></i></span><span class="nav-text">${translations[currentLang].dashboard || 'لوحة التحكم'}</span></a></li>
+                                    <li class="nav-item"><a href="/projects/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-building"></i></span><span class="nav-text">${translations[currentLang].projects || 'المشاريع'}</span></a></li>
+                                    <li class="nav-item"><a href="/contracts/index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-file-contract"></i></span><span class="nav-text">${translations[currentLang].contracts || 'العقود'}</span></a></li>
                                     <li class="nav-item active"><a href="index.html" class="nav-link"><span class="nav-icon"><i class="fas fa-user"></i></span><span class="nav-text">${translations[currentLang].pageTitle || 'الملف الشخصي'}</span></a></li>
-                                    <li class="nav-item"><a href="../login/index.html" class="nav-link logout"><span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span><span class="nav-text">${translations[currentLang].logout || 'تسجيل الخروج'}</span></a></li>
+                                    <li class="nav-item"><a href="/login/index.html" class="nav-link logout"><span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span><span class="nav-text">${translations[currentLang].logout || 'تسجيل الخروج'}</span></a></li>
                                 </ul>
                             </div>
                         </div>

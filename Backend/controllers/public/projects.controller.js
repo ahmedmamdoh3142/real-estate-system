@@ -1,5 +1,5 @@
 // Backend/controllers/public/projects.controller.js - التحكم في العقارات
-const projectsService = require('../../services/public/projects.service');
+const projectsService = require('/services/public/projects.service');
 
 /**
  * @desc    جلب جميع العقارات مع الفلترة

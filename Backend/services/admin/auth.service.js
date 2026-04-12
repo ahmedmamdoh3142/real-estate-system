@@ -9,7 +9,7 @@ const JWT_SECRET = 'real_estate_system_secret_key_2024';
 
 // الحصول على pool من app.locals (تم تعيينه في server.js)
 function getPool() {
-    const app = require('../../app');
+    const app = require('/app');
     if (!app.locals.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة');
     }

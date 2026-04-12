@@ -1,4 +1,4 @@
-const statsService = require('../../services/admin/stats.service');
+const statsService = require('/services/admin/stats.service');
 
 // ========== الأقسام ==========
 exports.getAllDepartments = async (req, res) => {

@@ -1243,7 +1243,7 @@
                 const audio = new Audio('/sounds/notification.mp3');
                 audio.play().catch(e => {
                     console.warn('Could not play notification.mp3, trying alternative path', e);
-                    const audio2 = new Audio('../sounds/notification.mp3');
+                    const audio2 = new Audio('/sounds/notification.mp3');
                     audio2.play().catch(e2 => console.warn('Notification sound failed:', e2));
                 });
             } catch (e) {
@@ -1262,7 +1262,7 @@
                 const audio = new Audio('/sounds/reminder.mp3');
                 audio.play().catch(e => {
                     console.warn('Could not play reminder.mp3, trying alternative path', e);
-                    const audio2 = new Audio('../sounds/reminder.mp3');
+                    const audio2 = new Audio('/sounds/reminder.mp3');
                     audio2.play().catch(e2 => console.warn('Reminder sound failed:', e2));
                 });
             } catch (e) {
@@ -3816,7 +3816,7 @@
                 if (user && user.id) {
                     this.currentUser = user;
                 } else {
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                     return;
                 }
                 this.updateUserInfo();

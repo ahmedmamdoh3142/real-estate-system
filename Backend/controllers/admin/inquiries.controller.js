@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/inquiries.controller.js
-const inquiriesService = require('../../services/admin/inquiries.service');
+const inquiriesService = require('/services/admin/inquiries.service');
 
 // GET /api/admin/inquiries
 exports.getAllInquiries = async (req, res) => {

@@ -1,7 +1,7 @@
 /* ===== صفحة إدارة المستخدمين - نظام إدارة العقارات ===== */
 /* تم التحديث ليتوافق مع تصميم صفحة العقود (ألوان داكنة، تدرجات، تحسينات الجوال) */
 body {
-    background-image: url('../../../global/assets/images/cover.webp');
+    background-image: url('/global/assets/images/cover.webp');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

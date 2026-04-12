@@ -139,7 +139,7 @@
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
-                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
+                <a href="/admin/pages/login/index.html" class="nav-link premium-link">
                     <div class="nav-icon-wrapper">
                         <i class="fas fa-sign-in-alt"></i>
                     </div>
@@ -646,7 +646,7 @@
                                     <span class="price-period">${priceText}</span>
                                 </div>
                                 <div class="project-actions">
-                                    <a href="../project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
+                                    <a href="/project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                         <span>تفاصيل</span>
                                     </a>
@@ -699,7 +699,7 @@
                                     <span class="price-period">${priceText}</span>
                                 </div>
                                 <div class="project-actions">
-                                    <a href="../project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
+                                    <a href="/project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                         <span>تفاصيل</span>
                                     </a>

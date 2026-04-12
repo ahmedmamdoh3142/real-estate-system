@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/users.controller.js
-const usersService = require('../../services/admin/users.service');
+const usersService = require('/services/admin/users.service');
 
 // GET /api/admin/permissions
 exports.getAllPermissions = async (req, res) => {

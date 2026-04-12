@@ -1,7 +1,7 @@
 // Backend/routes/admin/profile.routes.js
 const express = require('express');
 const router = express.Router();
-const profileController = require('../../controllers/admin/profile.controller');
+const profileController = require('/controllers/admin/profile.controller');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -9,7 +9,7 @@ const fs = require('fs');
 // تكوين multer لحفظ الصور الشخصية
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '../../../uploads/profile');
+        const uploadDir = path.join(__dirname, '/uploads/profile');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }

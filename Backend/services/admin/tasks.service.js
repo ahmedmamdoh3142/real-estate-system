@@ -6,7 +6,7 @@ require('dotenv').config();
 
 // الحصول على pool من app.locals (تم تعيينه في server.js)
 function getPool() {
-    const app = require('../../app');
+    const app = require('/app');
     if (!app.locals.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة');
     }
@@ -15,7 +15,7 @@ function getPool() {
 
 class TasksService {
     constructor() {
-        this.uploadDir = path.join(__dirname, '../../../uploads/tasks');
+        this.uploadDir = path.join(__dirname, '/uploads/tasks');
         if (!fs.existsSync(this.uploadDir)) {
             fs.mkdirSync(this.uploadDir, { recursive: true });
         }

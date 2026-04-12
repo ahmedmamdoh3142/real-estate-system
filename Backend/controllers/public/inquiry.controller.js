@@ -1,5 +1,5 @@
 // Backend/controllers/public/inquiry.controller.js - الإصدار المصحح
-const inquiryService = require('../../services/public/inquiry.service');
+const inquiryService = require('/services/public/inquiry.service');
 
 /**
  * @desc    جلب إحصائيات الاستفسارات

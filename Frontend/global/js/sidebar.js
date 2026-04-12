@@ -34,31 +34,31 @@
                 {
                     section: 'الرئيسية',
                     items: [
-                        { id: 'dashboard', title: 'لوحة التحكم', icon: 'fas fa-tachometer-alt', link: '../dashboard/index.html', permission: 'dashboard' }
+                        { id: 'dashboard', title: 'لوحة التحكم', icon: 'fas fa-tachometer-alt', link: '/dashboard/index.html', permission: 'dashboard' }
                     ]
                 },
                 {
                     section: 'إدارة العقارات',
                     items: [
-                        { id: 'projects', title: 'المشاريع', icon: 'fas fa-building', link: '../projects-management/index.html', permission: 'projects' },
-                        { id: 'contracts', title: 'العقود', icon: 'fas fa-file-contract', link: '../contracts/index.html', permission: 'contracts' },
-                        { id: 'payments', title: 'المدفوعات', icon: 'fas fa-money-bill-wave', link: '../payments/index.html', permission: 'payments' },
-                        { id: 'invoices', title: 'الفواتير', icon: 'fas fa-file-invoice', link: '../bills/index.html', permission: 'invoices' }
+                        { id: 'projects', title: 'المشاريع', icon: 'fas fa-building', link: '/projects-management/index.html', permission: 'projects' },
+                        { id: 'contracts', title: 'العقود', icon: 'fas fa-file-contract', link: '/contracts/index.html', permission: 'contracts' },
+                        { id: 'payments', title: 'المدفوعات', icon: 'fas fa-money-bill-wave', link: '/payments/index.html', permission: 'payments' },
+                        { id: 'invoices', title: 'الفواتير', icon: 'fas fa-file-invoice', link: '/bills/index.html', permission: 'invoices' }
                     ]
                 },
                 {
                     section: 'إدارة العملاء',
                     items: [
-                        { id: 'inquiries', title: 'الاستفسارات', icon: 'fas fa-headset', link: '../inquiries/index.html', permission: 'inquiries' },
-                        { id: 'clients', title: 'العملاء', icon: 'fas fa-users', link: '../leeds/index.html', permission: 'clients' }
+                        { id: 'inquiries', title: 'الاستفسارات', icon: 'fas fa-headset', link: '/inquiries/index.html', permission: 'inquiries' },
+                        { id: 'clients', title: 'العملاء', icon: 'fas fa-users', link: '/leeds/index.html', permission: 'clients' }
                     ]
                 },
                 {
                     section: 'الإدارة',
                     items: [
-                        { id: 'users', title: 'المستخدمين', icon: 'fas fa-user-cog', link: '../users/index.html', permission: 'users' },
-                        { id: 'recruitment', title: 'التوظيف', icon: 'fas fa-user-plus', link: '../job-management/index.html', permission: 'recruitment' },
-                        { id: 'tasks', title: 'المهمات', icon: 'fas fa-plus-circle', link: '../tasks/index.html', permission: 'tasks' }
+                        { id: 'users', title: 'المستخدمين', icon: 'fas fa-user-cog', link: '/users/index.html', permission: 'users' },
+                        { id: 'recruitment', title: 'التوظيف', icon: 'fas fa-user-plus', link: '/job-management/index.html', permission: 'recruitment' },
+                        { id: 'tasks', title: 'المهمات', icon: 'fas fa-plus-circle', link: '/tasks/index.html', permission: 'tasks' }
                     ]
                 }
             ];

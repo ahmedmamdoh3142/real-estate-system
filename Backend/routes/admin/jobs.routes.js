@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const jobsController = require('../../controllers/admin/jobs.controller');
+const jobsController = require('/controllers/admin/jobs.controller');
 
 // ==================== مسارات طلبات التوظيف ====================
 router.get('/health', (req, res) => {

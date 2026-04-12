@@ -316,7 +316,7 @@
             
             // إعادة توجيه إلى لوحة التحكم (سيتم التعامل مع الصلاحيات هناك)
             setTimeout(() => {
-                window.location.href = '../dashboard/index.html';
+                window.location.href = '/dashboard/index.html';
             }, 1500);
         }
         

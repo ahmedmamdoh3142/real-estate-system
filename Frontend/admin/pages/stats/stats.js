@@ -238,12 +238,12 @@
                     this.currentUser = user;
                     this.updateUserInfo();
                 } else {
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                     return;
                 }
             } catch (error) {
                 console.error('❌ Auth check failed:', error);
-                window.location.href = '../login/index.html';
+                window.location.href = '/login/index.html';
             }
         }
 

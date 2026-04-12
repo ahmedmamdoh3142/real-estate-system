@@ -2354,7 +2354,7 @@
                 this.currentUser = this.getCurrentUser();
                 if (!this.currentUser || !this.currentUser.id) {
                     console.error('❌ No logged in user found');
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                     return;
                 }
                 console.log('👤 Current user:', this.currentUser);
@@ -2383,7 +2383,7 @@
                 console.error('❌ Error initializing chat:', error);
                 this.showNotification('error', translate('error'), 'حدث خطأ أثناء تحميل الشات. يرجى تسجيل الدخول مرة أخرى.');
                 setTimeout(() => {
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                 }, 3000);
             }
         }
@@ -2585,7 +2585,7 @@
                     e.preventDefault();
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('user_data');
-                    window.location.href = '../login/index.html';
+                    window.location.href = '/login/index.html';
                 });
             }
 

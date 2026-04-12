@@ -6,7 +6,7 @@ require('dotenv').config();
 
 // الحصول على pool من app.locals
 function getPool() {
-    const app = require('../../app');
+    const app = require('/app');
     if (!app.locals.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة');
     }

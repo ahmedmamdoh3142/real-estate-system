@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/dashboard.controller.js
-const dashboardService = require('../../services/admin/dashboard.service');
+const dashboardService = require('/services/admin/dashboard.service');
 
 /**
  * @desc    جلب إحصائيات لوحة التحكم

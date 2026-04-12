@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 // استيراد الـ service للاستفادة من queryAsync (الذي يستخدم connectionString الصحيح)
-const dashboardService = require('../../services/admin/dashboard.service');
+const dashboardService = require('/services/admin/dashboard.service');
 
 console.log('✅ تم تحميل Dashboard Routes مع دعم الفلاتر (ربع سنوي/سنوي، نوع/مدينة) باستخدام service.queryAsync');
 

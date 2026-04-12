@@ -1,5 +1,5 @@
 // Backend/controllers/admin/profile.controller.js
-const profileService = require('../../services/admin/profile.service');
+const profileService = require('/services/admin/profile.service');
 const path = require('path');
 const fs = require('fs');
 
