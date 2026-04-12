@@ -1,91 +1,114 @@
-// Frontend/global/js/api-client.js - النسخة المحسنة 100%
-(function() {
+// Frontend/global/js/api-client.js - Production-safe version
+(function () {
     'use strict';
-    
-    console.log('✅ api-client.js loaded - ULTIMATE WORKING VERSION');
-    
-    // إعدادات API - تستخدم CORS
+
+    console.log('✅ api-client.js loaded - PRODUCTION SAFE VERSION');
+
     const API_CONFIG = {
         BASE_URL: '/api',
         TIMEOUT: 8000,
         MAX_RETRIES: 2,
-        RETRY_DELAY: 1000
+        RETRY_DELAY: 1000,
+        CACHE_DURATION: 60000
     };
-    
-    class UltimateAPIClient {
+
+    class APIClient {
         constructor() {
             this.baseURL = API_CONFIG.BASE_URL;
             this.isConnected = false;
             this.cache = new Map();
-            this.cacheDuration = 60000; // 60 ثانية للتخزين المؤقت
-            
-            console.log('🚀 Ultimate API Client initialized');
+            this.cacheDuration = API_CONFIG.CACHE_DURATION;
+
+            console.log('🚀 API Client initialized');
             console.log('📍 Base URL:', this.baseURL);
-            
-            // اختبار اتصال سريع
+
             setTimeout(() => this.testConnection(), 1000);
         }
-        
-        // اختبار اتصال مبسط
+
+        normalizeEndpoint(endpoint) {
+            if (!endpoint) return '/';
+            let e = String(endpoint).trim();
+
+            // Allow compatibility with old code that still passes /api/...
+            if (e.startsWith('/api/')) {
+                e = e.slice(4); // keep leading slash after removing "/api"
+            } else if (e === '/api') {
+                e = '/';
+            }
+
+            if (!e.startsWith('/')) {
+                e = '/' + e;
+            }
+
+            return e;
+        }
+
+        buildUrl(endpoint) {
+            const normalized = this.normalizeEndpoint(endpoint);
+            return `${this.baseURL}${normalized}`;
+        }
+
+        getCacheKey(endpoint, options = {}) {
+            return `${this.normalizeEndpoint(endpoint)}_${JSON.stringify(options)}`;
+        }
+
         async testConnection() {
             try {
                 console.log('🔍 Testing connection...');
-                const response = await fetch(`${this.baseURL}/api/health`, {
+
+                // Correct: /api/health
+                const response = await fetch(this.buildUrl('/health'), {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                         'Cache-Control': 'no-cache'
                     }
                 });
-                
+
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const data = await response.json();
-                console.log('✅ Server is alive:', data.message);
+                console.log('✅ Server is alive:', data.message || 'Connected');
                 this.isConnected = true;
-                
-                // إشعار بصيغة بسيطة
+
                 this.showStatus('success', '✅ الخادم متصل');
-                
+
                 return true;
             } catch (error) {
                 console.warn('⚠️ Server connection warning:', error.message);
                 this.isConnected = false;
-                
-                // تحذير بسيط
+
                 this.showStatus('warning', '⚠️ الخادم غير متصل - جاري استخدام البيانات المحلية');
-                
+
                 return false;
             }
         }
-        
-        // عرض حالة بسيطة
+
         showStatus(type, message) {
-            if (!window.Notifications) return;
-            
+            if (!window.Notifications || typeof window.Notifications.show !== 'function') return;
+
             window.Notifications.show({
-                type: type,
+                type,
                 title: type === 'success' ? 'تم بنجاح' : 'تنبيه',
-                message: message,
+                message,
                 duration: 3000
             });
         }
-        
-        // طلب API مبسط ومعالج للأخطاء
+
         async request(endpoint, options = {}) {
-            const url = `${this.baseURL}${endpoint}`;
-            const cacheKey = `${endpoint}_${JSON.stringify(options)}`;
-            
-            // التحقق من التخزين المؤقت
+            const normalizedEndpoint = this.normalizeEndpoint(endpoint);
+            const url = this.buildUrl(normalizedEndpoint);
+            const cacheKey = this.getCacheKey(normalizedEndpoint, options);
+
+            // Cache
             if (this.cache.has(cacheKey)) {
                 const cached = this.cache.get(cacheKey);
                 if (Date.now() - cached.timestamp < this.cacheDuration) {
-                    console.log(`💾 استخدام البيانات من الذاكرة: ${endpoint}`);
+                    console.log(`💾 استخدام البيانات من الذاكرة: ${normalizedEndpoint}`);
                     return cached.data;
                 }
             }
-            
-            // إعدادات الطلب
+
             const defaultOptions = {
                 method: 'GET',
                 headers: {
@@ -93,51 +116,57 @@
                     'Accept': 'application/json',
                     'Accept-Language': 'ar'
                 },
-                mode: 'cors',
                 cache: 'no-cache'
             };
-            
-            const finalOptions = { ...defaultOptions, ...options };
-            
+
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...(options.headers || {})
+                }
+            };
+
             try {
-                console.log(`🌐 Request: ${finalOptions.method} ${endpoint}`);
-                
+                console.log(`🌐 Request: ${finalOptions.method} ${normalizedEndpoint}`);
+
                 const response = await fetch(url, finalOptions);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                
-                const data = await response.json();
-                
-                // تخزين في الذاكرة
+
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await response.json()
+                    : await response.text();
+
                 this.cache.set(cacheKey, {
-                    data: data,
+                    data,
                     timestamp: Date.now()
                 });
-                
-                console.log(`✅ Response from ${endpoint}: Success`);
-                
+
+                console.log(`✅ Response from ${normalizedEndpoint}: Success`);
                 return data;
-                
             } catch (error) {
-                console.error(`❌ Request failed: ${endpoint}`, error.message);
-                
-                // محاولة استخدام بيانات مخزنة مسبقاً
-                const fallback = this.getFallbackData(endpoint);
+                console.error(`❌ Request failed: ${normalizedEndpoint}`, error.message);
+
+                const fallback = this.getFallbackData(normalizedEndpoint);
                 if (fallback) {
-                    console.log(`🔄 استخدام بيانات احتياطية لـ ${endpoint}`);
+                    console.log(`🔄 استخدام بيانات احتياطية لـ ${normalizedEndpoint}`);
                     return fallback;
                 }
-                
+
                 throw error;
             }
         }
-        
-        // بيانات احتياطية لكل endpoint
+
         getFallbackData(endpoint) {
+            const e = this.normalizeEndpoint(endpoint);
+
             const fallbacks = {
-                '/api/public/home/stats': {
+                '/public/home/stats': {
                     success: true,
                     data: {
                         totalProjects: 7,
@@ -152,7 +181,8 @@
                     source: 'fallback_data',
                     message: 'بيانات احتياطية - الخادم غير متصل'
                 },
-                '/api/public/home/featured-projects': {
+
+                '/public/home/featured-projects': {
                     success: true,
                     data: {
                         projects: [
@@ -192,62 +222,50 @@
                     source: 'fallback_data'
                 }
             };
-            
-            return fallbacks[endpoint] || null;
+
+            return fallbacks[e] || null;
         }
-        
-        // ===== APIs المحددة =====
-        
-        // الحصول على الإحصائيات
+
+        // ===== Public APIs =====
+
         async getStats() {
             console.log('📊 Calling getStats API...');
-            return this.request('/api/public/home/stats');
+            return this.request('/public/home/stats');
         }
-        
-        // الحصول على المشاريع المميزة
+
         async getFeaturedProjects(page = 1, limit = 6) {
             console.log('🏢 Calling getFeaturedProjects API...');
-            return this.request(`/api/public/home/featured-projects?page=${page}&limit=${limit}&_t=${Date.now()}`);
+            return this.request(`/public/home/featured-projects?page=${page}&limit=${limit}&_t=${Date.now()}`);
         }
-        
-        // الاشتراك في النشرة
+
         async subscribeNewsletter(email) {
-            return this.request('/api/public/home/newsletter', {
+            return this.request('/public/home/newsletter', {
                 method: 'POST',
                 body: JSON.stringify({ email })
             });
         }
-        
-        // اختبار قاعدة البيانات مباشرة
+
         async testDatabase() {
-            return this.request('/api/public/home/test-db');
+            return this.request('/public/home/test-db');
+        }
+
+        async healthCheck() {
+            return this.request('/health');
         }
     }
-    
-    // تعريف الكائن عمومياً
-    window.API = new UltimateAPIClient();
-    
-    // اختبار سريع بعد التحميل
+
+    window.API = new APIClient();
+
     setTimeout(() => {
         console.log('🔍 Running quick API tests...');
-        
-        // اختبار 1: الإحصائيات
+
         window.API.getStats()
-            .then(data => {
-                console.log('📊 Stats test passed:', data.success);
-            })
-            .catch(() => {
-                console.log('📊 Stats test: Using fallback');
-            });
-        
-        // اختبار 2: المشاريع
+            .then(data => console.log('📊 Stats test passed:', !!data?.success))
+            .catch(() => console.log('📊 Stats test: Using fallback'));
+
         window.API.getFeaturedProjects()
-            .then(data => {
-                console.log('🏢 Projects test passed:', data.success);
-            })
-            .catch(() => {
-                console.log('🏢 Projects test: Using fallback');
-            });
+            .then(data => console.log('🏢 Projects test passed:', !!data?.success))
+            .catch(() => console.log('🏢 Projects test: Using fallback'));
     }, 2000);
 
     console.log('🚀 API Client ready and tested!');
