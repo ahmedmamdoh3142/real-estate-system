@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/bills.controller.js
-const billsService = require('../../services/admin/bills.service');
+const billsService = require('/services/admin/bills.service');
 
 // GET /api/admin/bills
 exports.getAllInvoices = async (req, res) => {
