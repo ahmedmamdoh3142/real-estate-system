@@ -3,7 +3,9 @@ const sql = require('msnodesqlv8');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "Server=DESKTOP-54ST25S\\ATTENDANCE;Database=abh;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
+require('dotenv').config();
+const sql = require('msnodesqlv8');
+const connectionString = process.env.DB_CONNECTION_STRING;
 
 const GRACE_PERIOD_DAYS = 3;
 

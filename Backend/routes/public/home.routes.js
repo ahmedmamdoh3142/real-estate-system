@@ -2,8 +2,9 @@
 const express = require('express');
 
 // سلسلة الاتصال الثابتة
-const connectionString = "Server=DESKTOP-54ST25S\\ATTENDANCE;Database=abh;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
-
+require('dotenv').config();
+const sql = require('msnodesqlv8');
+const connectionString = process.env.DB_CONNECTION_STRING;
 // دالة لإنشاء الراوتر مع تمرير app
 module.exports = function(app) {
     const router = express.Router();
@@ -523,9 +524,9 @@ module.exports = function(app) {
                     contracts: contractsCount[0].count,
                     featuredProjects: featuredProjects.length,
                     featuredProjectsList: featuredProjects,
-                    database: 'abh',
-                    server: 'DESKTOP-54ST25S\\ATTENDANCE',
-                    time: new Date().toLocaleString('ar-SA')
+                    database: 'RealEstateDB',
+                    server: 'localhost,1433',
+                    time: new Date().toLocaleString('ar-SA'),
                 },
                 message: '✅ اختبار قاعدة البيانات ناجح'
             });

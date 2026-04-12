@@ -43,8 +43,9 @@ module.exports = function(app) {
     // 📊 نقطة نهاية للإحصائيات العامة
     router.get('/stats', async (req, res) => {
         try {
-            const sql = require('msnodesqlv8');
-            const connectionString = "Server=DESKTOP-54ST25S\\ATTENDANCE;Database=abh;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
+            require('dotenv').config();
+const sql = require('msnodesqlv8');
+const connectionString = process.env.DB_CONNECTION_STRING;
             
             const query = `
                 SELECT 
@@ -114,8 +115,9 @@ module.exports = function(app) {
     
     // 📍 نقطة نهاية لتجربة الاتصال بقاعدة البيانات
     router.get('/test-db', (req, res) => {
-        const sql = require('msnodesqlv8');
-        const connectionString = "Server=DESKTOP-54ST25S\\ATTENDANCE;Database=abh;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
+require('dotenv').config();
+const sql = require('msnodesqlv8');
+const connectionString = process.env.DB_CONNECTION_STRING;
         
         sql.query(connectionString, 
             "SELECT DB_NAME() as dbName, @@SERVERNAME as serverName, GETDATE() as serverTime, SYSTEM_USER as currentUser",
