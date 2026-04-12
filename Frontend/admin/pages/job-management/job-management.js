@@ -9,7 +9,7 @@
     
     class JobApplicationsManager {
         constructor() {
-            this.baseURL = 'http://localhost:3001';
+            this.baseURL = '/api';
             this.apiClient = this.createApiClient();
             this.currentUser = null;
             this.applications = [];

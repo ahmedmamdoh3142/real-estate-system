@@ -809,7 +809,7 @@
             
             try {
                 // استخدام API الحقيقي
-                const response = await fetch('http://localhost:3001/api/public/inquiry/submit', {
+                const response = await fetch('/api/public/inquiry/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1037,7 +1037,7 @@
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
-                fetch('http://localhost:3001/api/public/inquiry/test')
+                fetch('/api/public/inquiry/test')
                     .then(r => r.json())
                     .then(data => console.log('Inquiry API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ Inquiry API Connection failed - Running in demo mode'));

@@ -351,7 +351,7 @@
 
     class ChatManager {
         constructor() {
-            this.baseURL = 'http://localhost:3001';
+            this.baseURL = '/api';
             this.apiClient = null;
             this.currentUser = null;
             this.allUsers = [];

@@ -6,7 +6,7 @@
     
     // إعدادات API - تستخدم CORS
     const API_CONFIG = {
-        BASE_URL: 'http://localhost:3001',
+        BASE_URL: '/api',
         TIMEOUT: 8000,
         MAX_RETRIES: 2,
         RETRY_DELAY: 1000

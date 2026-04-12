@@ -8,7 +8,7 @@
 
     class TasksManager {
         constructor() {
-            this.baseURL = 'http://localhost:3001';
+            this.baseURL = '/api';
             this.currentUser = null;
             this.userPermissions = [];
             this.tasks = [];
@@ -3666,7 +3666,7 @@
                     list.innerHTML = '';
                     if (task.attachments && task.attachments.length > 0) {
                         task.attachments.forEach(att => {
-                            const fileUrl = att.fileUrl.startsWith('http') ? att.fileUrl : `http://localhost:3001${att.fileUrl}`;
+                            const fileUrl = att.fileUrl.startsWith('http') ? att.fileUrl : `/api${att.fileUrl}`;
                             list.innerHTML += `
                                 <div class="attachment-item">
                                     <div class="attachment-icon"><i class="fas ${att.mimeType?.startsWith('image/') ? 'fa-image' : 'fa-file'}"></i></div>

@@ -75,7 +75,7 @@ async function startServer() {
         console.log('\n' + '🎉'.repeat(10));
         console.log('✅ نظام إدارة العقارات يعمل الآن!');
         console.log('='.repeat(50));
-        console.log(`📍 الرابط: http://localhost:${PORT}`);
+        console.log(`📍 الرابط: /api:${PORT}`);
         console.log('📡 APIs متاحة:');
         console.log('   GET  /api/health');
         console.log('   GET  /api/public/home/stats');
