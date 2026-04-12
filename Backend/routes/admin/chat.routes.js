@@ -2,13 +2,20 @@ const express = require('express');
 const router = express.Router();
 const chatController = require('../../controllers/admin/chat.controller');
 const jwt = require('jsonwebtoken');
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
 
 const JWT_SECRET = 'real_estate_system_secret_key_2024';
+
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 /**
  * Custom authentication middleware for chat routes.
@@ -24,19 +31,15 @@ const customAuthMiddleware = async (req, res, next) => {
 
         const token = authHeader.substring(7);
         
-        // التحقق من التوكن الوهمي (mock)
         if (token.startsWith('mock_jwt_token_')) {
             const parts = token.split('_');
             if (parts.length >= 4) {
                 const userId = parseInt(parts[3]);
                 if (!isNaN(userId)) {
+                    const pool = getPool();
                     const query = `SELECT id, username, fullName, email, phone, role FROM Users WHERE id = ${userId}`;
-                    const user = await new Promise((resolve, reject) => {
-                        sql.query(connectionString, query, (err, rows) => {
-                            if (err) reject(err);
-                            else resolve(rows[0] || null);
-                        });
-                    });
+                    const result = await pool.request().query(query);
+                    const user = result.recordset[0] || null;
                     if (!user) {
                         return res.status(401).json({ success: false, message: 'مستخدم غير موجود' });
                     }
@@ -62,13 +65,10 @@ const customAuthMiddleware = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'توكن غير صالح' });
         }
 
+        const pool = getPool();
         const query = `SELECT id, username, fullName, email, phone, role FROM Users WHERE id = ${userId}`;
-        const user = await new Promise((resolve, reject) => {
-            sql.query(connectionString, query, (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows[0] || null);
-            });
-        });
+        const result = await pool.request().query(query);
+        const user = result.recordset[0] || null;
         if (!user) {
             return res.status(401).json({ success: false, message: 'مستخدم غير موجود' });
         }
@@ -103,6 +103,6 @@ router.delete('/:chatId', chatController.deleteChat);
 router.get('/:chatId/participants', chatController.getGroupParticipants);
 router.get('/users/search', chatController.searchUsers);
 router.get('/users/all', chatController.getAllUsers);
-router.get('/:chatId/media', chatController.getChatMedia); // new route for media
+router.get('/:chatId/media', chatController.getChatMedia);
 
 module.exports = router;

@@ -1,6 +1,7 @@
-// Backend/routes/index.js - تجميع كل الرواتر (محدث مع الاستفسارات)
+// Backend/routes/index.js - تجميع كل الرواتر (محدث مع mssql)
 const express = require('express');
 const router = express.Router();
+const sql = require('mssql');
 
 // استيراد الراوترات
 const createHomeRouter = require('./public/home.routes');
@@ -8,7 +9,23 @@ const createProjectsRouter = require('./public/projects.routes');
 const createProjectDetailsRouter = require('./public/project-details.routes');
 const createInquiryRouter = require('./public/inquiry.routes');
 
-// دالة لتهيئة وإرجاع الراوتر الرئيسي
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
+
+// دالة مساعدة للاستعلامات
+async function queryAsync(sqlQuery) {
+    const pool = getPool();
+    const result = await pool.request().query(sqlQuery);
+    return result.recordset;
+}
+
+// دالة لإنشاء الراوتر الرئيسي
 module.exports = function(app) {
     console.log('🚀 تهيئة الراوترات الرئيسية...');
     
@@ -43,10 +60,6 @@ module.exports = function(app) {
     // 📊 نقطة نهاية للإحصائيات العامة
     router.get('/stats', async (req, res) => {
         try {
-            require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
-            
             const query = `
                 SELECT 
                     (SELECT COUNT(*) FROM Projects) as projects,
@@ -58,40 +71,21 @@ const connectionString = process.env.DB_CONNECTION_STRING;
                     (SELECT SUM(paidAmount) FROM Payments WHERE status = 'مؤكد') as totalPayments
             `;
             
-            sql.query(connectionString, query, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في جلب الإحصائيات:', err);
-                    
-                    res.json({
-                        success: true,
-                        data: {
-                            projects: 5,
-                            users: 4,
-                            inquiries: 3,
-                            contracts: 2,
-                            leads: 2,
-                            cities: 1,
-                            totalPayments: 47000
-                        },
-                        source: 'fallback_data'
-                    });
-                } else {
-                    const stats = rows[0];
-                    
-                    res.json({
-                        success: true,
-                        data: {
-                            projects: stats.projects || 0,
-                            users: stats.users || 0,
-                            inquiries: stats.inquiries || 0,
-                            contracts: stats.contracts || 0,
-                            leads: stats.leads || 0,
-                            cities: stats.cities || 0,
-                            totalPayments: stats.totalPayments || 0
-                        },
-                        source: 'real_database'
-                    });
-                }
+            const rows = await queryAsync(query);
+            const stats = rows[0];
+            
+            res.json({
+                success: true,
+                data: {
+                    projects: stats.projects || 0,
+                    users: stats.users || 0,
+                    inquiries: stats.inquiries || 0,
+                    contracts: stats.contracts || 0,
+                    leads: stats.leads || 0,
+                    cities: stats.cities || 0,
+                    totalPayments: stats.totalPayments || 0
+                },
+                source: 'real_database'
             });
             
         } catch (error) {
@@ -114,32 +108,29 @@ const connectionString = process.env.DB_CONNECTION_STRING;
     });
     
     // 📍 نقطة نهاية لتجربة الاتصال بقاعدة البيانات
-    router.get('/test-db', (req, res) => {
-require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
-        
-        sql.query(connectionString, 
-            "SELECT DB_NAME() as dbName, @@SERVERNAME as serverName, GETDATE() as serverTime, SYSTEM_USER as currentUser",
-            (err, rows) => {
-                if (err) {
-                    res.json({
-                        success: false,
-                        message: '❌ فشل الاتصال بقاعدة البيانات',
-                        error: err.message,
-                        connectionString: connectionString
-                    });
-                } else {
-                    res.json({
-                        success: true,
-                        message: '✅ قاعدة البيانات متصلة بنجاح',
-                        data: rows[0],
-                        timestamp: new Date().toLocaleString('ar-SA'),
-                        connection: 'active'
-                    });
-                }
-            }
-        );
+    router.get('/test-db', async (req, res) => {
+        try {
+            const rows = await queryAsync(`
+                SELECT DB_NAME() as dbName, @@SERVERNAME as serverName, GETDATE() as serverTime, SYSTEM_USER as currentUser
+            `);
+            const data = rows[0];
+            
+            res.json({
+                success: true,
+                message: '✅ قاعدة البيانات متصلة بنجاح',
+                data: data,
+                timestamp: new Date().toLocaleString('ar-SA'),
+                connection: 'active'
+            });
+            
+        } catch (err) {
+            res.json({
+                success: false,
+                message: '❌ فشل الاتصال بقاعدة البيانات',
+                error: err.message,
+                timestamp: new Date().toLocaleString('ar-SA')
+            });
+        }
     });
     
     return router;

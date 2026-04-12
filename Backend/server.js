@@ -1,10 +1,31 @@
-// Backend/server.js - Production Ready (Fixed)
+// Backend/server.js - Production Ready with mssql (tedious)
 require('dotenv').config();
 
 const app = require('./app');
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
 const PORT = process.env.PORT || 3001;
+
+// ==================== إعدادات قاعدة البيانات ====================
+const dbConfig = {
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    port: parseInt(process.env.DB_PORT) || 1433,
+    options: {
+        encrypt: false,          // للتشغيل المحلي بدون SSL
+        trustServerCertificate: true,  // يسمح بشهادات ذاتية التوقيع
+        enableArithAbort: true,
+        connectTimeout: 30000,
+        requestTimeout: 30000
+    },
+    pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000
+    }
+};
 
 // ==================== START LOGS ====================
 console.log('\n' + '🚀'.repeat(10));
@@ -13,53 +34,43 @@ console.log('='.repeat(50));
 console.log('📅 التاريخ:', new Date().toLocaleString('ar-SA'));
 console.log('💻 المنفذ:', PORT);
 
-// ==================== CONNECTION STRING ====================
-const connectionString = process.env.DB_CONNECTION_STRING;
+// ==================== الاتصال بقاعدة البيانات ====================
+let pool = null;
 
-if (!connectionString) {
-    console.error('❌ DB_CONNECTION_STRING غير موجود في .env');
-    process.exit(1);
-}
-
-console.log('📁 قاعدة البيانات: RealEstateDB');
-console.log('🔌 بدء اختبار الاتصال...');
-
-// ==================== TEST DATABASE ====================
-sql.query(connectionString, "SELECT 1 as test", (err, rows) => {
-    if (err) {
-        console.error('❌ فشل الاتصال بقاعدة البيانات:', err.message);
-
-        console.log('\n⚠️ سيتم تشغيل الخادم بدون قاعدة البيانات');
-        app.locals.dbConnected = false;
-
-        startServer();
-    } else {
+async function connectToDatabase() {
+    try {
+        pool = await sql.connect(dbConfig);
+        global.dbPool = pool;   // <-- أضف هذا السطر
         console.log('✅ قاعدة البيانات متصلة بنجاح!');
         app.locals.dbConnected = true;
+        app.locals.dbPool = pool;
 
-        // ==================== QUICK STATS ====================
-        sql.query(
-            connectionString,
-            `
-            SELECT 
-                (SELECT COUNT(*) FROM Projects) as projects,
-                (SELECT COUNT(*) FROM Users) as users
-            `,
-            (err2, stats) => {
-                if (!err2 && stats && stats.length > 0) {
-                    console.log(
-                        `📊 الإحصائيات: ${stats[0].projects} مشروع, ${stats[0].users} مستخدم`
-                    );
-                }
+        // جلب إحصائيات سريعة
+        try {
+            const result = await pool.request().query(`
+                SELECT 
+                    (SELECT COUNT(*) FROM Projects) as projects,
+                    (SELECT COUNT(*) FROM Users) as users
+            `);
+            console.log(`📊 الإحصائيات: ${result.recordset[0].projects} مشروع, ${result.recordset[0].users} مستخدم`);
+        } catch (err) {
+            console.log('⚠️ لا يمكن قراءة الإحصائيات:', err.message);
+        }
 
-                startServer();
-            }
-        );
+        return true;
+    } catch (err) {
+        console.error('❌ فشل الاتصال بقاعدة البيانات:', err.message);
+        app.locals.dbConnected = false;
+        app.locals.dbPool = null;
+        return false;
     }
-});
+}
 
-// ==================== START SERVER ====================
-function startServer() {
+// ==================== بدء الخادم ====================
+async function startServer() {
+    // محاولة الاتصال بقاعدة البيانات (لا تمنع تشغيل الخادم في حالة الفشل)
+    await connectToDatabase();
+
     const server = app.listen(PORT, () => {
         console.log('\n' + '🎉'.repeat(10));
         console.log('✅ نظام إدارة العقارات يعمل الآن!');
@@ -79,13 +90,18 @@ function startServer() {
         }
     });
 
-    // ==================== GRACEFUL SHUTDOWN ====================
-    process.on('SIGINT', () => {
+    // إغلاق نظيف
+    process.on('SIGINT', async () => {
         console.log('\n👋 إيقاف الخادم...');
-
+        if (pool) {
+            await pool.close();
+            console.log('✅ تم إغلاق اتصال قاعدة البيانات');
+        }
         server.close(() => {
             console.log('✅ تم إغلاق الخادم بنجاح');
             process.exit(0);
         });
     });
 }
+
+startServer();

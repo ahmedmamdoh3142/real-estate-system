@@ -1,10 +1,17 @@
-const sql = require('msnodesqlv8');
 const fs = require('fs');
 const path = require('path');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class TasksService {
     constructor() {
@@ -32,30 +39,67 @@ class TasksService {
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
-    async queryAsync(sqlQuery, params = []) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, sqlQuery, params, (err, rows) => {
-                if (err) {
-                    console.error('❌ SQL Error:', err.message);
-                    console.error('Query:', sqlQuery);
-                    console.error('Params:', params);
-                    reject(err);
-                } else resolve(rows || []);
-            });
+    // دالة لتنفيذ استعلامات مع باراميترات (علامات استفهام)
+    async parameterizedQuery(query, params = []) {
+        const pool = getPool();
+        const request = pool.request();
+        // إضافة الباراميترات بالترتيب (p1, p2, ...)
+        params.forEach((param, index) => {
+            const paramName = `p${index + 1}`;
+            if (param === null || param === undefined) {
+                request.input(paramName, sql.NVarChar, null);
+            } else if (typeof param === 'number') {
+                request.input(paramName, sql.Int, param);
+            } else if (typeof param === 'string') {
+                request.input(paramName, sql.NVarChar, param);
+            } else if (param instanceof Date) {
+                request.input(paramName, sql.DateTime, param);
+            } else {
+                request.input(paramName, sql.NVarChar, String(param));
+            }
         });
+        // استبدال علامات الاستفهام بأسماء الباراميترات
+        let namedQuery = query;
+        for (let i = 0; i < params.length; i++) {
+            namedQuery = namedQuery.replace('?', `@p${i+1}`);
+        }
+        const result = await request.query(namedQuery);
+        return result.recordset || [];
+    }
+
+    async queryAsync(sqlQuery, params = []) {
+        try {
+            if (params && params.length > 0) {
+                return await this.parameterizedQuery(sqlQuery, params);
+            } else {
+                const pool = getPool();
+                const result = await pool.request().query(sqlQuery);
+                return result.recordset || [];
+            }
+        } catch (err) {
+            console.error('❌ SQL Error:', err.message);
+            console.error('Query:', sqlQuery);
+            console.error('Params:', params);
+            throw err;
+        }
     }
 
     async executeAsync(sqlQuery, params = []) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, sqlQuery, params, (err, result) => {
-                if (err) {
-                    console.error('❌ SQL Execute Error:', err.message);
-                    console.error('Query:', sqlQuery);
-                    console.error('Params:', params);
-                    reject(err);
-                } else resolve(result);
-            });
-        });
+        try {
+            if (params && params.length > 0) {
+                await this.parameterizedQuery(sqlQuery, params);
+                return { rowsAffected: 1 }; // تقليد النتيجة
+            } else {
+                const pool = getPool();
+                const result = await pool.request().query(sqlQuery);
+                return result;
+            }
+        } catch (err) {
+            console.error('❌ SQL Execute Error:', err.message);
+            console.error('Query:', sqlQuery);
+            console.error('Params:', params);
+            throw err;
+        }
     }
 
     async getScalar(query, params = []) {
@@ -134,7 +178,7 @@ class TasksService {
             UPDATE UserNotifications SET isRead = 1
             WHERE id = ? AND userId = ?
         `, [notificationId, userId]);
-        return { success: result.rowsAffected > 0 };
+        return { success: true };
     }
 
     async markAllNotificationsAsRead(userId) {
@@ -353,12 +397,10 @@ class TasksService {
         taskId = this._toSafeInt(taskId, null, true);
         userId = this._toSafeInt(userId, null, true);
 
-        // السماح للمشرف العام برؤية أي مهمة دون قيود
         const isGM = await this._isGeneralManager(userId);
         
         let checkQuery, checkParams;
         if (isGM) {
-            // المشرف العام يرى كل المهام
             checkQuery = `SELECT 1 FROM Tasks WHERE id = ?`;
             checkParams = [taskId];
         } else {

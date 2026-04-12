@@ -1,36 +1,41 @@
 // Backend/services/admin/profile.service.js
-const sql = require('msnodesqlv8');
 const bcrypt = require('bcryptjs');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class ProfileService {
     
     async queryAsync(query, params = []) {
-        return new Promise((resolve, reject) => {
-            if (params && params.length > 0) {
-                sql.query(connectionString, query, params, (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows || []);
-                });
-            } else {
-                sql.query(connectionString, query, (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows || []);
-                });
-            }
-        });
+        const pool = getPool();
+        try {
+            // ملاحظة: params غير مستخدمة في الاستعلامات الحالية، كل الاستعلامات مبنية كـ string عادي
+            const result = await pool.request().query(query);
+            return result.recordset || [];
+        } catch (err) {
+            console.error('❌ ProfileService.queryAsync error:', err);
+            throw err;
+        }
     }
 
     async executeAsync(query) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, query, (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
-            });
-        });
+        const pool = getPool();
+        try {
+            const result = await pool.request().query(query);
+            return result;
+        } catch (err) {
+            console.error('❌ ProfileService.executeAsync error:', err);
+            throw err;
+        }
     }
 
     escapeSql(str) {
@@ -180,16 +185,17 @@ class ProfileService {
     // ========== جلب متوسط التقييم الإجمالي للمستخدم ==========
     async getUserOverallRating(userId) {
         try {
+            // إعادة كتابة الاستعلام بدون placeholders (?) لأن mssql لا يدعمها بهذه الصيغة
             const query = `
                 SELECT AVG(CAST(tr.finalScore AS FLOAT)) as avgRating,
                        COUNT(tr.id) as totalRatings
                 FROM TaskAssignees ta
                 INNER JOIN Tasks t ON ta.taskId = t.id
                 INNER JOIN TaskRatings tr ON t.id = tr.taskId
-                WHERE ta.userId = ?
+                WHERE ta.userId = ${parseInt(userId)}
                   AND tr.ratedAt IS NOT NULL
             `;
-            const result = await this.queryAsync(query, [parseInt(userId)]);
+            const result = await this.queryAsync(query);
             const avgRating = result[0]?.avgRating !== null && result[0]?.avgRating !== undefined ? parseFloat(result[0].avgRating) : null;
             const totalRatings = result[0]?.totalRatings || 0;
             return { avgRating, totalRatings };
@@ -224,10 +230,10 @@ class ProfileService {
                 FROM TaskAssignees ta
                 INNER JOIN Tasks t ON ta.taskId = t.id
                 LEFT JOIN TaskRatings tr ON t.id = tr.taskId
-                WHERE ta.userId = ?
+                WHERE ta.userId = ${parseInt(userId)}
                 ORDER BY t.createdAt DESC
             `;
-            const tasks = await this.queryAsync(query, [parseInt(userId)]);
+            const tasks = await this.queryAsync(query);
             
             const tasksMap = new Map();
             for (const task of tasks) {

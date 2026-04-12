@@ -1,21 +1,20 @@
-// Backend/controllers/public/project-details.controller.js - التحكم في تفاصيل العقار
-const sql = require('msnodesqlv8');
+// Backend/controllers/public/project-details.controller.js - معدل لاستخدام mssql
+const sql = require('mssql');
 
-// سلسلة الاتصال
-require('dotenv').config();
-const connectionString = process.env.DB_CONNECTION_STRING;
-// دالة مساعدة للاستعلامات
-function queryAsync(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, sqlQuery, (err, rows) => {
-            if (err) {
-                console.error('❌ خطأ في الاستعلام:', err.message);
-                reject(err);
-            } else {
-                resolve(rows);
-            }
-        });
-    });
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
+
+// دالة مساعدة للاستعلامات (تعيد Promise)
+async function queryAsync(sqlQuery) {
+    const pool = getPool();
+    const result = await pool.request().query(sqlQuery);
+    return result.recordset;
 }
 
 /**
@@ -35,63 +34,72 @@ exports.getProjectDetails = async (req, res) => {
             });
         }
         
+        const pool = getPool();
+        
         // استعلام البيانات الأساسية
-        const projectQuery = `
-            SELECT 
-                p.id,
-                p.projectCode,
-                p.projectName,
-                p.projectType,
-                p.description,
-                p.location,
-                p.city,
-                p.district,
-                p.totalUnits,
-                p.availableUnits,
-                p.price,
-                p.priceType,
-                p.area,
-                ISNULL(p.areaUnit, N'متر مربع') as areaUnit,
-                p.bedrooms,
-                p.bathrooms,
-                p.isFeatured,
-                p.status,
-                p.completionDate,
-                p.createdAt,
-                p.updatedAt,
-                p.locationLink,
-                u.fullName as createdByName
-            FROM Projects p
-            LEFT JOIN Users u ON p.createdBy = u.id
-            WHERE p.id = ${projectId}
-        `;
+        const projectResult = await pool.request()
+            .input('projectId', sql.Int, projectId)
+            .query(`
+                SELECT 
+                    p.id,
+                    p.projectCode,
+                    p.projectName,
+                    p.projectType,
+                    p.description,
+                    p.location,
+                    p.city,
+                    p.district,
+                    p.totalUnits,
+                    p.availableUnits,
+                    p.price,
+                    p.priceType,
+                    p.area,
+                    ISNULL(p.areaUnit, N'متر مربع') as areaUnit,
+                    p.bedrooms,
+                    p.bathrooms,
+                    p.isFeatured,
+                    p.status,
+                    p.completionDate,
+                    p.createdAt,
+                    p.updatedAt,
+                    p.locationLink,
+                    u.fullName as createdByName
+                FROM Projects p
+                LEFT JOIN Users u ON p.createdBy = u.id
+                WHERE p.id = @projectId
+            `);
         
-        const projectResult = await queryAsync(projectQuery);
-        
-        if (!projectResult || projectResult.length === 0) {
+        if (!projectResult.recordset || projectResult.recordset.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'العقار غير موجود'
             });
         }
         
-        const project = projectResult[0];
+        const project = projectResult.recordset[0];
         
         // جلب الصور والميزات بالتوازي
-        const [images, features] = await Promise.all([
-            queryAsync(`
-                SELECT id, imageUrl, imageType, displayOrder, isActive
-                FROM ProjectImages 
-                WHERE projectId = ${projectId} AND isActive = 1
-                ORDER BY displayOrder
-            `),
-            queryAsync(`
-                SELECT id, featureName, featureValue, icon, displayOrder
-                FROM ProjectFeatures 
-                WHERE projectId = ${projectId}
-                ORDER BY displayOrder
-            `)
+        const [imagesResult, featuresResult] = await Promise.all([
+            pool.request()
+                .input('projectId', sql.Int, projectId)
+                .query(`
+                    SELECT id, imageUrl, imageType, displayOrder, isActive
+                    FROM ProjectImages 
+                    WHERE projectId = @projectId AND isActive = 1
+                    ORDER BY displayOrder
+                `),
+            pool.request()
+                .input('projectId', sql.Int, projectId)
+                .query(`
+                    SELECT id, featureName, featureValue, icon, displayOrder
+                    FROM ProjectFeatures 
+                    WHERE projectId = @projectId
+                    ORDER BY displayOrder
+                `)
         ]);
+        
+        const images = imagesResult.recordset;
+        const features = featuresResult.recordset;
         
         // معالجة البيانات
         const processedProject = {
@@ -163,61 +171,69 @@ exports.getRelatedProjects = async (req, res) => {
         
         console.log(`🔗 جلب العقارات المشابهة للمشروع ID: ${projectId}`);
         
-        // جلب بيانات المشروع الحالي
-        const currentProject = await queryAsync(`
-            SELECT projectType, city
-            FROM Projects
-            WHERE id = ${projectId}
-        `);
+        const pool = getPool();
         
-        if (!currentProject || currentProject.length === 0) {
+        // جلب بيانات المشروع الحالي
+        const currentProjectResult = await pool.request()
+            .input('projectId', sql.Int, projectId)
+            .query(`SELECT projectType, city FROM Projects WHERE id = @projectId`);
+        
+        if (!currentProjectResult.recordset || currentProjectResult.recordset.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'العقار غير موجود'
             });
         }
         
-        const { projectType, city } = currentProject[0];
+        const { projectType, city } = currentProjectResult.recordset[0];
         
         // جلب العقارات المشابهة
-        const relatedQuery = `
-            SELECT TOP ${limit} 
-                p.id,
-                p.projectName,
-                p.projectType,
-                p.city,
-                p.district,
-                p.area,
-                p.bedrooms,
-                p.bathrooms,
-                p.price,
-                p.priceType,
-                p.isFeatured,
-                p.status
-            FROM Projects p
-            WHERE p.id != ${projectId}
-            AND (p.projectType = N'${projectType?.replace(/'/g, "''") || 'سكني'}'
-                 OR p.city = N'${city?.replace(/'/g, "''") || 'الرياض'}')
-            AND p.status NOT IN ('مباع', 'محجوز')
-            ORDER BY 
-                CASE WHEN p.projectType = N'${projectType?.replace(/'/g, "''") || 'سكني'}' THEN 0 ELSE 1 END,
-                CASE WHEN p.city = N'${city?.replace(/'/g, "''") || 'الرياض'}' THEN 0 ELSE 1 END,
-                p.isFeatured DESC,
-                p.createdAt DESC
-        `;
-        
-        const relatedProjects = await queryAsync(relatedQuery);
-        
-        // معالجة النتائج
-        const processedProjects = await Promise.all(relatedProjects.map(async (project) => {
-            const images = await queryAsync(`
-                SELECT TOP 1 imageUrl
-                FROM ProjectImages 
-                WHERE projectId = ${project.id} AND isActive = 1
-                ORDER BY displayOrder
+        const relatedResult = await pool.request()
+            .input('projectId', sql.Int, projectId)
+            .input('projectType', sql.NVarChar, projectType || 'سكني')
+            .input('city', sql.NVarChar, city || 'الرياض')
+            .input('limit', sql.Int, limit)
+            .query(`
+                SELECT TOP (@limit) 
+                    p.id,
+                    p.projectName,
+                    p.projectType,
+                    p.city,
+                    p.district,
+                    p.area,
+                    p.bedrooms,
+                    p.bathrooms,
+                    p.price,
+                    p.priceType,
+                    p.isFeatured,
+                    p.status
+                FROM Projects p
+                WHERE p.id != @projectId
+                AND (p.projectType = @projectType OR p.city = @city)
+                AND p.status NOT IN ('مباع', 'محجوز')
+                ORDER BY 
+                    CASE WHEN p.projectType = @projectType THEN 0 ELSE 1 END,
+                    CASE WHEN p.city = @city THEN 0 ELSE 1 END,
+                    p.isFeatured DESC,
+                    p.createdAt DESC
             `);
+        
+        const relatedProjects = relatedResult.recordset;
+        
+        // معالجة النتائج مع جلب الصورة الرئيسية لكل مشروع
+        const processedProjects = [];
+        for (const project of relatedProjects) {
+            const imagesResult = await pool.request()
+                .input('projectId', sql.Int, project.id)
+                .query(`
+                    SELECT TOP 1 imageUrl
+                    FROM ProjectImages 
+                    WHERE projectId = @projectId AND isActive = 1
+                    ORDER BY displayOrder
+                `);
+            const mainImage = imagesResult.recordset.length > 0 ? imagesResult.recordset[0].imageUrl : '/global/assets/images/project-placeholder.jpg';
             
-            return {
+            processedProjects.push({
                 id: parseInt(project.id),
                 projectName: project.projectName || 'عقار',
                 projectType: getProjectTypeText(project.projectType || 'سكني'),
@@ -230,9 +246,9 @@ exports.getRelatedProjects = async (req, res) => {
                 priceType: getPriceTypeText(project.priceType || 'شراء'),
                 isFeatured: project.isFeatured === true || project.isFeatured === 1,
                 status: getStatusText(project.status || 'نشط'),
-                mainImage: images && images.length > 0 ? images[0].imageUrl : '/global/assets/images/project-placeholder.jpg'
-            };
-        }));
+                mainImage: mainImage
+            });
+        }
         
         res.status(200).json({
             success: true,
@@ -279,54 +295,62 @@ exports.submitInquiry = async (req, res) => {
             });
         }
         
-        // التحقق من وجود المشروع
-        const projectCheck = await queryAsync(`
-            SELECT projectName
-            FROM Projects
-            WHERE id = ${projectId}
-        `);
+        const pool = getPool();
         
-        if (!projectCheck || projectCheck.length === 0) {
+        // التحقق من وجود المشروع
+        const projectCheckResult = await pool.request()
+            .input('projectId', sql.Int, projectId)
+            .query(`SELECT projectName FROM Projects WHERE id = @projectId`);
+        
+        if (!projectCheckResult.recordset || projectCheckResult.recordset.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'العقار غير موجود'
             });
         }
         
+        const projectName = projectCheckResult.recordset[0].projectName;
+        
         // إنشاء كود الاستفسار
         const inquiryCode = `INQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         
         // إدخال الاستفسار
-        const insertQuery = `
-            INSERT INTO Inquiries (
-                inquiryCode,
-                projectId,
-                customerName,
-                customerEmail,
-                customerPhone,
-                message,
-                inquiryType,
-                status,
-                createdAt,
-                updatedAt
-            ) VALUES (
-                N'${inquiryCode}',
-                ${projectId},
-                N'${customerName.replace(/'/g, "''")}',
-                N'${customerEmail.replace(/'/g, "''")}',
-                N'${customerPhone.replace(/'/g, "''")}',
-                N'${message.replace(/'/g, "''")}',
-                N'${inquiryType.replace(/'/g, "''")}',
-                N'جديد',
-                GETDATE(),
-                GETDATE()
-            )
-            
-            SELECT SCOPE_IDENTITY() as newId
-        `;
+        const insertResult = await pool.request()
+            .input('inquiryCode', sql.NVarChar, inquiryCode)
+            .input('projectId', sql.Int, projectId)
+            .input('customerName', sql.NVarChar, customerName)
+            .input('customerEmail', sql.NVarChar, customerEmail)
+            .input('customerPhone', sql.NVarChar, customerPhone)
+            .input('message', sql.NVarChar, message)
+            .input('inquiryType', sql.NVarChar, inquiryType)
+            .query(`
+                INSERT INTO Inquiries (
+                    inquiryCode,
+                    projectId,
+                    customerName,
+                    customerEmail,
+                    customerPhone,
+                    message,
+                    inquiryType,
+                    status,
+                    createdAt,
+                    updatedAt
+                ) VALUES (
+                    @inquiryCode,
+                    @projectId,
+                    @customerName,
+                    @customerEmail,
+                    @customerPhone,
+                    @message,
+                    @inquiryType,
+                    N'جديد',
+                    GETDATE(),
+                    GETDATE()
+                );
+                SELECT SCOPE_IDENTITY() as newId;
+            `);
         
-        const insertResult = await queryAsync(insertQuery);
-        const newId = insertResult && insertResult.length > 0 ? insertResult[0].newId : null;
+        const newId = insertResult.recordset[0].newId;
         
         if (newId) {
             res.status(201).json({
@@ -335,7 +359,7 @@ exports.submitInquiry = async (req, res) => {
                     inquiryId: newId,
                     inquiryCode: inquiryCode,
                     projectId: projectId,
-                    projectName: projectCheck[0].projectName
+                    projectName: projectName
                 },
                 message: 'تم إرسال استفسارك بنجاح'
             });
@@ -364,35 +388,35 @@ exports.getProjectStats = async (req, res) => {
         
         console.log(`📊 جلب إحصائيات المشروع ID: ${projectId}`);
         
-        // استعلام الإحصائيات
-        const statsQuery = `
-            SELECT 
-                (SELECT COUNT(*) FROM Inquiries WHERE projectId = ${projectId}) as inquiriesCount,
-                (SELECT COUNT(*) FROM Leads WHERE projectId = ${projectId}) as leadsCount,
-                (SELECT COUNT(*) FROM Contracts WHERE projectId = ${projectId}) as contractsCount,
-                (SELECT COUNT(*) FROM Contracts WHERE projectId = ${projectId} AND contractStatus = 'نشط') as activeContractsCount,
-                
-                p.projectName,
-                p.projectType,
-                p.city,
-                p.status,
-                p.availableUnits,
-                p.totalUnits,
-                p.locationLink
-            FROM Projects p
-            WHERE p.id = ${projectId}
-        `;
+        const pool = getPool();
         
-        const statsResult = await queryAsync(statsQuery);
+        const statsResult = await pool.request()
+            .input('projectId', sql.Int, projectId)
+            .query(`
+                SELECT 
+                    (SELECT COUNT(*) FROM Inquiries WHERE projectId = @projectId) as inquiriesCount,
+                    (SELECT COUNT(*) FROM Leads WHERE projectId = @projectId) as leadsCount,
+                    (SELECT COUNT(*) FROM Contracts WHERE projectId = @projectId) as contractsCount,
+                    (SELECT COUNT(*) FROM Contracts WHERE projectId = @projectId AND contractStatus = 'نشط') as activeContractsCount,
+                    p.projectName,
+                    p.projectType,
+                    p.city,
+                    p.status,
+                    p.availableUnits,
+                    p.totalUnits,
+                    p.locationLink
+                FROM Projects p
+                WHERE p.id = @projectId
+            `);
         
-        if (!statsResult || statsResult.length === 0) {
+        if (!statsResult.recordset || statsResult.recordset.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'العقار غير موجود'
             });
         }
         
-        const stats = statsResult[0];
+        const stats = statsResult.recordset[0];
         
         const processedStats = {
             projectId: projectId,
@@ -412,7 +436,7 @@ exports.getProjectStats = async (req, res) => {
                 units: {
                     total: parseInt(stats.totalUnits) || 0,
                     available: parseInt(stats.availableUnits) || 0,
-                    occupied: parseInt(stats.totalUnits) - parseInt(stats.availableUnits) || 0,
+                    occupied: (parseInt(stats.totalUnits) || 0) - (parseInt(stats.availableUnits) || 0),
                     occupancyRate: stats.totalUnits > 0 ? 
                         Math.round(((parseInt(stats.totalUnits) - parseInt(stats.availableUnits)) / parseInt(stats.totalUnits)) * 100) : 0
                 }

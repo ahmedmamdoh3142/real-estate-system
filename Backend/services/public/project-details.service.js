@@ -1,38 +1,38 @@
 // Backend/services/public/project-details.service.js - خدمة تفاصيل المشروع مع الحقول الجديدة والتحقق من الليد (نسخة متوافقة مع @@IDENTITY)
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
-// سلسلة الاتصال
-require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 // دالة مساعدة للاستعلامات
-function queryAsync(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, sqlQuery, (err, rows) => {
-            if (err) {
-                console.error('❌ خطأ في الاستعلام:', err.message);
-                reject(err);
-            } else {
-                resolve(rows);
-            }
-        });
-    });
+async function queryAsync(sqlQuery) {
+    const pool = getPool();
+    try {
+        const result = await pool.request().query(sqlQuery);
+        return result.recordset;
+    } catch (err) {
+        console.error('❌ خطأ في الاستعلام:', err.message);
+        throw err;
+    }
 }
 
 // دالة لتنفيذ أوامر (INSERT, UPDATE, DELETE) بدون توقع نتائج
-function executeNonQuery(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, sqlQuery, (err, rows) => {
-            if (err) {
-                console.error('❌ خطأ في تنفيذ الأمر:', err.message);
-                reject(err);
-            } else {
-                console.log(`✅ تم تنفيذ الأمر بنجاح`);
-                resolve(rows);
-            }
-        });
-    });
+async function executeNonQuery(sqlQuery) {
+    const pool = getPool();
+    try {
+        await pool.request().query(sqlQuery);
+        console.log(`✅ تم تنفيذ الأمر بنجاح`);
+        return;
+    } catch (err) {
+        console.error('❌ خطأ في تنفيذ الأمر:', err.message);
+        throw err;
+    }
 }
 
 /**

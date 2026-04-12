@@ -1,31 +1,35 @@
 // 📁 Backend/services/admin/dashboard.service.js
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
-// سلسلة الاتصال بقاعدة البيانات - نفس المستخدمة في contracts.service.js والتي تعمل بنجاح
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class DashboardService {
     
     /**
-     * دالة مساعدة للاستعلامات باستخدام msnodesqlv8 (Promise)
+     * دالة مساعدة للاستعلامات باستخدام mssql (Promise)
      * @param {string} sqlQuery - استعلام SQL
      * @returns {Promise} نتيجة الاستعلام
      */
     async queryAsync(sqlQuery) {
-        return new Promise((resolve, reject) => {
+        const pool = getPool();
+        try {
             console.log('📝 تنفيذ استعلام لوحة التحكم:', sqlQuery.substring(0, 100) + '...');
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في استعلام لوحة التحكم:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم جلب ${rows.length} صف`);
-                    resolve(rows);
-                }
-            });
-        });
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم جلب ${result.recordset.length} صف`);
+            return result.recordset;
+        } catch (err) {
+            console.error('❌ خطأ في استعلام لوحة التحكم:', err.message);
+            throw err;
+        }
     }
 
     /**
@@ -34,12 +38,14 @@ class DashboardService {
      * @returns {Promise}
      */
     async executeAsync(query) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, query, (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
-            });
-        });
+        const pool = getPool();
+        try {
+            const result = await pool.request().query(query);
+            return result;
+        } catch (err) {
+            console.error('❌ خطأ في تنفيذ الأمر:', err.message);
+            throw err;
+        }
     }
 
     /**

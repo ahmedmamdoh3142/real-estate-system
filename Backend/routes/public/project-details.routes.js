@@ -1,51 +1,51 @@
-// Backend/routes/public/project-details.routes.js - الإصدار النهائي مع استخدام @@IDENTITY والسماح بـ NULL في inquiryId
+// Backend/routes/public/project-details.routes.js - الإصدار النهائي (معدل لاستخدام mssql)
 const express = require('express');
+const sql = require('mssql');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 // دالة لإنشاء الراوتر مع تمرير app
 module.exports = function(app) {
     const router = express.Router();
-    const sql = require('msnodesqlv8');
     
-    console.log('🚀 تهيئة project-details routes - VERSION 5.5 (مع @@IDENTITY والسماح بـ NULL في inquiryId)');
+    console.log('🚀 تهيئة project-details routes - VERSION 5.5 (mssql)');
     
     // دالة مساعدة للاستعلامات مع Promise محسنة
-    function queryAsync(sqlQuery) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
-            
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في الاستعلام:', err.message);
-                    console.error('❌ استعلام مسبب للخطأ:', sqlQuery);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم جلب ${rows ? rows.length : 0} صف`);
-                    resolve(rows);
-                }
-            });
-        });
+    async function queryAsync(sqlQuery) {
+        const pool = getPool();
+        console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
+        try {
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم جلب ${result.recordset.length} صف`);
+            return result.recordset;
+        } catch (err) {
+            console.error('❌ خطأ في الاستعلام:', err.message);
+            console.error('❌ استعلام مسبب للخطأ:', sqlQuery);
+            throw err;
+        }
     }
     
     // دالة لتنفيذ استعلام بدون توقع نتائج (مثل INSERT, UPDATE, DELETE)
-    function executeNonQuery(sqlQuery) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ أمر (non-query):', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
-            
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في تنفيذ الأمر:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم تنفيذ الأمر بنجاح`);
-                    resolve(rows);
-                }
-            });
-        });
+    async function executeNonQuery(sqlQuery) {
+        const pool = getPool();
+        console.log('📝 تنفيذ أمر (non-query):', sqlQuery.substring(0, 200) + (sqlQuery.length > 200 ? '...' : ''));
+        try {
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم تنفيذ الأمر بنجاح`);
+            return result;
+        } catch (err) {
+            console.error('❌ خطأ في تنفيذ الأمر:', err.message);
+            throw err;
+        }
     }
     
     // ===== ROUTES =====
@@ -63,7 +63,6 @@ module.exports = function(app) {
                 });
             }
             
-            // استعلام البيانات الأساسية
             const projectQuery = `
                 SELECT 
                     p.id,
@@ -106,7 +105,6 @@ module.exports = function(app) {
             
             const project = projectResult[0];
             
-            // جلب الصور والميزات بالتوازي
             const [images, features] = await Promise.all([
                 queryAsync(`
                     SELECT id, imageUrl, imageType, displayOrder, isActive
@@ -122,7 +120,6 @@ module.exports = function(app) {
                 `)
             ]);
             
-            // معالجة البيانات
             const processedProject = {
                 id: parseInt(project.id),
                 projectCode: project.projectCode || `PJ-${project.id}`,
@@ -201,7 +198,6 @@ module.exports = function(app) {
                 });
             }
             
-            // أولاً: جلب بيانات المشروع الحالي لمعرفة نوعه ومدينته
             const currentProjectQuery = `
                 SELECT projectType, city, projectName
                 FROM Projects
@@ -219,7 +215,6 @@ module.exports = function(app) {
             
             const { projectType, city, projectName } = currentProject[0];
             
-            // جلب العقارات المشابهة
             const relatedQuery = `
                 SELECT TOP ${limit} 
                     p.id,
@@ -247,10 +242,8 @@ module.exports = function(app) {
             console.log('📊 تنفيذ استعلام العقارات المشابهة...');
             const relatedProjects = await queryAsync(relatedQuery);
             
-            // معالجة كل مشروع لجلب الصور
             const processedProjects = await Promise.all(relatedProjects.map(async (project) => {
                 try {
-                    // جلب الصورة الرئيسية
                     const images = await queryAsync(`
                         SELECT TOP 1 imageUrl
                         FROM ProjectImages 
@@ -323,7 +316,7 @@ module.exports = function(app) {
         }
     });
     
-    // 📤 إرسال استفسار عن عقار - الإصدار المعدل مع @@IDENTITY والسماح بـ NULL في inquiryId
+    // 📤 إرسال استفسار عن عقار
     router.post('/:id/inquiry', async (req, res) => {
         try {
             const projectId = parseInt(req.params.id);
@@ -333,8 +326,8 @@ module.exports = function(app) {
                 customerPhone,
                 message,
                 inquiryType = 'استفسار_عام',
-                contactPreference,    // 'phone' أو 'whatsapp'
-                preferredTime         // النص المختار أو null
+                contactPreference,
+                preferredTime
             } = req.body;
             
             console.log(`📤 [INQUIRY] إرسال استفسار للمشروع ID: ${projectId}`);
@@ -348,7 +341,6 @@ module.exports = function(app) {
                 messageLength: message?.length 
             });
             
-            // التحقق من البيانات الأساسية
             if (!projectId || isNaN(projectId)) {
                 return res.status(400).json({
                     success: false,
@@ -363,7 +355,6 @@ module.exports = function(app) {
                 });
             }
             
-            // التحقق من صحة البريد الإلكتروني
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(customerEmail)) {
                 return res.status(400).json({
@@ -372,7 +363,6 @@ module.exports = function(app) {
                 });
             }
             
-            // التحقق من صحة رقم الجوال - regex متساهل: 05xxxxxxxx أو 5xxxxxxxx (إجمالي 10 أرقام)
             const cleanedPhone = customerPhone.replace(/\s+/g, '');
             const phoneRegex = /^(05|5)([0-9]{8,9})$/;
             if (!phoneRegex.test(cleanedPhone)) {
@@ -382,7 +372,6 @@ module.exports = function(app) {
                 });
             }
             
-            // التحقق من وجود المشروع
             const projectCheckQuery = `
                 SELECT projectName, projectCode
                 FROM Projects
@@ -401,7 +390,6 @@ module.exports = function(app) {
             const projectName = projectCheck[0].projectName;
             const projectCode = projectCheck[0].projectCode || `PJ-${projectId}`;
             
-            // 1. إدخال الاستفسار في جدول Inquiries (استعلام منفصل)
             const insertInquiryQuery = `
                 INSERT INTO Inquiries (
                     projectId,
@@ -433,20 +421,17 @@ module.exports = function(app) {
             console.log('📝 تنفيذ إدخال الاستفسار في قاعدة البيانات...');
             await executeNonQuery(insertInquiryQuery);
             
-            // 2. جلب آخر ID تم إدراجه باستخدام @@IDENTITY (يعمل في معظم الحالات مع msnodesqlv8)
             const getIdQuery = `SELECT @@IDENTITY as newId;`;
             const idResult = await queryAsync(getIdQuery);
             
             let newInquiryId = idResult && idResult.length > 0 ? idResult[0].newId : null;
             
-            // إذا لم نتمكن من الحصول على ID، نجرب SCOPE_IDENTITY() كبديل
             if (!newInquiryId) {
                 console.log('⚠️ @@IDENTITY أعادت NULL، نحاول SCOPE_IDENTITY()...');
                 const scopeIdResult = await queryAsync(`SELECT SCOPE_IDENTITY() as newId;`);
                 newInquiryId = scopeIdResult && scopeIdResult.length > 0 ? scopeIdResult[0].newId : null;
             }
             
-            // إذا فشل كل شيء، نستخدم آخر ID من الجدول (حل أخير)
             if (!newInquiryId) {
                 console.log('⚠️ SCOPE_IDENTITY() أيضاً فشلت، نجلب آخر ID من الجدول...');
                 const lastIdResult = await queryAsync(`SELECT MAX(id) as newId FROM Inquiries;`);
@@ -454,12 +439,10 @@ module.exports = function(app) {
             }
             
             if (!newInquiryId) {
-                // إذا فشلنا في الحصول على ID، نسمح للمستخدمين بالاستمرار مع إشعار
                 console.warn('⚠️ فشل الحصول على ID الاستفسار، سنكمل بدون ربط مع Leads');
-                newInquiryId = null; // سنستخدم null في Leads لاحقاً
+                newInquiryId = null;
             }
             
-            // جلب inquiryCode إذا كان newInquiryId موجوداً
             let inquiryCode = null;
             if (newInquiryId) {
                 try {
@@ -475,10 +458,9 @@ module.exports = function(app) {
                     inquiryCode = `INQ-${newInquiryId}`;
                 }
             } else {
-                inquiryCode = `INQ-${Date.now()}`; // كود مؤقت
+                inquiryCode = `INQ-${Date.now()}`;
             }
             
-            // تحديث تاريخ المشروع (اختياري)
             try {
                 await executeNonQuery(`
                     UPDATE Projects 
@@ -490,11 +472,9 @@ module.exports = function(app) {
                 console.warn('⚠️ فشل تحديث المشروع:', updateError.message);
             }
             
-            // 2. إضافة/تحديث الليد (Leads) - مع السماح بأن يكون inquiryId = NULL
             let leadResult = null;
             
             try {
-                // التحقق من وجود العميل في جدول Leads باستخدام البريد الإلكتروني أو رقم الجوال
                 const checkLeadQuery = `
                     SELECT id, leadCode, status
                     FROM Leads
@@ -505,7 +485,6 @@ module.exports = function(app) {
                 const existingLead = await queryAsync(checkLeadQuery);
                 
                 if (existingLead && existingLead.length > 0) {
-                    // العميل موجود مسبقاً - نحدث تاريخ التحديث فقط
                     console.log(`✅ العميل موجود مسبقاً في Leads, ID: ${existingLead[0].id}`);
                     
                     await executeNonQuery(`
@@ -521,7 +500,6 @@ module.exports = function(app) {
                         existed: true
                     };
                 } else {
-                    // العميل غير موجود - نقوم بإضافته (مع inquiryId قد يكون NULL)
                     console.log('➕ إضافة عميل جديد إلى Leads...');
                     
                     let insertLeadQuery;
@@ -552,7 +530,6 @@ module.exports = function(app) {
                             );
                         `;
                     } else {
-                        // إذا لم يكن لدينا inquiryId، نضيف بدون ربط
                         insertLeadQuery = `
                             INSERT INTO Leads (
                                 customerName,
@@ -580,12 +557,10 @@ module.exports = function(app) {
                     
                     await executeNonQuery(insertLeadQuery);
                     
-                    // جلب ID الليد الجديد
                     const leadIdResult = await queryAsync(`SELECT @@IDENTITY as newLeadId;`);
                     const newLeadId = leadIdResult && leadIdResult.length > 0 ? leadIdResult[0].newLeadId : null;
                     
                     if (newLeadId) {
-                        // جلب leadCode المولد تلقائياً
                         const leadCodeQuery = `SELECT leadCode FROM Leads WHERE id = ${newLeadId}`;
                         const leadCodeResult = await queryAsync(leadCodeQuery);
                         const leadCode = leadCodeResult && leadCodeResult.length > 0 ? leadCodeResult[0].leadCode : `LEAD-${newLeadId}`;
@@ -601,14 +576,12 @@ module.exports = function(app) {
                 }
             } catch (leadError) {
                 console.error('❌ فشل في معالجة الليد:', leadError.message);
-                // لا نفشل الطلب الرئيسي إذا فشل إدراج الليد
                 leadResult = {
                     error: leadError.message,
                     note: 'فشل إضافة/تحديث الليد، ولكن تم حفظ الاستفسار بنجاح'
                 };
             }
             
-            // 3. تسجيل في AuditLogs إن وجد (اختياري)
             try {
                 const checkAuditTableQuery = `
                     SELECT TABLE_NAME 
@@ -699,7 +672,6 @@ module.exports = function(app) {
                 });
             }
             
-            // استعلام الإحصائيات
             const statsQuery = `
                 SELECT 
                     (SELECT COUNT(*) FROM Inquiries WHERE projectId = ${projectId}) as inquiriesCount,
@@ -731,7 +703,6 @@ module.exports = function(app) {
             
             const stats = statsResult[0];
             
-            // جلب آخر الاستفسارات
             let recentInquiries = [];
             try {
                 const recentInquiriesQuery = `
@@ -817,7 +788,6 @@ module.exports = function(app) {
             
             console.log(`🧪 اختبار API تفاصيل المشروع ID: ${projectId}`);
             
-            // اختبار الاتصال بالمشروع
             const projectTest = await queryAsync(`
                 SELECT 
                     p.id,
@@ -831,7 +801,6 @@ module.exports = function(app) {
                 WHERE p.id = ${projectId}
             `);
             
-            // اختبار الصور
             const imagesTest = await queryAsync(`
                 SELECT TOP 2 id, imageUrl
                 FROM ProjectImages 
@@ -839,7 +808,6 @@ module.exports = function(app) {
                 ORDER BY displayOrder
             `);
             
-            // اختبار الميزات
             const featuresTest = await queryAsync(`
                 SELECT TOP 2 featureName, featureValue
                 FROM ProjectFeatures 
@@ -899,7 +867,7 @@ module.exports = function(app) {
         }
     });
     
-    // 🔧 إنشاء جدول Inquiries إذا لم يكن موجوداً (إصدار متوافق)
+    // 🔧 إنشاء جدول Inquiries إذا لم يكن موجوداً
     router.get('/setup/inquiries-table', async (req, res) => {
         try {
             const createTableQuery = `
@@ -936,7 +904,6 @@ module.exports = function(app) {
             
             await queryAsync(createTableQuery);
             
-            // اختبار الإدراج بعد الإنشاء
             const testInsertQuery = `
                 INSERT INTO Inquiries (projectId, customerName, customerEmail, customerPhone, message, inquiryType, status, contactPreferences, preferredTime)
                 VALUES (1, N'اختبار', N'test@test.com', N'0512345678', N'رسالة اختبار', N'استفسار_عام', N'جديد', N'whatsapp', N'مساءً');
@@ -984,14 +951,9 @@ module.exports = function(app) {
             
             const structure = await queryAsync(structureQuery);
             
-            // جلب عينة من البيانات
-            const sampleQuery = `
-                SELECT TOP 5 * FROM Inquiries ORDER BY id DESC
-            `;
-            
             let sample = [];
             try {
-                sample = await queryAsync(sampleQuery);
+                sample = await queryAsync(`SELECT TOP 5 * FROM Inquiries ORDER BY id DESC`);
             } catch (sampleError) {
                 console.warn('⚠️ فشل جلب عينة من البيانات:', sampleError.message);
             }

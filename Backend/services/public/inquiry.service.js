@@ -1,16 +1,22 @@
-// Backend/services/public/inquiry.service.js - الإصدار المصحح
+// Backend/services/public/inquiry.service.js - الإصدار المصحح (معدل لاستخدام mssql pool)
 const sql = require('mssql');
-const config = require('../../config/database.config');
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 /**
  * @desc    جلب إحصائيات الاستفسارات
  * @returns {Object} إحصائيات الاستفسارات
  */
 exports.getInquiryStats = async () => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لجلب إحصائيات الاستفسارات...');
         
         // استعلام 1: إجمالي الاستفسارات
@@ -78,14 +84,6 @@ exports.getInquiryStats = async () => {
     } catch (error) {
         console.error('❌ خطأ في getInquiryStats:', error);
         throw new Error('فشل في جلب إحصائيات الاستفسارات');
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -94,10 +92,8 @@ exports.getInquiryStats = async () => {
  * @returns {Array} قائمة المشاريع
  */
 exports.getProjectsForDropdown = async () => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لجلب المشاريع للقائمة المنسدلة...');
         
         // استعلام جلب المشاريع النشطة
@@ -127,14 +123,6 @@ exports.getProjectsForDropdown = async () => {
     } catch (error) {
         console.error('❌ خطأ في getProjectsForDropdown:', error);
         throw new Error('فشل في جلب المشاريع للقائمة المنسدلة');
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -144,12 +132,9 @@ exports.getProjectsForDropdown = async () => {
  * @returns {Object} نتيجة إرسال الاستفسار
  */
 exports.submitInquiry = async (inquiryData) => {
-    let pool;
-    let transaction;
+    const pool = getPool();
+    const transaction = new sql.Transaction(pool);
     try {
-        pool = await sql.connect(config);
-        transaction = new sql.Transaction(pool);
-        
         await transaction.begin();
         console.log('🔗 بدء معاملة إرسال الاستفسار...');
         
@@ -244,25 +229,15 @@ exports.submitInquiry = async (inquiryData) => {
         };
         
     } catch (error) {
-        if (transaction) {
-            try {
-                await transaction.rollback();
-                console.error('❌ تم التراجع عن المعاملة:', error.message);
-            } catch (rollbackError) {
-                console.error('❌ خطأ في التراجع عن المعاملة:', rollbackError);
-            }
+        try {
+            await transaction.rollback();
+            console.error('❌ تم التراجع عن المعاملة:', error.message);
+        } catch (rollbackError) {
+            console.error('❌ خطأ في التراجع عن المعاملة:', rollbackError);
         }
         
         console.error('❌ خطأ في submitInquiry:', error);
         throw new Error(`فشل في إرسال الاستفسار: ${error.message}`);
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -272,10 +247,8 @@ exports.submitInquiry = async (inquiryData) => {
  * @returns {Object} الاستفسارات مع معلومات الترقيم
  */
 exports.getInquiriesList = async ({ page = 1, limit = 10, status = null }) => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لجلب قائمة الاستفسارات...');
         
         const offset = (page - 1) * limit;
@@ -346,14 +319,6 @@ exports.getInquiriesList = async ({ page = 1, limit = 10, status = null }) => {
     } catch (error) {
         console.error('❌ خطأ في getInquiriesList:', error);
         throw new Error('فشل في جلب قائمة الاستفسارات');
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -366,12 +331,9 @@ exports.getInquiriesList = async ({ page = 1, limit = 10, status = null }) => {
  * @returns {Object} نتيجة التحديث
  */
 exports.updateInquiryStatus = async (inquiryId, status, response = null, assignedTo = null) => {
-    let pool;
-    let transaction;
+    const pool = getPool();
+    const transaction = new sql.Transaction(pool);
     try {
-        pool = await sql.connect(config);
-        transaction = new sql.Transaction(pool);
-        
         await transaction.begin();
         console.log(`🔗 تحديث حالة الاستفسار ${inquiryId}...`);
         
@@ -434,23 +396,13 @@ exports.updateInquiryStatus = async (inquiryId, status, response = null, assigne
         };
         
     } catch (error) {
-        if (transaction) {
-            try {
-                await transaction.rollback();
-            } catch (rollbackError) {
-                console.error('❌ خطأ في التراجع عن المعاملة:', rollbackError);
-            }
+        try {
+            await transaction.rollback();
+        } catch (rollbackError) {
+            console.error('❌ خطأ في التراجع عن المعاملة:', rollbackError);
         }
         
         console.error('❌ خطأ في updateInquiryStatus:', error);
         throw new Error(`فشل في تحديث حالة الاستفسار: ${error.message}`);
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };

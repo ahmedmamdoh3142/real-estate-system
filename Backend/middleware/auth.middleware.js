@@ -1,22 +1,24 @@
 // Backend/middleware/auth.middleware.js
-const sql = require('msnodesqlv8');
 const jwt = require('jsonwebtoken');
+const sql = require('mssql');
 
 require('dotenv').config();
-const connectionString = process.env.DB_CONNECTION_STRING;
-function queryAsync(query) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, query, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows || []);
-        });
-    });
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
 }
 
 async function getUserById(userId) {
-    const query = `SELECT id, username, fullName, email, phone, role FROM Users WHERE id = ${parseInt(userId)}`;
-    const result = await queryAsync(query);
-    return result[0] || null;
+    const pool = getPool();
+    const result = await pool.request()
+        .input('userId', sql.Int, parseInt(userId))
+        .query(`SELECT id, username, fullName, email, phone, role FROM Users WHERE id = @userId`);
+    return result.recordset[0] || null;
 }
 
 module.exports = async function authMiddleware(req, res, next) {

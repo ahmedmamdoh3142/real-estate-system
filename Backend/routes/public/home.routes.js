@@ -1,32 +1,36 @@
-// Backend/routes/public/home.routes.js - الإصدار المصحح 100%
+// Backend/routes/public/home.routes.js - الإصدار المصحح 100% (معدل لاستخدام mssql)
 const express = require('express');
+const sql = require('mssql');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
+
 // دالة لإنشاء الراوتر مع تمرير app
 module.exports = function(app) {
     const router = express.Router();
-    const sql = require('msnodesqlv8');
     
-    console.log('🚀 تهيئة home routes - VERSION 100% WORKING...');
+    console.log('🚀 تهيئة home routes - VERSION 100% WORKING (mssql)...');
     
     // دالة مساعدة للاستعلامات مع Promise محسنة
-    function queryAsync(sqlQuery) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
-            
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في الاستعلام:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم جلب ${rows ? rows.length : 0} صف`);
-                    resolve(rows);
-                }
-            });
-        });
+    async function queryAsync(sqlQuery) {
+        const pool = getPool();
+        console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
+        try {
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم جلب ${result.recordset.length} صف`);
+            return result.recordset;
+        } catch (err) {
+            console.error('❌ خطأ في الاستعلام:', err.message);
+            throw err;
+        }
     }
     
     // 🔍 التحقق من صحة الخادم
@@ -73,19 +77,11 @@ module.exports = function(app) {
         try {
             console.log('📊 جلب إحصائيات من قاعدة البيانات...');
             
-            // استعلام واحد لجلب جميع الإحصائيات المطلوبة
             const statsQuery = `
                 SELECT
-                    -- إجمالي الوحدات المتاحة (العقارات المتاحة)
                     ISNULL(SUM(availableUnits), 0) as totalAvailableUnits,
-                    
-                    -- إجمالي الوحدات المؤجرة = مجموع (totalUnits - availableUnits)
                     ISNULL(SUM(totalUnits - availableUnits), 0) as totalRentedUnits,
-                    
-                    -- عدد العملاء (عدد العقود)
                     (SELECT COUNT(*) FROM Contracts) as totalClients,
-                    
-                    -- عدد المشاريع (الاحصاء الرابع)
                     (SELECT COUNT(*) FROM Projects) as totalProjects
                 FROM Projects
             `;
@@ -98,10 +94,10 @@ module.exports = function(app) {
             res.status(200).json({
                 success: true,
                 data: {
-                    totalProjects: parseInt(stats.totalAvailableUnits) || 0,      // العقارات المتاحة = مجموع availableUnits
-                    totalUnits: parseInt(stats.totalRentedUnits) || 0,            // العقارات المؤجرة = مجموع (totalUnits - availableUnits)
-                    totalClients: parseInt(stats.totalClients) || 0,              // العملاء = عدد العقود
-                    totalCities: parseInt(stats.totalProjects) || 0               // الأحياء السكنية = عدد المشاريع
+                    totalProjects: parseInt(stats.totalAvailableUnits) || 0,
+                    totalUnits: parseInt(stats.totalRentedUnits) || 0,
+                    totalClients: parseInt(stats.totalClients) || 0,
+                    totalCities: parseInt(stats.totalProjects) || 0
                 },
                 source: 'real_database',
                 timestamp: new Date().toISOString(),
@@ -111,7 +107,6 @@ module.exports = function(app) {
         } catch (error) {
             console.error('❌ خطأ في جلب الإحصائيات:', error.message);
             
-            // في حالة الخطأ نعيد صفر ولا نستخدم بيانات افتراضية
             res.status(200).json({
                 success: true,
                 data: {
@@ -133,7 +128,6 @@ module.exports = function(app) {
         try {
             console.log(`🏢 جلب المشاريع المميزة من قاعدة البيانات...`);
             
-            // استعلام المشاريع المميزة
             const projectsQuery = `
                 SELECT 
                     p.id,
@@ -165,7 +159,6 @@ module.exports = function(app) {
             const projects = await queryAsync(projectsQuery);
             console.log(`✅ تم جلب ${projects.length} مشروع مميز`);
             
-            // إذا لم نجد مشاريع مميزة، نأخذ مشاريع عادية
             let finalProjects = projects;
             if (projects.length === 0) {
                 console.log('⚠️ لا توجد مشاريع مميزة، جلب مشاريع عادية...');
@@ -178,10 +171,8 @@ module.exports = function(app) {
                 finalProjects = allProjects;
             }
             
-            // معالجة البيانات وتحويلها للتنسيق الصحيح
             const formattedProjects = await Promise.all(finalProjects.map(async (project) => {
                 try {
-                    // جلب ميزات المشروع
                     const features = await queryAsync(`
                         SELECT TOP 3 featureName, featureValue, icon 
                         FROM ProjectFeatures 
@@ -189,7 +180,6 @@ module.exports = function(app) {
                         ORDER BY displayOrder
                     `);
                     
-                    // جلب الصور
                     const images = await queryAsync(`
                         SELECT TOP 1 imageUrl 
                         FROM ProjectImages 
@@ -197,7 +187,6 @@ module.exports = function(app) {
                         ORDER BY displayOrder
                     `);
                     
-                    // تحويل القيم المنطقية من SQL (bit) إلى boolean
                     const isFeatured = project.isFeatured === true || project.isFeatured === 1 || project.isFeatured === 'true';
                     
                     return {
@@ -231,7 +220,6 @@ module.exports = function(app) {
                 } catch (error) {
                     console.error(`❌ خطأ في معالجة المشروع ${project.id}:`, error);
                     
-                    // إرجاع بيانات افتراضية في حالة الخطأ
                     return {
                         id: parseInt(project.id),
                         projectName: project.projectName || 'عقار مميز',
@@ -276,7 +264,6 @@ module.exports = function(app) {
         } catch (error) {
             console.error('❌ خطأ في جلب المشاريع المميزة:', error.message);
             
-            // استعلام مبسط للتحقق من البيانات في قاعدة البيانات
             try {
                 console.log('🔄 محاولة جلب بيانات خام من قاعدة البيانات...');
                 const rawData = await queryAsync('SELECT TOP 5 id, projectName, isFeatured FROM Projects');
@@ -326,7 +313,6 @@ module.exports = function(app) {
         return typeMap[typeLower] || type;
     }
     
-    // دالة لتحويل نوع السعر للنص العربي
     function getPriceTypeText(type) {
         if (!type) return 'شراء';
         
@@ -343,7 +329,6 @@ module.exports = function(app) {
         return typeMap[typeLower] || type;
     }
     
-    // دالة لتحويل حالة المشروع للنص العربي
     function getStatusText(status) {
         if (!status) return 'نشط';
         
@@ -361,7 +346,6 @@ module.exports = function(app) {
         return statusMap[statusLower] || status;
     }
     
-    // بيانات احتياطية مضمونة
     function getGuaranteedProjects() {
         return [
             {
@@ -507,13 +491,9 @@ module.exports = function(app) {
         try {
             console.log('🧪 اختبار قاعدة البيانات مباشرة...');
             
-            // اختبار 1: عدد المشاريع
             const projectsCount = await queryAsync('SELECT COUNT(*) as count FROM Projects');
-            // اختبار 2: عدد المستخدمين
             const usersCount = await queryAsync('SELECT COUNT(*) as count FROM Users');
-            // اختبار 3: عدد العقود
             const contractsCount = await queryAsync('SELECT COUNT(*) as count FROM Contracts');
-            // اختبار 4: تفاصيل المشاريع المميزة
             const featuredProjects = await queryAsync('SELECT id, projectName, isFeatured FROM Projects WHERE isFeatured = 1');
             
             res.status(200).json({

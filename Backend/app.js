@@ -1,9 +1,9 @@
-// Backend/app.js - النسخة المحسنة مع APIs حقيقية + Project Details Routes + Inquiry Routes + Profile Routes
+// Backend/app.js - النسخة المحسنة مع APIs حقيقية (معدلة لـ mssql)
 const express = require('express');
-const path = require('path'); // ✅ إضافة path
+const path = require('path');
 const app = express();
 
-console.log('🚀 بدء تشغيل نظام إدارة العقارات - الإصدار الإنتاجي الكامل (msnodesqlv8)');
+console.log('🚀 بدء تشغيل نظام إدارة العقارات - الإصدار الإنتاجي الكامل (mssql/tedious)');
 
 // ==================== إعدادات CORS المحسنة ====================
 app.use((req, res, next) => {
@@ -21,7 +21,6 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Max-Age', '86400');
     
-    // معالجة طلبات preflight
     if (req.method === 'OPTIONS') {
         console.log('🔄 معالجة طلب Preflight:', req.originalUrl);
         return res.status(200).json({
@@ -54,10 +53,10 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
-        message: '✅ خادم العقارات يعمل بنجاح مع قاعدة البيانات الحقيقية (msnodesqlv8)',
+        message: '✅ خادم العقارات يعمل بنجاح مع قاعدة البيانات الحقيقية (mssql/tedious)',
         timestamp: new Date().toLocaleString('ar-SA'),
-        version: '5.0.0 - Complete Production System (msnodesqlv8)',
-        database: 'Connected to SQL Server (abh) using msnodesqlv8',
+        version: '5.0.0 - Complete Production System (mssql)',
+        database: 'Connected to SQL Server using mssql/tedious',
         endpoints: {
             public: {
                 home: '/api/public/home/*',
@@ -73,7 +72,7 @@ app.get('/api/health', (req, res) => {
                 contracts: '/api/admin/contracts/*',
                 payments: '/api/admin/payments/*',
                 inquiries: '/api/admin/inquiries/*',
-                profile: '/api/admin/profile/*' // ✅ تمت الإضافة
+                profile: '/api/admin/profile/*'
             }
         }
     });
@@ -83,10 +82,10 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: 'مرحباً في نظام إدارة العقارات - النسخة الإنتاجية الكاملة (msnodesqlv8)',
-        system: 'Real Estate Management System (msnodesqlv8)',
+        message: 'مرحباً في نظام إدارة العقارات - النسخة الإنتاجية الكاملة (mssql)',
+        system: 'Real Estate Management System (mssql/tedious)',
         version: '5.0.0',
-        database: 'SQL Server (abh) using msnodesqlv8',
+        database: 'SQL Server using mssql',
         endpoints: {
             // Health & Status
             health: 'GET /api/health',
@@ -319,18 +318,17 @@ try {
     app.use('/api/admin/dashboard', tempDashboardRouter);
 }
 
-// 🏢 Projects Management Routes - النسخة المحسنة
+// 🏢 Projects Management Routes
 try {
     const projectsRouter = require('./routes/admin/projects.routes');
     app.use('/api/admin/projects', projectsRouter);
-    console.log('✅ تم تحميل projects.routes.js - نظام إدارة المشاريع الكامل (msnodesqlv8)');
+    console.log('✅ تم تحميل projects.routes.js - نظام إدارة المشاريع الكامل (mssql)');
 } catch (error) {
     console.error('❌ خطأ في تحميل projects.routes:', error.message);
     console.log('🔧 إنشاء بديل مؤقت لـ projects routes');
     
     const tempProjectsRouter = express.Router();
     
-    // التحقق من الصحة
     tempProjectsRouter.get('/health', (req, res) => {
         res.json({
             success: true,
@@ -339,7 +337,6 @@ try {
         });
     });
     
-    // جلب جميع المشاريع
     tempProjectsRouter.get('/', (req, res) => {
         const { page = 1, limit = 25 } = req.query;
         res.json({
@@ -355,7 +352,6 @@ try {
         });
     });
     
-    // إضافة مسار stats إذا لم يكن موجوداً
     tempProjectsRouter.get('/stats', (req, res) => {
         res.json({
             success: true,
@@ -386,7 +382,6 @@ try {
         });
     });
     
-    // إضافة مسار recent إذا لم يكن موجوداً
     tempProjectsRouter.get('/recent', (req, res) => {
         res.json({
             success: true,
@@ -395,7 +390,6 @@ try {
         });
     });
     
-    // إضافة مسار search إذا لم يكن موجوداً
     tempProjectsRouter.get('/search', (req, res) => {
         res.json({
             success: true,
@@ -407,14 +401,13 @@ try {
     app.use('/api/admin/projects', tempProjectsRouter);
 }
 
-// 📝 Contracts Routes - النسخة الكاملة
+// 📝 Contracts Routes
 try {
     const contractsRouter = require('./routes/admin/contracts.routes');
     app.use('/api/admin/contracts', contractsRouter);
-    console.log('✅ تم تحميل contracts.routes.js - نظام إدارة العقود الكامل (msnodesqlv8)');
+    console.log('✅ تم تحميل contracts.routes.js - نظام إدارة العقود الكامل (mssql)');
 } catch (error) {
     console.error('❌ خطأ في تحميل contracts.routes:', error.message);
-    // إنشاء بديل مؤقت
     const tempRouter = express.Router();
     tempRouter.get('/', (req, res) => res.json({ success: true, data: [] }));
     app.use('/api/admin/contracts', tempRouter);
@@ -456,8 +449,6 @@ try {
     console.log('⚠️ users.routes.js غير موجود - سيتم تخطيه');
 }
 
-
-
 // ❓ bills Routes
 try {
     const billsRouter = require('./routes/admin/bills.routes');
@@ -466,7 +457,6 @@ try {
 } catch (error) {
     console.log('⚠️ bills.routes.js غير موجود - سيتم تخطيه');
 }
-
 
 // 📧 Email Routes
 try {
@@ -477,7 +467,6 @@ try {
     console.error('❌ خطأ في تحميل email.routes:', error.message);
 }
 
-
 // 📧 chat Routes
 try {
     const chatRouter = require('./routes/admin/chat.routes');
@@ -486,7 +475,6 @@ try {
 } catch (error) {
     console.error('❌ خطأ في تحميل chat.routes:', error.message);
 }
-
 
 // 📧 tasks Routes
 try {
@@ -497,7 +485,6 @@ try {
     console.error('❌ خطأ في تحميل tasks.routes:', error.message);
 }
 
-
 // 📧 stats Routes
 try {
     const statsRouter = require('./routes/admin/stats.routes');
@@ -506,8 +493,6 @@ try {
 } catch (error) {
     console.error('❌ خطأ في تحميل stats.routes:', error.message);
 }
-
-
 
 // ❓ jobs Routes
 try {
@@ -518,14 +503,13 @@ try {
     console.log('⚠️ jobs.routes.js غير موجود - سيتم تخطيه');
 }
 
-// 👤 Profile Routes (الجديد)
+// 👤 Profile Routes
 try {
     const profileRouter = require('./routes/admin/profile.routes');
     app.use('/api/admin/profile', profileRouter);
     console.log('✅ تم تحميل profile.routes.js - إدارة الملف الشخصي');
 } catch (error) {
     console.error('❌ خطأ في تحميل profile.routes:', error.message);
-    // إنشاء بديل مؤقت
     const tempProfileRouter = express.Router();
     tempProfileRouter.get('/me', (req, res) => {
         res.json({ 
@@ -547,11 +531,10 @@ console.log('✅ تم تحميل جميع الراوترات الإدارية');
 
 // ==================== Middleware للتعامل مع الأخطاء ====================
 
-// Handle 404 - يجب أن يكون في النهاية
+// Handle 404
 app.use('*', (req, res) => {
     console.log('⚠️ مسار غير موجود:', req.originalUrl, 'Method:', req.method);
     
-    // عرض المسارات المتاحة
     const availableEndpoints = {
         'التحقق من الصحة': 'GET /api/health',
         'الصفحة الرئيسية': 'GET /',

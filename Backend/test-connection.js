@@ -1,14 +1,13 @@
 // Backend/test-connection.js
-const sql = require('mssql');
-
 require('dotenv').config();
 const sql = require('mssql');
 
 const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER,
+    server: process.env.DB_HOST,
     database: process.env.DB_NAME,
+    port: parseInt(process.env.DB_PORT) || 1433,
     options: {
         encrypt: false,
         trustServerCertificate: true,
@@ -21,11 +20,6 @@ const dbConfig = {
     },
     connectionTimeout: 30000,
     requestTimeout: 30000
-};
-
-module.exports = {
-    sql,
-    dbConfig
 };
 
 async function testConnection() {
@@ -75,9 +69,8 @@ async function testConnection() {
         console.log('   - رقم الخطأ:', error.number || 'غير معروف');
         console.log('\n🛠️ استكشاف الأخطاء وإصلاحها:');
         console.log('   1. تأكد من تشغيل SQL Server');
-        console.log('   2. قم بتشغيل: npm run enable-sql');
-        console.log('   3. قم بتشغيل: npm run enable-browser');
-        console.log('   4. قم بتشغيل: npm run check-services');
+        console.log('   2. تحقق من بيانات الاتصال في ملف .env');
+        console.log('   3. تأكد من أن SQL Server يسمح بالاتصالات عن بعد');
         return false;
     }
 }

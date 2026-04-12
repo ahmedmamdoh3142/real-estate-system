@@ -1,33 +1,36 @@
-// Backend/routes/public/projects.routes.js - الإصدار النهائي للعقارات
+// Backend/routes/public/projects.routes.js - الإصدار النهائي للعقارات (معدل لاستخدام mssql)
 const express = require('express');
+const sql = require('mssql');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 // دالة لإنشاء الراوتر مع تمرير app
 module.exports = function(app) {
     const router = express.Router();
-    const sql = require('msnodesqlv8');
     
-    console.log('🚀 تهيئة projects routes - VERSION 100% WORKING...');
+    console.log('🚀 تهيئة projects routes - VERSION 100% WORKING (mssql)...');
     
     // دالة مساعدة للاستعلامات مع Promise محسنة
-    function queryAsync(sqlQuery) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
-            
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في الاستعلام:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم جلب ${rows ? rows.length : 0} صف`);
-                    resolve(rows);
-                }
-            });
-        });
+    async function queryAsync(sqlQuery) {
+        const pool = getPool();
+        console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
+        try {
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم جلب ${result.recordset.length} صف`);
+            return result.recordset;
+        } catch (err) {
+            console.error('❌ خطأ في الاستعلام:', err.message);
+            throw err;
+        }
     }
     
     // 🔍 جلب جميع العقارات مع الفلترة والترتيب
@@ -48,21 +51,16 @@ module.exports = function(app) {
             console.log('🏢 جلب جميع العقارات مع الفلترة...');
             console.log('🔍 الفلاتر:', { type, city, transaction, minPrice, maxPrice, search, sort });
             
-            // بناء استعلام WHERE ديناميكي
             let whereConditions = [];
-            let queryParams = [];
             
-            // فلتر النوع
             if (type !== 'all' && type) {
                 whereConditions.push(`p.projectType = N'${type.replace(/'/g, "''")}'`);
             }
             
-            // فلتر المدينة
             if (city !== 'all' && city) {
                 whereConditions.push(`p.city = N'${city.replace(/'/g, "''")}'`);
             }
             
-            // فلتر السعر
             if (minPrice) {
                 whereConditions.push(`p.price >= ${parseFloat(minPrice)}`);
             }
@@ -70,7 +68,6 @@ module.exports = function(app) {
                 whereConditions.push(`p.price <= ${parseFloat(maxPrice)}`);
             }
             
-            // فلتر نوع المعاملة
             if (transaction !== 'all' && transaction) {
                 if (transaction === 'إيجار') {
                     whereConditions.push(`(p.priceType LIKE N'%إيجار%' OR p.priceType LIKE N'%تأجير%' OR p.priceType = N'rent')`);
@@ -79,7 +76,6 @@ module.exports = function(app) {
                 }
             }
             
-            // فلتر البحث
             if (search) {
                 const searchSafe = search.replace(/'/g, "''");
                 whereConditions.push(`(
@@ -90,12 +86,10 @@ module.exports = function(app) {
                 )`);
             }
             
-            // بناء جملة WHERE
             let whereClause = whereConditions.length > 0 
                 ? 'WHERE ' + whereConditions.join(' AND ')
                 : '';
             
-            // بناء ORDER BY
             let orderBy = 'ORDER BY p.createdAt DESC';
             switch (sort) {
                 case 'price_low':
@@ -119,14 +113,12 @@ module.exports = function(app) {
                     break;
             }
             
-            // استعلام العد الكلي
             const countQuery = `
                 SELECT COUNT(*) as totalCount
                 FROM Projects p
                 ${whereClause}
             `;
             
-            // استعلام البيانات
             const offset = (parseInt(page) - 1) * parseInt(limit);
             const dataQuery = `
                 SELECT 
@@ -167,10 +159,8 @@ module.exports = function(app) {
             
             console.log(`✅ تم جلب ${projects.length} مشروع من أصل ${totalCount}`);
             
-            // معالجة كل مشروع لجلب الصور والميزات
             const processedProjects = await Promise.all(projects.map(async (project) => {
                 try {
-                    // جلب الصور
                     const images = await queryAsync(`
                         SELECT TOP 1 imageUrl, imageType
                         FROM ProjectImages 
@@ -178,7 +168,6 @@ module.exports = function(app) {
                         ORDER BY displayOrder
                     `);
                     
-                    // جلب الميزات
                     const features = await queryAsync(`
                         SELECT TOP 3 featureName, featureValue, icon
                         FROM ProjectFeatures 
@@ -186,7 +175,6 @@ module.exports = function(app) {
                         ORDER BY displayOrder
                     `);
                     
-                    // تحويل القيم المنطقية
                     const isFeatured = project.isFeatured === true || project.isFeatured === 1 || project.isFeatured === 'true';
                     
                     return {
@@ -221,7 +209,6 @@ module.exports = function(app) {
                 } catch (error) {
                     console.error(`❌ خطأ في معالجة المشروع ${project.id}:`, error);
                     
-                    // إرجاع بيانات أساسية في حالة الخطأ
                     return {
                         id: parseInt(project.id),
                         projectName: project.projectName || 'عقار',
@@ -296,25 +283,12 @@ module.exports = function(app) {
             
             const statsQuery = `
                 SELECT 
-                    -- إجمالي العقارات
                     (SELECT COUNT(*) FROM Projects) as totalProjects,
-                    
-                    -- العقارات المتاحة
                     (SELECT COUNT(*) FROM Projects WHERE status NOT IN ('مباع', 'محجوز')) as availableProjects,
-                    
-                    -- العقارات المباعة
                     (SELECT COUNT(*) FROM Projects WHERE status = 'مباع') as soldProjects,
-                    
-                    -- العقارات للإيجار
                     (SELECT COUNT(*) FROM Projects WHERE priceType LIKE N'%إيجار%' OR priceType LIKE N'%تأجير%') as rentProjects,
-                    
-                    -- العقارات للبيع
                     (SELECT COUNT(*) FROM Projects WHERE priceType LIKE N'%شراء%' OR priceType LIKE N'%بيع%') as saleProjects,
-                    
-                    -- المدن
                     (SELECT STRING_AGG(city, ', ') FROM (SELECT DISTINCT city FROM Projects WHERE city IS NOT NULL) as cities) as citiesList,
-                    
-                    -- أنواع العقارات
                     (SELECT COUNT(*) FROM Projects WHERE projectType = N'سكني') as residentialCount,
                     (SELECT COUNT(*) FROM Projects WHERE projectType = N'تجاري') as commercialCount,
                     (SELECT COUNT(*) FROM Projects WHERE projectType = N'صناعي') as industrialCount,
@@ -324,7 +298,6 @@ module.exports = function(app) {
             const result = await queryAsync(statsQuery);
             const stats = result[0];
             
-            // تحليل قائمة المدن
             const cities = stats.citiesList ? stats.citiesList.split(', ') : ['الرياض'];
             
             res.status(200).json({
@@ -401,10 +374,8 @@ module.exports = function(app) {
             
             const projects = await queryAsync(featuredQuery);
             
-            // معالجة البيانات
             const processedProjects = await Promise.all(projects.map(async (project) => {
                 try {
-                    // جلب الصورة الرئيسية
                     const images = await queryAsync(`
                         SELECT TOP 1 imageUrl
                         FROM ProjectImages 
@@ -448,7 +419,6 @@ module.exports = function(app) {
                 }
             }));
             
-            // إذا لم توجد عقارات مميزة، نأخذ أحدث العقارات
             let finalProjects = processedProjects;
             if (processedProjects.length === 0) {
                 console.log('⚠️ لا توجد عقارات مميزة، جلب أحدث العقارات...');
@@ -512,7 +482,6 @@ module.exports = function(app) {
                 });
             }
             
-            // استعلام البيانات الأساسية
             const projectQuery = `
                 SELECT 
                     p.id,
@@ -553,37 +522,26 @@ module.exports = function(app) {
             
             const project = projectResult[0];
             
-            // جلب الصور
-            const imagesQuery = `
-                SELECT id, imageUrl, imageType, displayOrder, isActive
-                FROM ProjectImages 
-                WHERE projectId = ${projectId} AND isActive = 1
-                ORDER BY displayOrder
-            `;
-            
-            // جلب الميزات
-            const featuresQuery = `
-                SELECT id, featureName, featureValue, icon, displayOrder
-                FROM ProjectFeatures 
-                WHERE projectId = ${projectId}
-                ORDER BY displayOrder
-            `;
-            
-            // جبل الاستفسارات المرتبطة
-            const inquiriesQuery = `
-                SELECT COUNT(*) as inquiriesCount
-                FROM Inquiries
-                WHERE projectId = ${projectId}
-            `;
-            
-            // تنفيذ الاستعلامات بالتوازي
             const [images, features, inquiries] = await Promise.all([
-                queryAsync(imagesQuery),
-                queryAsync(featuresQuery),
-                queryAsync(inquiriesQuery)
+                queryAsync(`
+                    SELECT id, imageUrl, imageType, displayOrder, isActive
+                    FROM ProjectImages 
+                    WHERE projectId = ${projectId} AND isActive = 1
+                    ORDER BY displayOrder
+                `),
+                queryAsync(`
+                    SELECT id, featureName, featureValue, icon, displayOrder
+                    FROM ProjectFeatures 
+                    WHERE projectId = ${projectId}
+                    ORDER BY displayOrder
+                `),
+                queryAsync(`
+                    SELECT COUNT(*) as inquiriesCount
+                    FROM Inquiries
+                    WHERE projectId = ${projectId}
+                `)
             ]);
             
-            // معالجة البيانات
             const processedProject = {
                 id: parseInt(project.id),
                 projectCode: project.projectCode || `PJ-${project.id}`,
@@ -695,25 +653,18 @@ module.exports = function(app) {
         try {
             console.log('🧪 اختبار قاعدة البيانات للعقارات...');
             
-            // اختبار 1: عدد المشاريع
             const projectsCount = await queryAsync('SELECT COUNT(*) as count FROM Projects');
-            
-            // اختبار 2: أنواع المشاريع
             const typesCount = await queryAsync(`
                 SELECT projectType, COUNT(*) as count
                 FROM Projects
                 GROUP BY projectType
                 ORDER BY count DESC
             `);
-            
-            // اختبار 3: أحدث المشاريع
             const latestProjects = await queryAsync(`
                 SELECT TOP 5 id, projectName, projectType, city, price
                 FROM Projects
                 ORDER BY createdAt DESC
             `);
-            
-            // اختبار 4: الصور
             const imagesCount = await queryAsync('SELECT COUNT(*) as count FROM ProjectImages');
             
             res.status(200).json({
@@ -781,7 +732,6 @@ module.exports = function(app) {
         return typeMap[typeLower] || type;
     }
     
-    // دالة لتحويل نوع السعر للنص العربي
     function getPriceTypeText(type) {
         if (!type) return 'شراء';
         
@@ -798,7 +748,6 @@ module.exports = function(app) {
         return typeMap[typeLower] || type;
     }
     
-    // دالة لتحويل حالة المشروع للنص العربي
     function getStatusText(status) {
         if (!status) return 'نشط';
         
@@ -818,7 +767,6 @@ module.exports = function(app) {
         return statusMap[statusLower] || status;
     }
     
-    // بيانات احتياطية للعقارات
     function getFallbackProjects() {
         return [
             {
@@ -872,7 +820,6 @@ module.exports = function(app) {
         ];
     }
     
-    // بيانات احتياطية للعقارات المميزة
     function getFallbackFeaturedProjects() {
         return [
             {
@@ -920,7 +867,7 @@ module.exports = function(app) {
             },
             {
                 id: 4,
-                projectName: 'فندق ومنتجعع الضيافة',
+                projectName: 'فندق ومنتجع الضيافة',
                 projectType: 'فندقي',
                 city: 'الرياض',
                 district: 'الملك عبدالله',
@@ -934,7 +881,6 @@ module.exports = function(app) {
         ];
     }
     
-    // بيانات احتياطية لتفاصيل العقار
     function getFallbackProjectDetails(id) {
         const projects = {
             1: {

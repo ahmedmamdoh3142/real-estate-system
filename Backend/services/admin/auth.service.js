@@ -1,25 +1,31 @@
 // Backend/services/admin/auth.service.js
-const sql = require('msnodesqlv8');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
 
 const JWT_SECRET = 'real_estate_system_secret_key_2024';
 
-// دالة مساعدة للاستعلامات
-function queryAsync(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, sqlQuery, (err, rows) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(rows);
-            }
-        });
-    });
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
+
+// دالة مساعدة للاستعلامات (تعيد Promise)
+async function queryAsync(sqlQuery) {
+    const pool = getPool();
+    try {
+        const result = await pool.request().query(sqlQuery);
+        return result.recordset;
+    } catch (err) {
+        console.error('❌ خطأ في الاستعلام:', err.message);
+        throw err;
+    }
 }
 
 /**

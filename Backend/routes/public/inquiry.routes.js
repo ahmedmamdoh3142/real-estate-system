@@ -1,50 +1,50 @@
-// Backend/routes/public/inquiry.routes.js - الإصدار المصحح النهائي
+// Backend/routes/public/inquiry.routes.js - الإصدار المصحح النهائي (معدل لاستخدام mssql)
 const express = require('express');
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 // دالة لإنشاء الراوتر
 module.exports = function(app) {
     const router = express.Router();
     
-    console.log('🚀 تهيئة inquiry routes - VERSION COMPLETE FIXED...');
+    console.log('🚀 تهيئة inquiry routes - VERSION COMPLETE FIXED (mssql)...');
     
     // دالة مساعدة للاستعلامات
-    function queryAsync(sqlQuery) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
-            
-            sql.query(connectionString, sqlQuery, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في الاستعلام:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم جلب ${rows ? rows.length : 0} صف`);
-                    resolve(rows);
-                }
-            });
-        });
+    async function queryAsync(sqlQuery) {
+        const pool = getPool();
+        console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
+        try {
+            const result = await pool.request().query(sqlQuery);
+            console.log(`✅ تم جلب ${result.recordset.length} صف`);
+            return result.recordset;
+        } catch (err) {
+            console.error('❌ خطأ في الاستعلام:', err.message);
+            throw err;
+        }
     }
     
     // دالة لتنفيذ الأوامر (INSERT, UPDATE, DELETE)
-    function executeAsync(sqlCommand) {
-        return new Promise((resolve, reject) => {
-            console.log('📝 تنفيذ أمر:', sqlCommand.substring(0, 100) + '...');
-            
-            sql.query(connectionString, sqlCommand, (err, result) => {
-                if (err) {
-                    console.error('❌ خطأ في التنفيذ:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ تم تنفيذ الأمر بنجاح`);
-                    resolve(result);
-                }
-            });
-        });
+    async function executeAsync(sqlCommand) {
+        const pool = getPool();
+        console.log('📝 تنفيذ أمر:', sqlCommand.substring(0, 100) + '...');
+        try {
+            const result = await pool.request().query(sqlCommand);
+            console.log(`✅ تم تنفيذ الأمر بنجاح`);
+            return result;
+        } catch (err) {
+            console.error('❌ خطأ في التنفيذ:', err.message);
+            throw err;
+        }
     }
     
     // 🔍 اختبار API الاستفسارات
@@ -52,11 +52,9 @@ module.exports = function(app) {
         try {
             console.log('🧪 اختبار API الاستفسارات...');
             
-            // اختبار الاتصال بقاعدة البيانات
             const testQuery = await queryAsync('SELECT COUNT(*) as inquiriesCount FROM Inquiries');
             const projectsQuery = await queryAsync('SELECT COUNT(*) as projectsCount FROM Projects');
             
-            // التحقق من وجود الحقول الجديدة
             const columnsQuery = await queryAsync(`
                 SELECT COLUMN_NAME 
                 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -99,23 +97,14 @@ module.exports = function(app) {
             
             const statsQuery = `
                 SELECT 
-                    -- إجمالي الاستفسارات
                     (SELECT COUNT(*) FROM Inquiries) as totalInquiries,
-                    
-                    -- الاستفسارات الجديدة (لم يتم الرد عليها)
                     (SELECT COUNT(*) FROM Inquiries WHERE status = 'جديد') as newInquiries,
-                    
-                    -- متوسط وقت الرد (بالساعات)
                     (SELECT AVG(DATEDIFF(HOUR, createdAt, respondedAt)) 
                      FROM Inquiries 
                      WHERE respondedAt IS NOT NULL) as avgResponseHours,
-                    
-                    -- نسبة الرضا (بناءً على الاستفسارات المجابة)
                     (SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM Inquiries WHERE respondedAt IS NOT NULL)
                      FROM Inquiries 
                      WHERE status = 'تم_الرد') as satisfactionRate,
-                    
-                    -- الاستفسارات اليوم
                     (SELECT COUNT(*) FROM Inquiries WHERE CAST(createdAt AS DATE) = CAST(GETDATE() AS DATE)) as todayInquiries
             `;
             
@@ -156,7 +145,6 @@ module.exports = function(app) {
     
     // 📨 إرسال استفسار جديد (الإصدار المصحح النهائي)
     router.post('/submit', async (req, res) => {
-        let transaction;
         try {
             console.log('📨 معالجة استفسار جديد...');
             console.log('📦 بيانات الواردة:', JSON.stringify(req.body, null, 2));
@@ -171,7 +159,6 @@ module.exports = function(app) {
                 preferredTime
             } = req.body;
             
-            // التحقق من البيانات المطلوبة
             if (!customerName || !customerEmail || !customerPhone || !message) {
                 return res.status(400).json({
                     success: false,
@@ -179,19 +166,14 @@ module.exports = function(app) {
                 });
             }
             
-            // تنظيف رقم الهاتف
             const cleanPhone = customerPhone.replace(/\D/g, '');
-            
-            // تحويل تفضيلات التواصل من مصفوفة إلى نص
             const contactPrefsText = Array.isArray(contactPreferences) 
                 ? contactPreferences.join(',')
                 : contactPreferences || '';
             
-            // إنشاء كود الاستفسار (بدون إدخاله في SQL - سيتم إنشاؤه تلقائياً)
             const inquiryCode = 'INQ-' + new Date().getFullYear() + '-' + 
                 String(Math.floor(Math.random() * 10000)).padStart(4, '0');
             
-            // استعلام لإدخال الاستفسار - بدون inquiryCode لأنه محسوب تلقائياً
             const insertQuery = `
                 INSERT INTO Inquiries (
                     customerName,
@@ -221,7 +203,6 @@ module.exports = function(app) {
             
             console.log('📝 استعلام الإدخال:', insertQuery.substring(0, 200) + '...');
             
-            // تنفيذ الإدخال
             const result = await queryAsync(insertQuery);
             
             if (!result || result.length === 0) {
@@ -237,7 +218,6 @@ module.exports = function(app) {
             
             console.log(`✅ تم إرسال استفسار جديد: ${dbInquiryCode || inquiryCode} للعميل ${customerName}`);
             
-            // إعداد البيانات للرد
             const inquiryData = {
                 inquiryId: newId,
                 inquiryCode: dbInquiryCode || inquiryCode,
@@ -256,7 +236,6 @@ module.exports = function(app) {
                 ]
             };
             
-            // التحقق من وجود الاستفسار في قاعدة البيانات
             const verifyQuery = await queryAsync(`SELECT * FROM Inquiries WHERE id = ${newId}`);
             console.log(`✅ التحقق من الاستفسار: ${verifyQuery.length > 0 ? 'موجود' : 'غير موجود'}`);
             
@@ -272,7 +251,6 @@ module.exports = function(app) {
             console.error('❌ خطأ في إرسال الاستفسار:', error.message);
             console.error('❌ تفاصيل الخطأ:', error.stack);
             
-            // إرجاع خطأ مفصل
             res.status(500).json({
                 success: false,
                 message: 'حدث خطأ في إرسال الاستفسار',
@@ -340,7 +318,6 @@ module.exports = function(app) {
         }
     });
     
-    // دالة لتحويل نوع المشروع
     function getProjectTypeText(type) {
         if (!type) return 'سكني';
         
@@ -357,7 +334,6 @@ module.exports = function(app) {
         return typeMap[typeLower] || type;
     }
     
-    // دالة لتحويل حالة المشروع
     function getStatusText(status) {
         if (!status) return 'نشط';
         
@@ -373,7 +349,6 @@ module.exports = function(app) {
         return statusMap[statusLower] || status;
     }
     
-    // بيانات احتياطية للمشاريع
     function getFallbackProjects() {
         return [
             {

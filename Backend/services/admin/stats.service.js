@@ -1,24 +1,53 @@
-const sql = require('msnodesqlv8');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class StatsService {
-    async queryAsync(query, params = []) {
-        return new Promise((resolve, reject) => {
-            if (params && params.length > 0) {
-                sql.query(connectionString, query, params, (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows || []);
-                });
+    // دالة لتنفيذ استعلامات مع باراميترات (باستخدام ?)
+    async parameterizedQuery(query, params = []) {
+        const pool = getPool();
+        const request = pool.request();
+        // إضافة الباراميترات بالترتيب (p1, p2, ...)
+        params.forEach((param, index) => {
+            const paramName = `p${index + 1}`;
+            if (param === null || param === undefined) {
+                request.input(paramName, sql.NVarChar, null);
+            } else if (typeof param === 'number') {
+                request.input(paramName, sql.Int, param);
+            } else if (typeof param === 'string') {
+                request.input(paramName, sql.NVarChar, param);
+            } else if (param instanceof Date) {
+                request.input(paramName, sql.DateTime, param);
             } else {
-                sql.query(connectionString, query, (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows || []);
-                });
+                request.input(paramName, sql.NVarChar, String(param));
             }
         });
+        // استبدال علامات الاستفهام بأسماء الباراميترات
+        let namedQuery = query;
+        for (let i = 0; i < params.length; i++) {
+            namedQuery = namedQuery.replace('?', `@p${i+1}`);
+        }
+        const result = await request.query(namedQuery);
+        return result.recordset || [];
+    }
+
+    async queryAsync(query, params = []) {
+        if (params && params.length > 0) {
+            return await this.parameterizedQuery(query, params);
+        } else {
+            const pool = getPool();
+            const result = await pool.request().query(query);
+            return result.recordset || [];
+        }
     }
 
     escapeSql(str) {

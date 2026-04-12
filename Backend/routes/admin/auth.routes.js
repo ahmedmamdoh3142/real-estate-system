@@ -1,49 +1,52 @@
-// Backend/routes/admin/auth.routes.js - النسخة المعتمدة على جدول الصلاحيات
+// Backend/routes/admin/auth.routes.js - النسخة المعتمدة على جدول الصلاحيات (معدلة لاستخدام mssql)
 const express = require('express');
-const sql = require('msnodesqlv8');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const sql = require('mssql');
 
 const router = express.Router();
 
-console.log('🔐 تهيئة auth.routes.js - نظام المصادقة مع الصلاحيات الديناميكية...');
+console.log('🔐 تهيئة auth.routes.js - نظام المصادقة مع الصلاحيات الديناميكية (mssql)');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
 
 const JWT_SECRET = 'real_estate_system_secret_key_2024';
 
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
+
 // دالة مساعدة للاستعلامات
-function queryAsync(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
-        
-        sql.query(connectionString, sqlQuery, (err, rows) => {
-            if (err) {
-                console.error('❌ خطأ في الاستعلام:', err.message);
-                reject(err);
-            } else {
-                console.log(`✅ تم جلب ${rows ? rows.length : 0} صف`);
-                resolve(rows);
-            }
-        });
-    });
+async function queryAsync(sqlQuery) {
+    const pool = getPool();
+    console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
+    try {
+        const result = await pool.request().query(sqlQuery);
+        console.log(`✅ تم جلب ${result.recordset.length} صف`);
+        return result.recordset;
+    } catch (err) {
+        console.error('❌ خطأ في الاستعلام:', err.message);
+        throw err;
+    }
 }
 
 // دالة مساعدة للاستعلامات من نوع exec (للـ UPDATE/INSERT)
-function executeAsync(sqlQuery) {
-    return new Promise((resolve, reject) => {
-        sql.query(connectionString, sqlQuery, (err, result) => {
-            if (err) {
-                console.error('❌ خطأ في التنفيذ:', err.message);
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
+async function executeAsync(sqlQuery) {
+    const pool = getPool();
+    console.log('📝 تنفيذ أمر (non-query):', sqlQuery.substring(0, 100) + '...');
+    try {
+        const result = await pool.request().query(sqlQuery);
+        console.log(`✅ تم تنفيذ الأمر بنجاح`);
+        return result;
+    } catch (err) {
+        console.error('❌ خطأ في التنفيذ:', err.message);
+        throw err;
+    }
 }
 
 /**
@@ -59,11 +62,10 @@ async function getUserPermissions(userId) {
             ORDER BY p.sortOrder
         `;
         const permissions = await queryAsync(permissionsQuery);
-        // إرجاع مصفوفة بأسماء الصلاحيات فقط (مثل 'dashboard', 'projects' ...)
         return permissions.map(p => p.name);
     } catch (error) {
         console.error('❌ خطأ في جلب صلاحيات المستخدم:', error);
-        return []; // في حالة الخطأ نعيد مصفوفة فارغة
+        return [];
     }
 }
 
@@ -74,7 +76,6 @@ router.post('/login', async (req, res) => {
         
         const { username, password, rememberMe } = req.body;
         
-        // التحقق من البيانات المدخلة
         if (!username || !password) {
             return res.status(400).json({
                 success: false,
@@ -84,7 +85,6 @@ router.post('/login', async (req, res) => {
         
         console.log(`👤 محاولة تسجيل دخول للمستخدم: ${username}`);
         
-        // البحث عن المستخدم في قاعدة البيانات الحقيقية فقط
         const userQuery = `
             SELECT 
                 id,
@@ -123,7 +123,6 @@ router.post('/login', async (req, res) => {
         
         const user = users[0];
         
-        // التحقق من حالة الحساب
         if (!user.isActive) {
             console.log('❌ الحساب غير نشط:', username);
             return res.status(403).json({
@@ -132,7 +131,6 @@ router.post('/login', async (req, res) => {
             });
         }
         
-        // التحقق من كلمة المرور باستخدام bcrypt
         let passwordMatches = false;
         try {
             passwordMatches = await bcrypt.compare(password, user.passwordHash);
@@ -154,7 +152,6 @@ router.post('/login', async (req, res) => {
         
         console.log('✅ تسجيل الدخول ناجح للمستخدم:', username);
         
-        // تحديث وقت آخر دخول
         try {
             await executeAsync(`
                 UPDATE Users 
@@ -163,14 +160,11 @@ router.post('/login', async (req, res) => {
             `);
         } catch (updateError) {
             console.warn('⚠️ فشل تحديث lastLogin:', updateError.message);
-            // لا نوقف عملية تسجيل الدخول بسبب هذا الخطأ
         }
         
-        // جلب صلاحيات المستخدم من قاعدة البيانات
         const permissions = await getUserPermissions(user.id);
         console.log(`🔑 صلاحيات المستخدم (${permissions.length}):`, permissions);
         
-        // إنشاء token (JWT)
         const tokenPayload = {
             userId: user.id,
             username: user.username,
@@ -184,7 +178,6 @@ router.post('/login', async (req, res) => {
             { expiresIn: rememberMe ? '30d' : '1d' }
         );
         
-        // إعداد بيانات المستخدم للرد
         const userData = {
             id: user.id,
             username: user.username,
@@ -203,7 +196,7 @@ router.post('/login', async (req, res) => {
             data: {
                 token: token,
                 user: userData,
-                permissions: permissions  // مصفوفة بأسماء الصلاحيات
+                permissions: permissions
             }
         });
         
@@ -223,7 +216,6 @@ router.get('/me', async (req, res) => {
     try {
         console.log('👤 طلب معلومات المستخدم الحالي...');
         
-        // الحصول على التوكن من الرأس
         const token = req.headers.authorization?.split(' ')[1];
         
         if (!token) {
@@ -233,7 +225,6 @@ router.get('/me', async (req, res) => {
             });
         }
         
-        // التحقق من التوكن
         let decoded;
         try {
             decoded = jwt.verify(token, JWT_SECRET);
@@ -245,7 +236,6 @@ router.get('/me', async (req, res) => {
             });
         }
         
-        // جلب بيانات المستخدم من قاعدة البيانات
         const userQuery = `
             SELECT 
                 id,
@@ -271,7 +261,6 @@ router.get('/me', async (req, res) => {
         }
         
         const user = users[0];
-        // جلب الصلاحيات من جدول UserPermissions
         const permissions = await getUserPermissions(user.id);
         console.log(`🔑 صلاحيات المستخدم (me):`, permissions);
         
@@ -327,7 +316,6 @@ router.get('/dashboard-stats', async (req, res) => {
             });
         }
         
-        // بناء الاستعلام بناءً على الدور (مثال مبسط)
         let statsQuery = `
             SELECT 
                 (SELECT COUNT(*) FROM Projects) as totalProjects,
@@ -380,7 +368,6 @@ router.get('/recent-activities', async (req, res) => {
             });
         }
         
-        // جلب آخر 20 نشاطاً من سجل التدقيق
         const activitiesQuery = `
             SELECT TOP 20 
                 a.id,
@@ -405,7 +392,6 @@ router.get('/recent-activities', async (req, res) => {
     } catch (error) {
         console.error('❌ خطأ في جلب الأنشطة:', error);
         
-        // في حالة عدم وجود جدول AuditLogs، نعيد مصفوفة فارغة
         res.status(200).json({
             success: true,
             data: []

@@ -1,32 +1,43 @@
 // 📁 Backend/services/admin/contracts.service.js
-const sql = require('msnodesqlv8');
 const fs = require('fs');
 const path = require('path');
+const sql = require('mssql');
 
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
 
 const GRACE_PERIOD_DAYS = 3;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class ContractsService {
     
     async queryAsync(query, params = {}) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, query, (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows || []);
-            });
-        });
+        const pool = getPool();
+        try {
+            const result = await pool.request().query(query);
+            return result.recordset || [];
+        } catch (err) {
+            console.error('❌ ContractsService.queryAsync error:', err);
+            throw err;
+        }
     }
 
     async executeAsync(query) {
-        return new Promise((resolve, reject) => {
-            sql.query(connectionString, query, (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
-            });
-        });
+        const pool = getPool();
+        try {
+            const result = await pool.request().query(query);
+            return result;
+        } catch (err) {
+            console.error('❌ ContractsService.executeAsync error:', err);
+            throw err;
+        }
     }
 
     escapeSql(str) {

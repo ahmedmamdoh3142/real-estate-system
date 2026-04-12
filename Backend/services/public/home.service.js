@@ -1,15 +1,21 @@
 const sql = require('mssql');
-const config = require('../../config/database.config');
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 /**
  * @desc    جلب إحصائيات الصفحة الرئيسية
  * @returns {Object} إحصائيات الصفحة الرئيسية
  */
 exports.getHomeStats = async () => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لجلب الإحصائيات...');
         
         // استعلام 1: عدد المشاريع النشطة
@@ -80,14 +86,6 @@ exports.getHomeStats = async () => {
     } catch (error) {
         console.error('❌ خطأ في getHomeStats:', error);
         throw new Error('فشل في جلب إحصائيات الصفحة الرئيسية');
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -99,10 +97,8 @@ exports.getHomeStats = async () => {
  * @returns {Object} المشاريع مع معلومات الترقيم
  */
 exports.getFeaturedProjects = async ({ page = 1, limit = 6 }) => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لجلب المشاريع المميزة...');
         
         const offset = (page - 1) * limit;
@@ -197,14 +193,6 @@ exports.getFeaturedProjects = async ({ page = 1, limit = 6 }) => {
     } catch (error) {
         console.error('❌ خطأ في getFeaturedProjects:', error);
         throw new Error('فشل في جلب المشاريع المميزة');
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };
 
@@ -214,10 +202,8 @@ exports.getFeaturedProjects = async ({ page = 1, limit = 6 }) => {
  * @returns {Object} نتيجة الاشتراك
  */
 exports.subscribeNewsletter = async (email) => {
-    let pool;
+    const pool = getPool();
     try {
-        pool = await sql.connect(config);
-        
         console.log('🔗 الاتصال بقاعدة البيانات لتسجيل النشرة البريدية...');
         
         // التحقق من وجود البريد مسبقاً
@@ -296,13 +282,5 @@ exports.subscribeNewsletter = async (email) => {
     } catch (error) {
         console.error('❌ خطأ في subscribeNewsletter:', error);
         throw error;
-    } finally {
-        if (pool) {
-            try {
-                await pool.close();
-            } catch (closeError) {
-                console.error('❌ خطأ في إغلاق الاتصال:', closeError);
-            }
-        }
     }
 };

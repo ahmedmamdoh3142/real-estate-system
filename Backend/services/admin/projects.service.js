@@ -1,10 +1,16 @@
-// 📁 Backend/services/admin/projects.service.js - النسخة المصححة كاملة مع إضافة locationLink و contractPdfUrl وإصلاح مشكلة الحذف
-const sql = require('msnodesqlv8');
+// 📁 Backend/services/admin/projects.service.js - النسخة المصححة كاملة مع إضافة locationLink و contractPdfUrl وإصلاح مشكلة الحذف (معدلة لاستخدام mssql)
+const sql = require('mssql');
 
-// سلسلة الاتصال الثابتة
 require('dotenv').config();
-const sql = require('msnodesqlv8');
-const connectionString = process.env.DB_CONNECTION_STRING;
+
+// الحصول على pool من app.locals (تم تعيينه في server.js)
+function getPool() {
+    const app = require('../../app');
+    if (!app.locals.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة');
+    }
+    return app.locals.dbPool;
+}
 
 class ProjectsService {
     
@@ -12,7 +18,8 @@ class ProjectsService {
      * تنفيذ استعلام مع معاملات - محسنة
      */
     async queryAsync(query, params = {}) {
-        return new Promise((resolve, reject) => {
+        const pool = getPool();
+        try {
             console.log('📝 تنفيذ استعلام SQL...');
             console.log('🔤 الاستعلام:', query.substring(0, 200) + (query.length > 200 ? '...' : ''));
             
@@ -20,36 +27,31 @@ class ProjectsService {
                 console.log('📦 المعاملات:', params);
             }
             
-            sql.query(connectionString, query, (err, rows) => {
-                if (err) {
-                    console.error('❌ خطأ في الاستعلام:', err.message);
-                    reject(err);
-                } else {
-                    console.log(`✅ نجاح الاستعلام، عدد النتائج: ${rows ? rows.length : 0}`);
-                    resolve(rows || []);
-                }
-            });
-        });
+            const result = await pool.request().query(query);
+            console.log(`✅ نجاح الاستعلام، عدد النتائج: ${result.recordset ? result.recordset.length : 0}`);
+            return result.recordset || [];
+        } catch (err) {
+            console.error('❌ خطأ في الاستعلام:', err.message);
+            throw err;
+        }
     }
 
     /**
      * تنفيذ استعلام INSERT/UPDATE/DELETE
      */
     async executeAsync(query) {
-        return new Promise((resolve, reject) => {
+        const pool = getPool();
+        try {
             console.log('⚡ تنفيذ استعلام تغيير...');
             console.log('🔤 الاستعلام:', query.substring(0, 300));
             
-            sql.query(connectionString, query, (err, result) => {
-                if (err) {
-                    console.error('❌ خطأ في التنفيذ:', err.message);
-                    reject(err);
-                } else {
-                    console.log('✅ تم التنفيذ بنجاح');
-                    resolve(result);
-                }
-            });
-        });
+            const result = await pool.request().query(query);
+            console.log('✅ تم التنفيذ بنجاح');
+            return result;
+        } catch (err) {
+            console.error('❌ خطأ في التنفيذ:', err.message);
+            throw err;
+        }
     }
 
     /**
