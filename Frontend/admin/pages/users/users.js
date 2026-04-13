@@ -8,7 +8,7 @@
     
     class UsersManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = 'http://localhost:3001';
             this.apiClient = this.createApiClient();
             this.currentUser = null;
             this.users = [];

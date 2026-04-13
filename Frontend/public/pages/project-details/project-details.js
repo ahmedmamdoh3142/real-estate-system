@@ -6,7 +6,7 @@
     
     class ProjectDetailsPage {
         constructor() {
-            this.apiBaseUrl = '/api/public';
+            this.apiBaseUrl = 'http://localhost:3001/api/public';
             this.projectId = this.getProjectIdFromURL();
             this.projectData = null;
             this.relatedProjects = [];
@@ -103,7 +103,7 @@
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
-                <a href="/admin/pages/login/index.html" class="nav-link premium-link">
+                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
                     <div class="nav-icon-wrapper">
                         <i class="fas fa-sign-in-alt"></i>
                     </div>
@@ -1305,7 +1305,7 @@
             
             console.log('🔗 اختبار اتصال API...');
             try {
-                const response = await fetch('/api/health');
+                const response = await fetch('http://localhost:3001/api/health');
                 const data = await response.json();
                 console.log('✅ حالة الخادم:', data);
             } catch (error) {

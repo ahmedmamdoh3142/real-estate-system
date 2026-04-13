@@ -2,7 +2,7 @@
 /* مطابق لنمط صفحة العقود مع ألوان وإضافات خاصة بالفواتير */
 /* تم إزالة أي إشارات للعميل، مع الحفاظ على كل الأنماط الأخرى */
 body {
-    background-image: url('/global/assets/images/cover.webp');
+    background-image: url('../../../global/assets/images/cover.webp');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

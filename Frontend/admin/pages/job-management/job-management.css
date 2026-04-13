@@ -1,7 +1,7 @@
 /* ===== صفحة إدارة التوظيف - نظام إدارة العقارات ===== */
 /* تم التحديث ليتوافق مع تصميم صفحة إدارة العقود (ألوان داكنة، تدرجات، تحسينات الجوال) */
 body {
-background-image: url('/global/assets/images/cover.webp');    background-attachment: fixed;
+background-image: url('../../../global/assets/images/cover.webp');    background-attachment: fixed;
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

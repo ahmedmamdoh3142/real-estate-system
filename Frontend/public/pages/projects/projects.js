@@ -139,7 +139,7 @@
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
-                <a href="/admin/pages/login/index.html" class="nav-link premium-link">
+                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
                     <div class="nav-icon-wrapper">
                         <i class="fas fa-sign-in-alt"></i>
                     </div>
@@ -337,7 +337,7 @@
             try {
                 console.log('🏙️ جلب قائمة المدن من API...');
                 
-                const response = await fetch('/api/public/projects/cities/list');
+                const response = await fetch('http://localhost:3001/api/public/projects/cities/list');
                 if (!response.ok) throw new Error('Failed to load cities');
                 
                 const data = await response.json();
@@ -365,7 +365,7 @@
                 this.showLoadingState();
                 
                 // استخدام fetch مباشرة
-                const response = await fetch('/api/public/projects/all');
+                const response = await fetch('http://localhost:3001/api/public/projects/all');
                 if (!response.ok) throw new Error('Failed to load projects');
                 
                 const data = await response.json();
@@ -646,7 +646,7 @@
                                     <span class="price-period">${priceText}</span>
                                 </div>
                                 <div class="project-actions">
-                                    <a href="/project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
+                                    <a href="../project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                         <span>تفاصيل</span>
                                     </a>
@@ -699,7 +699,7 @@
                                     <span class="price-period">${priceText}</span>
                                 </div>
                                 <div class="project-actions">
-                                    <a href="/project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
+                                    <a href="../project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                         <span>تفاصيل</span>
                                     </a>
@@ -1016,12 +1016,12 @@
             // اختبار الاتصال بالخادم
             setTimeout(async () => {
                 try {
-                    const response = await fetch('/api/public/projects/all');
+                    const response = await fetch('http://localhost:3001/api/public/projects/all');
                     const data = await response.json();
                     console.log('API Test:', data.success ? '✅ Connected' : '❌ Failed');
                     
                     // اختبار API المدن
-                    const citiesResponse = await fetch('/api/public/projects/cities/list');
+                    const citiesResponse = await fetch('http://localhost:3001/api/public/projects/cities/list');
                     const citiesData = await citiesResponse.json();
                     console.log('Cities API Test:', citiesData.success ? '✅ Connected' : '❌ Failed');
                     console.log('Cities from API:', citiesData.data?.cities);

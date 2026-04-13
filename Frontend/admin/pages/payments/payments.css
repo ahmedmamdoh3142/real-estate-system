@@ -2,7 +2,7 @@
 /* تم التحديث ليتوافق مع تصميم صفحة إدارة العقود (ألوان داكنة، تدرجات، تحسينات الجوال) */
 /* مع تحسين توسيط خلايا الجدول وإضافة رسالة تأكيد حذف مطابقة لتصميم العقود */
 body {
-    background-image: url('/global/assets/images/cover.webp');
+    background-image: url('../../../global/assets/images/cover.webp');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

@@ -1,6 +1,6 @@
 /* ===== صفحة إدارة المشاريع - نظام إدارة العقارات ===== */
 body {
-    background-image: url('/global/assets/images/cover.webp');
+    background-image: url('../../../global/assets/images/cover.webp');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;

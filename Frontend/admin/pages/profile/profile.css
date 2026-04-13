@@ -3,7 +3,7 @@
 /* تم تحديثه ليتوافق مع تصميم الجوال والشاشات الصغيرة (احترافي) */
 body {
     /* صورة خلفية احترافية تعبر عن البريد الإلكتروني والتواصل (مكتب، حاسوب، رسائل) */
-    background-image: url('/global/assets/images/cover.webp');
+    background-image: url('../../../global/assets/images/cover.webp');
     background-attachment: fixed;
     background-size: cover;
     background-position: center;

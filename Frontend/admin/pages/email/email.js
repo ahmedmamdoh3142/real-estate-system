@@ -178,7 +178,7 @@
 
     class EmailManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = 'http://localhost:3001';
             this.apiClient = null;
             this.currentUser = null;
             this.currentFolder = 'inbox';
@@ -296,7 +296,7 @@
                 if (user && user.id) {
                     this.currentUser = user;
                 } else {
-                    window.location.href = '/login/index.html';
+                    window.location.href = '../login/index.html';
                     return;
                 }
                 this.updateUserInfo();

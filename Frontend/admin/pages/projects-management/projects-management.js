@@ -1,5 +1,6 @@
 // ===== صفحة إدارة المشاريع - نظام إدارة العقارات =====
 // 📁 المسار: Frontend/admin/pages/projects-management/projects-management.js
+// 🔗 الاتصال: يتصل بـ Backend/app.js على localhost:3001
 // 🧠 الغرض: إدارة المشاريع مع اتصال حقيقي بقاعدة البيانات
 // 📱 إصدار محسن للجوال - تم إزالة كل ما يتعلق بالعقود
 
@@ -10,7 +11,7 @@
     
     class ProjectsManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = 'http://localhost:3001';
             this.apiClient = this.createApiClient();
             this.currentUser = null;
             this.projects = [];

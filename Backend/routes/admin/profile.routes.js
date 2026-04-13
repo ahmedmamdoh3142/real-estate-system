@@ -9,7 +9,7 @@ const fs = require('fs');
 // تكوين multer لحفظ الصور الشخصية
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '/uploads/profile');
+        const uploadDir = path.join(__dirname, '../../../uploads/profile');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }

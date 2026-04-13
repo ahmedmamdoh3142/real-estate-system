@@ -140,7 +140,7 @@
     // ========== مدير الصفحة ==========
     class StatsManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = 'http://localhost:3001';
             this.currentUser = null;
             this.selectedDepartmentId = null;
             this.chartInstance = null;
@@ -238,12 +238,12 @@
                     this.currentUser = user;
                     this.updateUserInfo();
                 } else {
-                    window.location.href = '/login/index.html';
+                    window.location.href = '../login/index.html';
                     return;
                 }
             } catch (error) {
                 console.error('❌ Auth check failed:', error);
-                window.location.href = '/login/index.html';
+                window.location.href = '../login/index.html';
             }
         }
 

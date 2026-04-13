@@ -15,7 +15,7 @@ function getPool() {
 
 class TasksService {
     constructor() {
-        this.uploadDir = path.join(__dirname, '/uploads/tasks');
+        this.uploadDir = path.join(__dirname, '../../../uploads/tasks');
         if (!fs.existsSync(this.uploadDir)) {
             fs.mkdirSync(this.uploadDir, { recursive: true });
         }

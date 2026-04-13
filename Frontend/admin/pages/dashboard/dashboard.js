@@ -6,7 +6,7 @@
 
     class Dashboard {
         constructor() {
-            this.apiBaseUrl = '/api/admin/dashboard';
+            this.apiBaseUrl = 'http://localhost:3001/api/admin/dashboard';
             this.charts = {};
             this.data = {
                 stats: null,
@@ -25,7 +25,7 @@
             
             if (!this.currentUser) {
                 console.warn('⚠️ لا يوجد مستخدم مسجل الدخول، جاري التوجيه إلى صفحة تسجيل الدخول');
-                window.location.href = '/login/index.html';
+                window.location.href = '../login/index.html';
                 return;
             }
             
@@ -176,25 +176,25 @@
                 {
                     section: 'إدارة العقارات',
                     items: [
-                        { id: 'projects', title: 'المشاريع', icon: 'fas fa-building', link: '/projects-management/index.html', permission: 'projects' },
-                        { id: 'contracts', title: 'العقود', icon: 'fas fa-file-contract', link: '/contracts/index.html', permission: 'contracts' },
-                        { id: 'payments', title: 'المدفوعات', icon: 'fas fa-money-bill-wave', link: '/payments/index.html', permission: 'payments' },
-                        { id: 'invoices', title: 'الفواتير', icon: 'fas fa-file-invoice', link: '/bills/index.html', permission: 'invoices' }
+                        { id: 'projects', title: 'المشاريع', icon: 'fas fa-building', link: '../projects-management/index.html', permission: 'projects' },
+                        { id: 'contracts', title: 'العقود', icon: 'fas fa-file-contract', link: '../contracts/index.html', permission: 'contracts' },
+                        { id: 'payments', title: 'المدفوعات', icon: 'fas fa-money-bill-wave', link: '../payments/index.html', permission: 'payments' },
+                        { id: 'invoices', title: 'الفواتير', icon: 'fas fa-file-invoice', link: '../bills/index.html', permission: 'invoices' }
                     ]
                 },
                 {
                     section: 'إدارة العملاء',
                     items: [
-                        { id: 'inquiries', title: 'الاستفسارات', icon: 'fas fa-headset', link: '/inquiries/index.html', permission: 'inquiries' },
-                        { id: 'clients', title: 'العملاء', icon: 'fas fa-users', link: '/leeds/index.html', permission: 'clients' }
+                        { id: 'inquiries', title: 'الاستفسارات', icon: 'fas fa-headset', link: '../inquiries/index.html', permission: 'inquiries' },
+                        { id: 'clients', title: 'العملاء', icon: 'fas fa-users', link: '../leeds/index.html', permission: 'clients' }
                     ]
                 },
                 {
                     section: 'الإدارة',
                     items: [
-                        { id: 'users', title: 'المستخدمين', icon: 'fas fa-user-cog', link: '/users/index.html', permission: 'users' },
-                        { id: 'recruitment', title: 'التوظيف', icon: 'fas fa-user-plus', link: '/job-management/index.html', permission: 'recruitment' },
-                        { id: 'tasks', title: 'المهمات', icon: 'fas fa-plus-circle', link: '/tasks/index.html', permission: 'tasks' }
+                        { id: 'users', title: 'المستخدمين', icon: 'fas fa-user-cog', link: '../users/index.html', permission: 'users' },
+                        { id: 'recruitment', title: 'التوظيف', icon: 'fas fa-user-plus', link: '../job-management/index.html', permission: 'recruitment' },
+                        { id: 'tasks', title: 'المهمات', icon: 'fas fa-plus-circle', link: '../tasks/index.html', permission: 'tasks' }
                     ]
                 }
             ];
@@ -431,9 +431,9 @@
             const viewAllLink = document.getElementById('view-all-link');
             if (!viewAllLink) return;
             const links = {
-                contracts: '/contracts/index.html',
-                payments: '/payments/index.html',
-                inquiries: '/inquiries/index.html'
+                contracts: '../contracts/index.html',
+                payments: '../payments/index.html',
+                inquiries: '../inquiries/index.html'
             };
             viewAllLink.href = links[tableType] || '#';
         }
@@ -794,9 +794,9 @@
         
         handleQuickAction(actionId) {
             switch(actionId) {
-                case 'quick-add-project': window.location.href = '/projects-management/index.html?action=add'; break;
-                case 'quick-add-contract': window.location.href = '/contracts/index.html?action=add'; break;
-                case 'quick-notification': window.location.href = '/payments/index.html?action=add'; break;
+                case 'quick-add-project': window.location.href = '../projects-management/index.html?action=add'; break;
+                case 'quick-add-contract': window.location.href = '../contracts/index.html?action=add'; break;
+                case 'quick-notification': window.location.href = '../payments/index.html?action=add'; break;
             }
         }
         

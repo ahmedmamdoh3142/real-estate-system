@@ -178,7 +178,7 @@
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
-                <a href="/admin/pages/login/index.html" class="nav-link premium-link">
+                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
                     <div class="nav-icon-wrapper">
                         <i class="fas fa-sign-in-alt"></i>
                     </div>
@@ -809,7 +809,7 @@
             
             try {
                 // استخدام API الحقيقي
-                const response = await fetch('/api/public/inquiry/submit', {
+                const response = await fetch('http://localhost:3001/api/public/inquiry/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1037,7 +1037,7 @@
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
-                fetch('/api/public/inquiry/test')
+                fetch('http://localhost:3001/api/public/inquiry/test')
                     .then(r => r.json())
                     .then(data => console.log('Inquiry API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ Inquiry API Connection failed - Running in demo mode'));

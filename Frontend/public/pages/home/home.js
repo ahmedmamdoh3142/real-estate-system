@@ -109,7 +109,7 @@
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
-                <a href="/admin/pages/login/index.html" class="nav-link premium-link">
+                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
                     <div class="nav-icon-wrapper">
                         <i class="fas fa-sign-in-alt"></i>
                     </div>
@@ -171,7 +171,7 @@
                 console.log('📊 Loading statistics...');
                 
                 // استخدام fetch مباشرة
-                const response = await fetch('/api/public/home/stats');
+                const response = await fetch('http://localhost:3001/api/public/home/stats');
                 if (!response.ok) throw new Error('Failed to load stats');
                 
                 const data = await response.json();
@@ -233,7 +233,7 @@
                 `;
                 
                 // جلب البيانات
-                const response = await fetch('/api/public/home/featured-projects');
+                const response = await fetch('http://localhost:3001/api/public/home/featured-projects');
                 if (!response.ok) throw new Error('Failed to load projects');
                 
                 const data = await response.json();
@@ -331,7 +331,7 @@
                                     <span class="price-period">${priceText}</span>
                                 </div>
                                 <div class="project-action-grid">
-                                    <a href="/project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
+                                    <a href="../project-details/index.html?id=${id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                         <span>تفاصيل</span>
                                     </a>
@@ -459,7 +459,7 @@
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
-                fetch('/api/public/home/featured-projects')
+                fetch('http://localhost:3001/api/public/home/featured-projects')
                     .then(r => r.json())
                     .then(data => console.log('API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ API Connection failed'));
