@@ -9,7 +9,7 @@
     
     class JobApplicationsManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = '';
             this.apiClient = this.createApiClient();
             this.currentUser = null;
             this.applications = [];

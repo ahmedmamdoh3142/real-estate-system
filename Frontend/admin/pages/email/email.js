@@ -178,7 +178,7 @@
 
     class EmailManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = '';
             this.apiClient = null;
             this.currentUser = null;
             this.currentFolder = 'inbox';
