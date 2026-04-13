@@ -8,7 +8,7 @@
 
     class TasksManager {
         constructor() {
-            this.baseURL = '/api';
+            this.baseURL = '';
             this.currentUser = null;
             this.userPermissions = [];
             this.tasks = [];

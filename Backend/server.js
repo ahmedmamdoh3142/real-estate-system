@@ -1,5 +1,5 @@
 // Backend/server.js - Production Ready with mssql (tedious)
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 
 const app = require('./app');
 const sql = require('mssql');
