@@ -80,7 +80,7 @@
             try {
                 console.log('🔍 اختبار الاتصال بالخادم...');
                 
-                const response = await fetch('http://localhost:3001/api/health');
+                const response = await fetch('/api/health');
                 if (response.ok) {
                     console.log('✅ الخادم متصل ويعمل');
                     this.updateServerStatus('connected', 'الخادم متصل');
@@ -255,7 +255,7 @@
                 }
                 
                 // إرسال الطلب إلى الخادم الحقيقي
-                const response = await fetch('http://localhost:3001/api/admin/auth/login', {
+                const response = await fetch('/api/admin/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

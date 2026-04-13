@@ -171,7 +171,7 @@
                 console.log('📊 Loading statistics...');
                 
                 // استخدام fetch مباشرة
-                const response = await fetch('http://localhost:3001/api/public/home/stats');
+                const response = await fetch('/api/public/home/stats');
                 if (!response.ok) throw new Error('Failed to load stats');
                 
                 const data = await response.json();
@@ -233,7 +233,7 @@
                 `;
                 
                 // جلب البيانات
-                const response = await fetch('http://localhost:3001/api/public/home/featured-projects');
+                const response = await fetch('/api/public/home/featured-projects');
                 if (!response.ok) throw new Error('Failed to load projects');
                 
                 const data = await response.json();
@@ -459,7 +459,7 @@
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
-                fetch('http://localhost:3001/api/public/home/featured-projects')
+                fetch('/api/public/home/featured-projects')
                     .then(r => r.json())
                     .then(data => console.log('API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ API Connection failed'));

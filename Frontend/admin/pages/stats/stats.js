@@ -140,7 +140,7 @@
     // ========== مدير الصفحة ==========
     class StatsManager {
         constructor() {
-            this.baseURL = 'http://localhost:3001';
+            this.baseURL = '/api';
             this.currentUser = null;
             this.selectedDepartmentId = null;
             this.chartInstance = null;

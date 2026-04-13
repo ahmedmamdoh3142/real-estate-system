@@ -6,7 +6,7 @@
     
     class ProjectDetailsPage {
         constructor() {
-            this.apiBaseUrl = 'http://localhost:3001/api/public';
+            this.apiBaseUrl = '/api/public';
             this.projectId = this.getProjectIdFromURL();
             this.projectData = null;
             this.relatedProjects = [];
@@ -1305,7 +1305,7 @@
             
             console.log('🔗 اختبار اتصال API...');
             try {
-                const response = await fetch('http://localhost:3001/api/health');
+                const response = await fetch('/api/health');
                 const data = await response.json();
                 console.log('✅ حالة الخادم:', data);
             } catch (error) {
