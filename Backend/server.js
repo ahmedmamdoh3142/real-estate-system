@@ -3,7 +3,7 @@ const path = require('path');
 
 // 🔥 تأكد إن .env بيتقري حتى لو جوه Backend أو root
 require('dotenv').config({
-    path: path.join(__dirname, '../.env')
+    path: path.join(__dirname, '.env')
 });
 
 const app = require('./app');
