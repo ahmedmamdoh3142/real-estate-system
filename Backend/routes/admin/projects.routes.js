@@ -1,7 +1,7 @@
 // 📁 Backend/routes/admin/projects.routes.js - نظام إدارة المشاريع الكامل
 const express = require('express');
 const router = express.Router();
-const projectsController = require('/controllers/admin/projects.controller');
+const projectsController = require('../../controllers/admin/projects.controller');
 
 console.log('✅ تم تحميل Projects Routes مع اتصال قاعدة البيانات الحقيقي (msnodesqlv8)');
 

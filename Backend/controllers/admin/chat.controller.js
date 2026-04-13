@@ -1,14 +1,14 @@
-const chatService = require('/services/admin/chat.service');
+const chatService = require('../../services/admin/chat.service');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = path.join(__dirname, '/uploads/chats');
+const uploadDir = path.join(__dirname, '../../../uploads/chats');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const avatarUploadDir = path.join(__dirname, '/uploads/group-avatars');
+const avatarUploadDir = path.join(__dirname, '../../../uploads/group-avatars');
 if (!fs.existsSync(avatarUploadDir)) {
     fs.mkdirSync(avatarUploadDir, { recursive: true });
 }

@@ -1,5 +1,5 @@
 // Backend/controllers/admin/auth.controller.js
-const authService = require('/services/admin/auth.service');
+const authService = require('../../services/admin/auth.service');
 
 /**
  * @desc    تسجيل دخول المستخدم

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const statsController = require('/controllers/admin/stats.controller');
+const statsController = require('../../controllers/admin/stats.controller');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'real_estate_system_secret_key_2024';

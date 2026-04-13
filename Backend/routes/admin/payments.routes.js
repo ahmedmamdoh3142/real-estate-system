@@ -1,7 +1,7 @@
 // 📁 Backend/routes/admin/payments.routes.js
 const express = require('express');
 const router = express.Router();
-const paymentsController = require('/controllers/admin/payments.controller');
+const paymentsController = require('../../controllers/admin/payments.controller');
 
 // التحقق من صحة الـ API
 router.get('/health', (req, res) => {

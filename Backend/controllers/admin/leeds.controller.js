@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/leeds.controller.js
-const leedsService = require('/services/admin/leeds.service');
+const leedsService = require('../../services/admin/leeds.service');
 
 // GET /api/admin/leeds
 exports.getAllClients = async (req, res) => {

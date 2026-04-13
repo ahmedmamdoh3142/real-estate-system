@@ -1,7 +1,7 @@
 // 📁 Backend/routes/admin/bills.routes.js
 const express = require('express');
 const router = express.Router();
-const billsController = require('/controllers/admin/bills.controller');
+const billsController = require('../../controllers/admin/bills.controller');
 
 // 📊 إحصائيات
 router.get('/stats', billsController.getInvoicesStats);

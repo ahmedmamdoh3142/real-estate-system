@@ -1,10 +1,10 @@
 // Backend/controllers/admin/email.controller.js
-const emailService = require('/services/admin/email.service');
+const emailService = require('../../services/admin/email.service');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = path.join(__dirname, '/uploads/emails');
+const uploadDir = path.join(__dirname, '../../../uploads/emails');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }

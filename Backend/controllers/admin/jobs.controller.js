@@ -1,4 +1,4 @@
-const jobsService = require('/services/admin/jobs.service');
+const jobsService = require('../../services/admin/jobs.service');
 
 // ==================== طلبات التوظيف (Applications) ====================
 

@@ -1,5 +1,5 @@
 // 📁 Backend/controllers/admin/contracts.controller.js
-const contractsService = require('/services/admin/contracts.service');
+const contractsService = require('../../services/admin/contracts.service');
 const path = require('path');
 const fs = require('fs');
 

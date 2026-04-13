@@ -1,6 +1,6 @@
 // 📁 Backend/controllers/admin/payments.controller.js
-const paymentsService = require('/services/admin/payments.service');
-const contractsService = require('/services/admin/contracts.service'); // استيراد
+const paymentsService = require('../../services/admin/payments.service');
+const contractsService = require('../../services/admin/contracts.service'); // استيراد
 
 // GET /api/admin/payments
 exports.getAllPayments = async (req, res) => {

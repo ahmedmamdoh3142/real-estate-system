@@ -1,7 +1,7 @@
 // 📁 Backend/routes/admin/users.routes.js
 const express = require('express');
 const router = express.Router();
-const usersController = require('/controllers/admin/users.controller');
+const usersController = require('../../controllers/admin/users.controller');
 
 // التحقق من صحة الـ API
 router.get('/health', (req, res) => {

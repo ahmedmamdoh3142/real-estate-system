@@ -1,14 +1,12 @@
-// Backend/config/database.config.js - ملف إعدادات قاعدة البيانات
 const sql = require('mssql');
-
 require('dotenv').config();
-const sql = require('mssql');
 
 const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER,
+    server: process.env.DB_HOST,
     database: process.env.DB_NAME,
+    port: parseInt(process.env.DB_PORT, 10) || 1433,
     options: {
         encrypt: false,
         trustServerCertificate: true,
@@ -23,16 +21,10 @@ const dbConfig = {
     requestTimeout: 30000
 };
 
-module.exports = {
-    sql,
-    dbConfig
-};
-
-// دالة الاتصال العامة
 async function connectToDatabase() {
     try {
         const pool = await sql.connect(dbConfig);
-        console.log('✅ تم الاتصال بنجاح بقاعدة البيانات:', dbConfig.database);
+        console.log('✅ تم الاتصال بقاعدة البيانات:', dbConfig.database);
         return pool;
     } catch (error) {
         console.error('❌ فشل الاتصال بقاعدة البيانات:', error.message);
@@ -40,20 +32,18 @@ async function connectToDatabase() {
     }
 }
 
-// دالة الاستعلام العامة
 async function executeQuery(query, params = []) {
     try {
         const pool = await connectToDatabase();
         const request = pool.request();
-        
-        // إضافة الباراميترات إذا وجدت
+
         params.forEach((param, index) => {
             request.input(`param${index}`, param.type || sql.VarChar, param.value);
         });
-        
+
         const result = await request.query(query);
         await pool.close();
-        
+
         return {
             success: true,
             data: result.recordset,
@@ -70,8 +60,8 @@ async function executeQuery(query, params = []) {
 }
 
 module.exports = {
+    sql,
     dbConfig,
     connectToDatabase,
-    executeQuery,
-    sql
+    executeQuery
 };

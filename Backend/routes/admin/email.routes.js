@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const emailController = require('/controllers/admin/email.controller');
+const emailController = require('../../controllers/admin/email.controller');
 const jwt = require('jsonwebtoken');
 
 console.log('📧 Loading email.routes...');

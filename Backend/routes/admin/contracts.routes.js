@@ -4,7 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const contractsController = require('/controllers/admin/contracts.controller');
+const contractsController = require('../../controllers/admin/contracts.controller');
 
 // التأكد من وجود مجلد رفع العقود
 const uploadDir = path.join(__dirname, '/uploads/contracts');

@@ -1,7 +1,7 @@
 // Backend/routes/admin/profile.routes.js
 const express = require('express');
 const router = express.Router();
-const profileController = require('/controllers/admin/profile.controller');
+const profileController = require('../../controllers/admin/profile.controller');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
