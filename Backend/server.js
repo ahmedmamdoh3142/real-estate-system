@@ -1,21 +1,39 @@
-// Backend/server.js - Production Ready with mssql (tedious)
-require('dotenv').config();
+// Backend/server.js - Production Ready FIXED
+const path = require('path');
+
+// 🔥 تأكد إن .env بيتقري حتى لو جوه Backend أو root
+require('dotenv').config({
+    path: path.join(__dirname, '../.env')
+});
 
 const app = require('./app');
 const sql = require('mssql');
 
 const PORT = process.env.PORT || 3001;
 
+// ==================== DEBUG ENV ====================
+console.log('\n🔍 ENV CHECK:');
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_PORT:', process.env.DB_PORT);
+
+// ❌ منع التشغيل لو البيانات ناقصة
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
+    console.error('\n❌ خطأ: بيانات قاعدة البيانات ناقصة في .env');
+    process.exit(1);
+}
+
 // ==================== إعدادات قاعدة البيانات ====================
 const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    server: process.env.DB_HOST,
+    server: process.env.DB_HOST, // 👈 أهم سطر
     database: process.env.DB_NAME,
     port: parseInt(process.env.DB_PORT) || 1433,
     options: {
-        encrypt: false,          // للتشغيل المحلي بدون SSL
-        trustServerCertificate: true,  // يسمح بشهادات ذاتية التوقيع
+        encrypt: false,
+        trustServerCertificate: true,
         enableArithAbort: true,
         connectTimeout: 30000,
         requestTimeout: 30000
@@ -39,19 +57,24 @@ let pool = null;
 
 async function connectToDatabase() {
     try {
+        console.log('\n🔌 محاولة الاتصال بقاعدة البيانات...');
+        
         pool = await sql.connect(dbConfig);
-        global.dbPool = pool;   // <-- أضف هذا السطر
-        console.log('✅ قاعدة البيانات متصلة بنجاح!');
+
+        global.dbPool = pool;
         app.locals.dbConnected = true;
         app.locals.dbPool = pool;
 
-        // جلب إحصائيات سريعة
+        console.log('✅ قاعدة البيانات متصلة بنجاح!');
+
+        // اختبار بسيط
         try {
             const result = await pool.request().query(`
                 SELECT 
                     (SELECT COUNT(*) FROM Projects) as projects,
                     (SELECT COUNT(*) FROM Users) as users
             `);
+
             console.log(`📊 الإحصائيات: ${result.recordset[0].projects} مشروع, ${result.recordset[0].users} مستخدم`);
         } catch (err) {
             console.log('⚠️ لا يمكن قراءة الإحصائيات:', err.message);
@@ -59,46 +82,52 @@ async function connectToDatabase() {
 
         return true;
     } catch (err) {
-        console.error('❌ فشل الاتصال بقاعدة البيانات:', err.message);
+        console.error('\n❌ فشل الاتصال بقاعدة البيانات:');
+        console.error('➡️ السبب:', err.message);
+
+        console.error('\n💡 تأكد من:');
+        console.error('- DB_HOST صح');
+        console.error('- SQL Server شغال');
+        console.error('- اليوزر والباسورد صح');
+
+        global.dbPool = null;
         app.locals.dbConnected = false;
         app.locals.dbPool = null;
+
         return false;
     }
 }
 
 // ==================== بدء الخادم ====================
 async function startServer() {
-    // محاولة الاتصال بقاعدة البيانات (لا تمنع تشغيل الخادم في حالة الفشل)
     await connectToDatabase();
 
     const server = app.listen(PORT, () => {
         console.log('\n' + '🎉'.repeat(10));
         console.log('✅ نظام إدارة العقارات يعمل الآن!');
         console.log('='.repeat(50));
-        console.log(`📍 الرابط: /api:${PORT}`);
-        console.log('📡 APIs متاحة:');
+        console.log(`📍 الرابط: http://localhost:${PORT}`);
+        console.log('📡 APIs:');
         console.log('   GET  /api/health');
         console.log('   GET  /api/public/home/stats');
         console.log('   GET  /api/public/home/featured-projects');
-        console.log('\n⚡ جاهز لاستقبال الطلبات!');
 
         if (!app.locals.dbConnected) {
-            console.log('\n⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️');
+            console.log('\n⚠️ ⚠️ ⚠️');
             console.log('⚠️ قاعدة البيانات غير متصلة');
-            console.log('⚠️ النظام يعمل ببيانات افتراضية');
-            console.log('⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️');
+            console.log('⚠️ شغال fallback mode');
+            console.log('⚠️ ⚠️ ⚠️');
         }
     });
 
-    // إغلاق نظيف
     process.on('SIGINT', async () => {
         console.log('\n👋 إيقاف الخادم...');
         if (pool) {
             await pool.close();
-            console.log('✅ تم إغلاق اتصال قاعدة البيانات');
+            console.log('✅ تم إغلاق DB');
         }
         server.close(() => {
-            console.log('✅ تم إغلاق الخادم بنجاح');
+            console.log('✅ تم إغلاق السيرفر');
             process.exit(0);
         });
     });
