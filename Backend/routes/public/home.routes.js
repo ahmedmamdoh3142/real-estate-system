@@ -6,11 +6,10 @@ require('dotenv').config();
 
 // الحصول على pool من app.locals
 function getPool() {
-    const app = require('../../app');
-    if (!app.locals.dbPool) {
-        throw new Error('قاعدة البيانات غير متصلة');
+    if (!global.dbPool) {
+        throw new Error('قاعدة البيانات غير متصلة - global.dbPool غير موجود');
     }
-    return app.locals.dbPool;
+    return global.dbPool;
 }
 
 // دالة لإنشاء الراوتر مع تمرير app
