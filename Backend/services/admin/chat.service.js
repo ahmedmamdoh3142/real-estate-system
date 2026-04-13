@@ -1,17 +1,44 @@
 const sql = require('mssql');
 require('dotenv').config();
 
-// الحصول على pool من app.locals (تم تعيينه في server.js)
-function getPool() {
-    if (!global.dbPool) {
-        throw new Error('قاعدة البيانات غير متصلة - global.dbPool غير موجود');
+// الحصول على pool من app.locals أو global.dbPool مع محاولة إعادة الاتصال
+async function getPool() {
+    if (global.dbPool) return global.dbPool;
+    try {
+        const app = require('../../app');
+        if (app.locals && app.locals.dbPool) return app.locals.dbPool;
+    } catch(e) {}
+    
+    // محاولة إعادة الاتصال بقاعدة البيانات
+    console.log('⚠️ ChatService: No dbPool available, attempting to reconnect...');
+    const dbConfig = {
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        server: process.env.DB_HOST,
+        database: process.env.DB_NAME,
+        port: parseInt(process.env.DB_PORT) || 1433,
+        options: {
+            encrypt: false,
+            trustServerCertificate: true,
+            enableArithAbort: true
+        }
+    };
+    try {
+        const pool = await sql.connect(dbConfig);
+        global.dbPool = pool;
+        const app = require('../../app');
+        if (app.locals) app.locals.dbPool = pool;
+        console.log('✅ ChatService: Reconnected to database successfully');
+        return pool;
+    } catch (err) {
+        console.error('❌ ChatService: Failed to reconnect:', err.message);
+        throw new Error('قاعدة البيانات غير متصلة - لا يمكن إنشاء اتصال جديد');
     }
-    return global.dbPool;
 }
 
 class ChatService {
     async queryAsync(query, params = {}) {
-        const pool = getPool();
+        const pool = await getPool();
         try {
             const result = await pool.request().query(query);
             return result.recordset || [];
@@ -22,7 +49,7 @@ class ChatService {
     }
 
     async executeAsync(query) {
-        const pool = getPool();
+        const pool = await getPool();
         try {
             const result = await pool.request().query(query);
             return result;

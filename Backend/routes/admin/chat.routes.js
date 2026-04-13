@@ -8,13 +8,39 @@ require('dotenv').config();
 
 const JWT_SECRET = 'real_estate_system_secret_key_2024';
 
-// الحصول على pool من app.locals
-function getPool() {
-    const app = require('../../app');
-    if (!app.locals.dbPool) {
-        throw new Error('قاعدة البيانات غير متصلة');
+// الحصول على pool من app.locals أو global.dbPool مع محاولة إعادة الاتصال
+async function getPool() {
+    if (global.dbPool) return global.dbPool;
+    try {
+        const app = require('../../app');
+        if (app.locals && app.locals.dbPool) return app.locals.dbPool;
+    } catch(e) {}
+    
+    // محاولة إعادة الاتصال بقاعدة البيانات
+    console.log('⚠️ ChatRoutes: No dbPool available, attempting to reconnect...');
+    const dbConfig = {
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        server: process.env.DB_HOST,
+        database: process.env.DB_NAME,
+        port: parseInt(process.env.DB_PORT) || 1433,
+        options: {
+            encrypt: false,
+            trustServerCertificate: true,
+            enableArithAbort: true
+        }
+    };
+    try {
+        const pool = await sql.connect(dbConfig);
+        global.dbPool = pool;
+        const app = require('../../app');
+        if (app.locals) app.locals.dbPool = pool;
+        console.log('✅ ChatRoutes: Reconnected to database successfully');
+        return pool;
+    } catch (err) {
+        console.error('❌ ChatRoutes: Failed to reconnect:', err.message);
+        throw new Error('قاعدة البيانات غير متصلة - لا يمكن إنشاء اتصال جديد');
     }
-    return app.locals.dbPool;
 }
 
 /**
@@ -36,7 +62,13 @@ const customAuthMiddleware = async (req, res, next) => {
             if (parts.length >= 4) {
                 const userId = parseInt(parts[3]);
                 if (!isNaN(userId)) {
-                    const pool = getPool();
+                    let pool;
+                    try {
+                        pool = await getPool();
+                    } catch (err) {
+                        console.error('❌ Chat route: Failed to get pool for mock token:', err);
+                        return res.status(500).json({ success: false, message: 'خطأ في الاتصال بقاعدة البيانات، يرجى المحاولة لاحقاً' });
+                    }
                     const query = `SELECT id, username, fullName, email, phone, role FROM Users WHERE id = ${userId}`;
                     const result = await pool.request().query(query);
                     const user = result.recordset[0] || null;
@@ -65,7 +97,14 @@ const customAuthMiddleware = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'توكن غير صالح' });
         }
 
-        const pool = getPool();
+        let pool;
+        try {
+            pool = await getPool();
+        } catch (err) {
+            console.error('❌ Chat route: Failed to get pool for token validation:', err);
+            return res.status(500).json({ success: false, message: 'خطأ في الاتصال بقاعدة البيانات، يرجى المحاولة لاحقاً' });
+        }
+
         const query = `SELECT id, username, fullName, email, phone, role FROM Users WHERE id = ${userId}`;
         const result = await pool.request().query(query);
         const user = result.recordset[0] || null;
