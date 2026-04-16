@@ -1,11 +1,11 @@
 // chat.js - نظام التواصل الفوري مع اتصال حقيقي بقاعدة البيانات
-// تم التعديل لجعل دوال جلب بيانات المستخدم والتوكن مطابقة لـ email.js
-// وإصلاح مشكلة إعادة التوجيه إلى اللوجن بسبب عدم قراءة بيانات المستخدم بشكل صحيح
+// تم التعديل: إصلاح أخطاء العناصر غير الموجودة (null references)
+// وإضافة فحص أمان لجميع الـ Event Listeners
 
 (function() {
     'use strict';
 
-    console.log('✅ chat.js Loaded - Enhanced Authentication & Stability');
+    console.log('✅ chat.js Loaded - Enhanced Authentication & Stability (Fixed Null Issues)');
 
     // ========== نظام الترجمة (مثل TaskFlow Pro) ==========
     const translations = {
@@ -380,109 +380,24 @@
             this.currentAudio = null;
             this.currentVoiceElement = null;
 
-            this.elements = {
-                chatsList: document.getElementById('chats-list'),
-                welcomeScreen: document.getElementById('welcome-screen'),
-                chatHeader: document.getElementById('chat-header'),
-                messagesContainer: document.getElementById('messages-container'),
-                messageInputArea: document.getElementById('message-input-area'),
-                messagesList: document.getElementById('messages-list'),
-                chatName: document.getElementById('chat-name'),
-                chatStatus: document.getElementById('chat-status'),
-                chatAvatarPlaceholder: document.getElementById('chat-avatar-placeholder'),
-                chatAvatarImg: document.getElementById('chat-avatar-img'),
-                messageInput: document.getElementById('message-input'),
-                sendBtn: document.getElementById('send-message-btn'),
-                chatsSearchInput: document.getElementById('chats-search-input'),
-                newChatBtn: document.getElementById('new-chat-btn'),
-                newGroupBtn: document.getElementById('new-group-btn'),
-                newChatModal: document.getElementById('new-chat-modal'),
-                newGroupModal: document.getElementById('new-group-modal'),
-                contactsList: document.getElementById('contacts-list'),
-                participantsList: document.getElementById('participants-list'),
-                createGroupBtn: document.getElementById('create-group-btn'),
-                cancelGroupBtn: document.getElementById('cancel-group-btn'),
-                groupNameInput: document.getElementById('group-name-input'),
-                participantsSearchInput: document.getElementById('participants-search-input'),
-                newChatSearchInput: document.getElementById('new-chat-search-input'),
-                newChatModalClose: document.getElementById('new-chat-modal-close'),
-                newGroupModalClose: document.getElementById('new-group-modal-close'),
-                startChatBtn: document.getElementById('start-chat-btn'),
-                menuToggle: document.getElementById('menu-toggle'),
-                sidebar: document.getElementById('dashboard-sidebar'),
-                sidebarClose: document.getElementById('sidebar-close'),
-                sidebarBackdrop: document.getElementById('sidebar-backdrop'),
-                userProfileBtn: document.getElementById('user-profile-btn'),
-                userDropdown: document.getElementById('user-dropdown'),
-                currentUserName: document.getElementById('current-user-name'),
-                currentUserRole: document.getElementById('current-user-role'),
-                systemTime: document.getElementById('system-time'),
-                emojiBtn: document.getElementById('emoji-btn'),
-                attachBtn: document.getElementById('attach-btn'),
-                emojiPanel: document.getElementById('emoji-panel'),
-                imageViewerModal: document.getElementById('image-viewer-modal'),
-                imageViewerImg: document.getElementById('image-viewer-img'),
-                imageViewerDownload: document.getElementById('image-viewer-download'),
-                imageViewerClose: document.getElementById('image-viewer-close'),
-                chatArea: document.getElementById('chat-area'),
-                mobileBackBtn: document.getElementById('mobile-back-btn'),
-                employeeSearchInput: document.getElementById('employee-search-input'),
-                employeeSearchResults: document.getElementById('employee-search-results'),
-                currentViewIndicator: document.getElementById('current-view-indicator'),
-                viewingUserName: document.getElementById('viewing-user-name'),
-                resetViewBtn: document.getElementById('reset-view-btn'),
-                groupInfoModal: document.getElementById('group-info-modal'),
-                groupInfoBody: document.getElementById('group-info-body'),
-                groupInfoFooter: document.getElementById('group-info-footer'),
-                groupInfoClose: document.getElementById('group-info-close'),
-                chatHeaderInfo: document.getElementById('chat-header-info'),
-                addParticipantModal: document.getElementById('add-participant-modal'),
-                addParticipantSearch: document.getElementById('add-participant-search'),
-                addParticipantList: document.getElementById('add-participant-list'),
-                cancelAddParticipantBtn: document.getElementById('cancel-add-participant-btn'),
-                confirmAddParticipantBtn: document.getElementById('confirm-add-participant-btn'),
-                addParticipantClose: document.getElementById('add-participant-close'),
-                confirmationModal: document.getElementById('confirmation-modal'),
-                confirmTitle: document.getElementById('confirm-title'),
-                confirmMessage: document.getElementById('confirm-message'),
-                confirmOk: document.getElementById('confirm-ok'),
-                confirmCancel: document.getElementById('confirm-cancel'),
-                confirmClose: document.getElementById('confirm-close'),
-                replyPreview: document.getElementById('reply-preview'),
-                replyText: document.querySelector('#reply-preview .reply-text'),
-                cancelReplyBtn: document.getElementById('cancel-reply-btn'),
-                localSearchBtn: document.getElementById('local-search-btn'),
-                searchNavigation: document.getElementById('search-navigation'),
-                searchPrev: document.getElementById('search-prev'),
-                searchNext: document.getElementById('search-next'),
-                searchCounter: document.getElementById('search-counter'),
-                globalSearchBtn: document.getElementById('global-search-btn'),
-                globalSearchModal: document.getElementById('global-search-modal'),
-                globalSearchClose: document.getElementById('global-search-close'),
-                globalSearchQuery: document.getElementById('global-search-query'),
-                globalSearchResults: document.getElementById('global-search-results'),
-                localSearchBar: document.getElementById('local-search-bar'),
-                localSearchInput: document.getElementById('local-search-input'),
-                localSearchCounter: document.getElementById('local-search-counter'),
-                localSearchPrev: document.getElementById('local-search-prev'),
-                localSearchNext: document.getElementById('local-search-next'),
-                localSearchClose: document.getElementById('local-search-close'),
-                voiceRecordBtn: document.getElementById('voice-record-btn'),
-                voiceRecordingIndicator: document.getElementById('voice-recording-indicator'),
-                recordingTimer: document.getElementById('recording-timer'),
-                cancelRecordingBtn: document.getElementById('cancel-recording-btn'),
-                chatInfoBtn: document.getElementById('chat-info-btn'),
-                chatInfoModal: document.getElementById('chat-info-modal'),
-                chatInfoBody: document.getElementById('chat-info-body'),
-                chatInfoClose: document.getElementById('chat-info-close')
-            };
+            // تعريف جميع العناصر التي سيتم استخدامها، مع تعيينها لاحقاً
+            this.elements = {};
 
             currentLang = getCurrentLanguage();
             setLanguage(currentLang);
             this.init();
         }
 
-        // ========== جلب المستخدم الحالي من localStorage (مطابق لـ email.js) ==========
+        // Helper method to safely get element by ID or selector
+        safeGetElement(selector, isId = true) {
+            const element = isId ? document.getElementById(selector) : document.querySelector(selector);
+            if (!element) {
+                console.warn(`⚠️ Element not found: ${selector}`);
+            }
+            return element;
+        }
+
+        // ========== جلب المستخدم الحالي من localStorage ==========
         getCurrentUser() {
             try {
                 const userData = localStorage.getItem('user_data');
@@ -498,7 +413,7 @@
             return null;
         }
 
-        // ========== جلب التوكن من localStorage (مطابق لـ email.js) ==========
+        // ========== جلب التوكن من localStorage ==========
         getAuthToken() {
             try {
                 let token = localStorage.getItem('auth_token');
@@ -666,7 +581,7 @@
                     body
                 });
                 const newMessage = response.data;
-                const tempMsg = this.elements.messagesList.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
+                const tempMsg = this.elements.messagesList?.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
                 if (tempMsg) {
                     tempMsg.setAttribute('data-msg-id', newMessage.id);
                 }
@@ -675,7 +590,7 @@
             } catch (error) {
                 console.error('❌ Error sending message:', error);
                 this.showNotification('error', translate('error'), translate('failedToSend'));
-                const failedMsg = this.elements.messagesList.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
+                const failedMsg = this.elements.messagesList?.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
                 if (failedMsg) failedMsg.remove();
                 return false;
             }
@@ -726,7 +641,7 @@
                     body: formData
                 });
                 const newMessage = response.data;
-                const tempMsg = this.elements.messagesList.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
+                const tempMsg = this.elements.messagesList?.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
                 if (tempMsg) {
                     const isOutgoing = true;
                     const newHtml = this.renderMessageHtml(newMessage, isOutgoing, this.activeChatType);
@@ -737,7 +652,7 @@
             } catch (error) {
                 console.error('❌ Error sending file:', error);
                 this.showNotification('error', translate('error'), translate('failedToSend'));
-                const failedMsg = this.elements.messagesList.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
+                const failedMsg = this.elements.messagesList?.querySelector(`.message[data-msg-id="${localMessage.id}"]`);
                 if (failedMsg) failedMsg.remove();
                 return false;
             }
@@ -828,10 +743,10 @@
                 if (this.activeChatId === chatId) {
                     this.activeChatId = null;
                     this.activeChatType = null;
-                    this.elements.welcomeScreen.style.display = 'flex';
-                    this.elements.chatHeader.style.display = 'none';
-                    this.elements.messagesContainer.style.display = 'none';
-                    this.elements.messageInputArea.style.display = 'none';
+                    if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+                    if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'none';
+                    if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'none';
+                    if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'none';
                 }
                 this.showNotification('success', translate('success'), translate('groupLeft'));
             } catch (error) {
@@ -847,10 +762,10 @@
                 if (this.activeChatId === chatId) {
                     this.activeChatId = null;
                     this.activeChatType = null;
-                    this.elements.welcomeScreen.style.display = 'flex';
-                    this.elements.chatHeader.style.display = 'none';
-                    this.elements.messagesContainer.style.display = 'none';
-                    this.elements.messageInputArea.style.display = 'none';
+                    if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+                    if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'none';
+                    if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'none';
+                    if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'none';
                 }
                 this.showNotification('success', translate('success'), translate('chatDeleted'));
             } catch (error) {
@@ -869,10 +784,10 @@
             await this.loadChats();
             this.activeChatId = null;
             this.activeChatType = null;
-            this.elements.welcomeScreen.style.display = 'flex';
-            this.elements.chatHeader.style.display = 'none';
-            this.elements.messagesContainer.style.display = 'none';
-            this.elements.messageInputArea.style.display = 'none';
+            if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+            if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'none';
+            if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'none';
+            if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'none';
             this.updateViewIndicator();
             this.updateInputAreaForViewingMode();
             this.showNotification('success', `عرض شاتات ${this.getUserNameById(userId)}`, '');
@@ -884,10 +799,10 @@
             this.loadChats();
             this.activeChatId = null;
             this.activeChatType = null;
-            this.elements.welcomeScreen.style.display = 'flex';
-            this.elements.chatHeader.style.display = 'none';
-            this.elements.messagesContainer.style.display = 'none';
-            this.elements.messageInputArea.style.display = 'none';
+            if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+            if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'none';
+            if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'none';
+            if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'none';
             this.updateViewIndicator();
             this.updateInputAreaForViewingMode();
             this.showNotification('info', translate('info'), '');
@@ -900,31 +815,31 @@
             } else {
                 this.elements.currentViewIndicator.style.display = 'flex';
                 const userName = this.getUserNameById(this.viewingUserId);
-                this.elements.viewingUserName.textContent = userName;
+                if (this.elements.viewingUserName) this.elements.viewingUserName.textContent = userName;
             }
         }
 
         updateInputAreaForViewingMode() {
-            if (!this.elements.messageInputArea) return;
+            if (!this.elements.messageInput) return;
             const isViewing = (this.viewingUserId && this.viewingUserId !== this.currentUser.id);
             if (isViewing) {
                 this.elements.messageInput.disabled = true;
-                this.elements.sendBtn.disabled = true;
-                this.elements.attachBtn.disabled = true;
-                this.elements.voiceRecordBtn.disabled = true;
+                if (this.elements.sendBtn) this.elements.sendBtn.disabled = true;
+                if (this.elements.attachBtn) this.elements.attachBtn.disabled = true;
+                if (this.elements.voiceRecordBtn) this.elements.voiceRecordBtn.disabled = true;
                 this.elements.messageInput.placeholder = translate('viewingMode');
                 if (this.elements.chatStatus) {
                     this.elements.chatStatus.innerHTML = `<span class="viewing-badge">${translate('viewingMode')}</span>`;
                 }
             } else {
                 this.elements.messageInput.disabled = false;
-                this.elements.sendBtn.disabled = false;
-                this.elements.attachBtn.disabled = false;
-                this.elements.voiceRecordBtn.disabled = false;
+                if (this.elements.sendBtn) this.elements.sendBtn.disabled = false;
+                if (this.elements.attachBtn) this.elements.attachBtn.disabled = false;
+                if (this.elements.voiceRecordBtn) this.elements.voiceRecordBtn.disabled = false;
                 this.elements.messageInput.placeholder = translate('typeMessage');
-                if (this.activeChatType === 'group') {
+                if (this.activeChatType === 'group' && this.elements.chatStatus) {
                     this.elements.chatStatus.textContent = translate('participantsCount', { count: this.chats.find(c => c.id === this.activeChatId)?.participantsCount || 0 });
-                } else {
+                } else if (this.elements.chatStatus) {
                     this.elements.chatStatus.textContent = '';
                 }
             }
@@ -1124,32 +1039,37 @@
             this.activeChatType = chat.chatType;
             this.activeChatCreatorId = chat.createdBy;
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.chat-item[data-chat-id="${chatId}"]`).classList.add('active');
-            this.elements.welcomeScreen.style.display = 'none';
-            this.elements.chatHeader.style.display = 'flex';
-            this.elements.messagesContainer.style.display = 'block';
-            this.elements.messageInputArea.style.display = 'block';
+            const activeChatItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+            if (activeChatItem) activeChatItem.classList.add('active');
+            if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'none';
+            if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'flex';
+            if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'block';
+            if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'block';
             const chatName = chat.chatType === 'private' ? (chat.otherParticipantName || translate('privateChat')) : (chat.chatName || translate('group'));
-            this.elements.chatName.textContent = chatName;
+            if (this.elements.chatName) this.elements.chatName.textContent = chatName;
             if (chat.avatar) {
-                this.elements.chatAvatarImg.src = this.baseURL + chat.avatar;
-                this.elements.chatAvatarImg.style.display = 'block';
-                this.elements.chatAvatarPlaceholder.style.display = 'none';
+                if (this.elements.chatAvatarImg) {
+                    this.elements.chatAvatarImg.src = this.baseURL + chat.avatar;
+                    this.elements.chatAvatarImg.style.display = 'block';
+                }
+                if (this.elements.chatAvatarPlaceholder) this.elements.chatAvatarPlaceholder.style.display = 'none';
             } else {
-                this.elements.chatAvatarImg.style.display = 'none';
-                this.elements.chatAvatarPlaceholder.style.display = 'flex';
-                this.elements.chatAvatarPlaceholder.textContent = this.getAvatarLetter(chatName);
+                if (this.elements.chatAvatarImg) this.elements.chatAvatarImg.style.display = 'none';
+                if (this.elements.chatAvatarPlaceholder) {
+                    this.elements.chatAvatarPlaceholder.style.display = 'flex';
+                    this.elements.chatAvatarPlaceholder.textContent = this.getAvatarLetter(chatName);
+                }
             }
             if (chat.chatType === 'group') {
-                this.elements.chatStatus.textContent = translate('participantsCount', { count: chat.participantsCount });
-                this.elements.chatHeaderInfo.style.cursor = 'pointer';
+                if (this.elements.chatStatus) this.elements.chatStatus.textContent = translate('participantsCount', { count: chat.participantsCount });
+                if (this.elements.chatHeaderInfo) this.elements.chatHeaderInfo.style.cursor = 'pointer';
             } else {
                 const status = chat.otherParticipantStatus === 'online' ? translate('online') : translate('offline');
-                this.elements.chatStatus.textContent = status;
-                this.elements.chatHeaderInfo.style.cursor = 'default';
+                if (this.elements.chatStatus) this.elements.chatStatus.textContent = status;
+                if (this.elements.chatHeaderInfo) this.elements.chatHeaderInfo.style.cursor = 'default';
             }
             await this.loadMessages(chatId);
-            if (this.isMobile()) {
+            if (this.isMobile() && this.elements.chatArea) {
                 this.elements.chatArea.classList.add('active');
                 document.body.classList.add('chat-open');
             }
@@ -1268,6 +1188,7 @@
         }
 
         async sendMessage() {
+            if (!this.elements.messageInput) return;
             const text = this.elements.messageInput.value.trim();
             const replyToId = this.replyToMessage ? this.replyToMessage.id : null;
             if (text) {
@@ -1302,10 +1223,10 @@
                 }
                 const response = await this.apiClient.request(url);
                 const newMessages = response.data;
-                const currentMessages = Array.from(this.elements.messagesList.querySelectorAll('.message')).map(el => parseInt(el.dataset.msgId));
+                const currentMessages = Array.from(this.elements.messagesList?.querySelectorAll('.message') || []).map(el => parseInt(el.dataset.msgId));
                 const lastMsgId = currentMessages.length ? Math.max(...currentMessages) : 0;
                 const newMsgs = newMessages.filter(m => m.id > lastMsgId);
-                if (newMsgs.length) {
+                if (newMsgs.length && this.elements.messagesList) {
                     for (let msg of newMsgs) {
                         const isOutgoing = this.isOutgoingMessage(msg.senderId);
                         const html = this.renderMessageHtml(msg, isOutgoing, this.activeChatType);
@@ -1407,8 +1328,8 @@
         showConfirmation(title, message) {
             return new Promise((resolve) => {
                 this.confirmResolve = resolve;
-                this.elements.confirmTitle.textContent = title;
-                this.elements.confirmMessage.textContent = message;
+                if (this.elements.confirmTitle) this.elements.confirmTitle.textContent = title;
+                if (this.elements.confirmMessage) this.elements.confirmMessage.textContent = message;
                 this.openModal(this.elements.confirmationModal);
             });
         }
@@ -1444,10 +1365,13 @@
         }
 
         updateUserInfo() {
-            if (this.elements.currentUserName && this.currentUser) {
-                this.elements.currentUserName.textContent = this.currentUser.fullName;
+            // These elements may not exist in chat.html, so we just skip if not found
+            const currentUserName = document.getElementById('current-user-name');
+            if (currentUserName && this.currentUser) {
+                currentUserName.textContent = this.currentUser.fullName;
             }
-            if (this.elements.currentUserRole && this.currentUser) {
+            const currentUserRole = document.getElementById('current-user-role');
+            if (currentUserRole && this.currentUser) {
                 const roleMap = {
                     'مشرف_عام': 'مشرف عام',
                     'مدير_مشاريع': 'مدير مشاريع',
@@ -1458,7 +1382,7 @@
                     'موظف': 'موظف',
                     'موظف_استقبال': 'موظف استقبال'
                 };
-                this.elements.currentUserRole.textContent = roleMap[this.currentUser.role] || this.currentUser.role;
+                currentUserRole.textContent = roleMap[this.currentUser.role] || this.currentUser.role;
             }
             this.updateEmployeeSearchVisibility();
         }
@@ -1475,18 +1399,19 @@
         }
 
         updateSystemTime() {
-            if (this.elements.systemTime) {
+            const systemTimeElement = document.getElementById('system-time');
+            if (systemTimeElement) {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' });
                 const dateStr = now.toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
-                this.elements.systemTime.textContent = `${timeStr} - ${dateStr}`;
+                systemTimeElement.textContent = `${timeStr} - ${dateStr}`;
             }
         }
 
         openImageViewer(imageUrl) {
             if (this.elements.imageViewerImg) {
                 this.elements.imageViewerImg.src = imageUrl;
-                this.elements.imageViewerDownload.href = imageUrl;
+                if (this.elements.imageViewerDownload) this.elements.imageViewerDownload.href = imageUrl;
                 this.openModal(this.elements.imageViewerModal);
             }
         }
@@ -1567,89 +1492,99 @@
                 footerHtml = `<button class="btn btn-secondary" id="leave-group-btn">${translate('leave')}</button>`;
             }
 
-            this.elements.groupInfoBody.innerHTML = bodyHtml;
-            this.elements.groupInfoFooter.innerHTML = footerHtml;
+            if (this.elements.groupInfoBody) this.elements.groupInfoBody.innerHTML = bodyHtml;
+            if (this.elements.groupInfoFooter) this.elements.groupInfoFooter.innerHTML = footerHtml;
             this.openModal(this.elements.groupInfoModal);
 
             if (isCreator) {
                 const avatarLarge = document.getElementById('group-avatar-large');
                 const avatarInput = document.getElementById('group-avatar-input');
-                avatarLarge.addEventListener('click', () => {
-                    avatarInput.click();
-                });
-                avatarInput.addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const formData = new FormData();
-                        formData.append('avatar', file);
-                        try {
-                            await this.apiClient.request(`/api/admin/chat/${this.activeChatId}/avatar`, {
-                                method: 'POST',
-                                body: formData
-                            });
-                            this.showNotification('success', translate('success'), translate('groupAvatarUpdated'));
-                            await this.loadChats();
-                            const updatedChat = this.chats.find(c => c.id === this.activeChatId);
-                            if (updatedChat && updatedChat.avatar) {
-                                const img = avatarLarge.querySelector('img');
-                                if (img) img.src = this.baseURL + updatedChat.avatar;
-                                else avatarLarge.innerHTML = `<img src="${this.baseURL}${updatedChat.avatar}" alt="${translate('groupAvatar')}"><div class="change-avatar-overlay"><i class="fas fa-camera"></i></div>`;
+                if (avatarLarge && avatarInput) {
+                    avatarLarge.addEventListener('click', () => {
+                        avatarInput.click();
+                    });
+                    avatarInput.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const formData = new FormData();
+                            formData.append('avatar', file);
+                            try {
+                                await this.apiClient.request(`/api/admin/chat/${this.activeChatId}/avatar`, {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                this.showNotification('success', translate('success'), translate('groupAvatarUpdated'));
+                                await this.loadChats();
+                                const updatedChat = this.chats.find(c => c.id === this.activeChatId);
+                                if (updatedChat && updatedChat.avatar) {
+                                    const img = avatarLarge.querySelector('img');
+                                    if (img) img.src = this.baseURL + updatedChat.avatar;
+                                    else avatarLarge.innerHTML = `<img src="${this.baseURL}${updatedChat.avatar}" alt="${translate('groupAvatar')}"><div class="change-avatar-overlay"><i class="fas fa-camera"></i></div>`;
+                                }
+                                if (updatedChat.avatar) {
+                                    if (this.elements.chatAvatarImg) {
+                                        this.elements.chatAvatarImg.src = this.baseURL + updatedChat.avatar;
+                                        this.elements.chatAvatarImg.style.display = 'block';
+                                    }
+                                    if (this.elements.chatAvatarPlaceholder) this.elements.chatAvatarPlaceholder.style.display = 'none';
+                                } else {
+                                    if (this.elements.chatAvatarImg) this.elements.chatAvatarImg.style.display = 'none';
+                                    if (this.elements.chatAvatarPlaceholder) this.elements.chatAvatarPlaceholder.style.display = 'flex';
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                this.showNotification('error', translate('error'), translate('failedToUpdateGroupAvatar'));
                             }
-                            if (updatedChat.avatar) {
-                                this.elements.chatAvatarImg.src = this.baseURL + updatedChat.avatar;
-                                this.elements.chatAvatarImg.style.display = 'block';
-                                this.elements.chatAvatarPlaceholder.style.display = 'none';
-                            } else {
-                                this.elements.chatAvatarImg.style.display = 'none';
-                                this.elements.chatAvatarPlaceholder.style.display = 'flex';
+                        }
+                    });
+                }
+
+                const saveGroupNameBtn = document.getElementById('save-group-name-btn');
+                if (saveGroupNameBtn) {
+                    saveGroupNameBtn.addEventListener('click', async () => {
+                        const newName = document.getElementById('edit-group-name')?.value.trim();
+                        if (newName && newName !== chat.chatName) {
+                            try {
+                                await this.apiClient.request(`/api/admin/chat/${this.activeChatId}`, {
+                                    method: 'PUT',
+                                    body: { chatName: newName }
+                                });
+                                chat.chatName = newName;
+                                this.renderChatsList();
+                                if (this.elements.chatName) this.elements.chatName.textContent = newName;
+                                this.showNotification('success', translate('success'), translate('groupNameUpdated'));
+                            } catch (err) {
+                                console.error(err);
+                                this.showNotification('error', translate('error'), translate('failedToUpdateGroupName'));
                             }
-                        } catch (err) {
-                            console.error(err);
-                            this.showNotification('error', translate('error'), translate('failedToUpdateGroupAvatar'));
-                        }
-                    }
-                });
-
-                document.getElementById('save-group-name-btn').addEventListener('click', async () => {
-                    const newName = document.getElementById('edit-group-name').value.trim();
-                    if (newName && newName !== chat.chatName) {
-                        try {
-                            await this.apiClient.request(`/api/admin/chat/${this.activeChatId}`, {
-                                method: 'PUT',
-                                body: { chatName: newName }
-                            });
-                            chat.chatName = newName;
-                            this.renderChatsList();
-                            this.elements.chatName.textContent = newName;
-                            this.showNotification('success', translate('success'), translate('groupNameUpdated'));
-                        } catch (err) {
-                            console.error(err);
-                            this.showNotification('error', translate('error'), translate('failedToUpdateGroupName'));
-                        }
-                    }
-                    this.closeModal(this.elements.groupInfoModal);
-                });
-
-                document.getElementById('delete-group-btn').addEventListener('click', async () => {
-                    const confirmed = await this.showConfirmation(translate('confirmTitle'), translate('confirmDelete'));
-                    if (confirmed) {
-                        try {
-                            await this.apiClient.request(`/api/admin/chat/${this.activeChatId}`, { method: 'DELETE' });
-                            await this.loadChats();
-                            this.activeChatId = null;
-                            this.activeChatType = null;
-                            this.elements.welcomeScreen.style.display = 'flex';
-                            this.elements.chatHeader.style.display = 'none';
-                            this.elements.messagesContainer.style.display = 'none';
-                            this.elements.messageInputArea.style.display = 'none';
-                            this.showNotification('success', translate('success'), translate('chatDeleted'));
-                        } catch (err) {
-                            console.error(err);
-                            this.showNotification('error', translate('error'), translate('failedToDelete'));
                         }
                         this.closeModal(this.elements.groupInfoModal);
-                    }
-                });
+                    });
+                }
+
+                const deleteGroupBtn = document.getElementById('delete-group-btn');
+                if (deleteGroupBtn) {
+                    deleteGroupBtn.addEventListener('click', async () => {
+                        const confirmed = await this.showConfirmation(translate('confirmTitle'), translate('confirmDelete'));
+                        if (confirmed) {
+                            try {
+                                await this.apiClient.request(`/api/admin/chat/${this.activeChatId}`, { method: 'DELETE' });
+                                await this.loadChats();
+                                this.activeChatId = null;
+                                this.activeChatType = null;
+                                if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+                                if (this.elements.chatHeader) this.elements.chatHeader.style.display = 'none';
+                                if (this.elements.messagesContainer) this.elements.messagesContainer.style.display = 'none';
+                                if (this.elements.messageInputArea) this.elements.messageInputArea.style.display = 'none';
+                                this.showNotification('success', translate('success'), translate('chatDeleted'));
+                            } catch (err) {
+                                console.error(err);
+                                this.showNotification('error', translate('error'), translate('failedToDelete'));
+                            }
+                            this.closeModal(this.elements.groupInfoModal);
+                        }
+                    });
+                }
 
                 const addParticipantBtn = document.getElementById('add-participant-from-info');
                 if (addParticipantBtn) {
@@ -1658,13 +1593,16 @@
                     });
                 }
             } else {
-                document.getElementById('leave-group-btn').addEventListener('click', async () => {
-                    const confirmed = await this.showConfirmation(translate('confirmTitle'), translate('confirmLeave'));
-                    if (confirmed) {
-                        await this.leaveGroup(this.activeChatId);
-                        this.closeModal(this.elements.groupInfoModal);
-                    }
-                });
+                const leaveGroupBtn = document.getElementById('leave-group-btn');
+                if (leaveGroupBtn) {
+                    leaveGroupBtn.addEventListener('click', async () => {
+                        const confirmed = await this.showConfirmation(translate('confirmTitle'), translate('confirmLeave'));
+                        if (confirmed) {
+                            await this.leaveGroup(this.activeChatId);
+                            this.closeModal(this.elements.groupInfoModal);
+                        }
+                    });
+                }
             }
 
             document.querySelectorAll('.remove-participant').forEach(btn => {
@@ -1723,19 +1661,19 @@
             if (users.length === 0) {
                 html = `<div style="text-align:center; padding:1rem;">${translate('noUsersFound')}</div>`;
             }
-            this.elements.addParticipantList.innerHTML = html;
+            if (this.elements.addParticipantList) this.elements.addParticipantList.innerHTML = html;
         }
 
         setReplyTo(messageId, senderName, preview) {
             this.replyToMessage = { id: messageId, senderName, preview };
-            this.elements.replyPreview.style.display = 'flex';
-            this.elements.replyText.textContent = translate('replyingTo', { name: senderName }) + `: ${preview}`;
+            if (this.elements.replyPreview) this.elements.replyPreview.style.display = 'flex';
+            if (this.elements.replyText) this.elements.replyText.textContent = translate('replyingTo', { name: senderName }) + `: ${preview}`;
         }
 
         clearReply() {
             this.replyToMessage = null;
-            this.elements.replyPreview.style.display = 'none';
-            this.elements.replyText.textContent = '';
+            if (this.elements.replyPreview) this.elements.replyPreview.style.display = 'none';
+            if (this.elements.replyText) this.elements.replyText.textContent = '';
         }
 
         performLocalSearch(query) {
@@ -1781,10 +1719,8 @@
             this.currentMatchIndex = -1;
             this.isSearchActive = false;
             this.searchQuery = '';
-            this.elements.searchNavigation.style.display = 'none';
-            if (this.elements.localSearchBar) {
-                this.elements.localSearchBar.style.display = 'none';
-            }
+            if (this.elements.searchNavigation) this.elements.searchNavigation.style.display = 'none';
+            if (this.elements.localSearchBar) this.elements.localSearchBar.style.display = 'none';
             const highlights = document.querySelectorAll('.search-highlight');
             highlights.forEach(span => {
                 const parent = span.parentNode;
@@ -1795,16 +1731,16 @@
         showLocalSearchBar() {
             if (this.elements.localSearchBar) {
                 this.elements.localSearchBar.style.display = 'flex';
-                this.elements.localSearchInput.value = '';
-                this.elements.localSearchInput.focus();
-                this.elements.localSearchCounter.textContent = '0/0';
+                if (this.elements.localSearchInput) this.elements.localSearchInput.value = '';
+                if (this.elements.localSearchInput) this.elements.localSearchInput.focus();
+                if (this.elements.localSearchCounter) this.elements.localSearchCounter.textContent = '0/0';
             }
         }
 
         updateSearchCounterDisplay() {
             const total = this.searchMatches.length;
             const current = this.currentMatchIndex + 1;
-            this.elements.localSearchCounter.textContent = translate('matchCount', { current, total });
+            if (this.elements.localSearchCounter) this.elements.localSearchCounter.textContent = translate('matchCount', { current, total });
         }
 
         scrollToMatch(index) {
@@ -1830,9 +1766,9 @@
         }
 
         async performGlobalSearch() {
-            const query = this.elements.globalSearchQuery.value.trim();
+            const query = this.elements.globalSearchQuery?.value.trim();
             if (!query) {
-                this.elements.globalSearchResults.innerHTML = `<div style="text-align:center; padding:1rem;">${translate('noResultsFound')}</div>`;
+                if (this.elements.globalSearchResults) this.elements.globalSearchResults.innerHTML = `<div style="text-align:center; padding:1rem;">${translate('noResultsFound')}</div>`;
                 return;
             }
             try {
@@ -1851,6 +1787,7 @@
 
         renderGlobalSearchResults(results, query) {
             const container = this.elements.globalSearchResults;
+            if (!container) return;
             if (!results.length) {
                 container.innerHTML = `<div style="text-align:center; padding:1rem;">${translate('noResultsFound')}</div>`;
                 return;
@@ -1936,7 +1873,7 @@
                 this.mediaRecorder.start();
                 this.isRecording = true;
                 this.recordStartTime = Date.now();
-                this.elements.voiceRecordBtn.classList.add('recording');
+                if (this.elements.voiceRecordBtn) this.elements.voiceRecordBtn.classList.add('recording');
                 this.showRecordingIndicator();
                 this.startRecordTimer();
             } catch (err) {
@@ -1949,7 +1886,7 @@
             if (this.mediaRecorder && this.isRecording) {
                 this.mediaRecorder.stop();
                 this.isRecording = false;
-                this.elements.voiceRecordBtn.classList.remove('recording');
+                if (this.elements.voiceRecordBtn) this.elements.voiceRecordBtn.classList.remove('recording');
                 this.stopRecordTimer();
             }
         }
@@ -1958,7 +1895,7 @@
             if (this.mediaRecorder && this.isRecording) {
                 this.mediaRecorder.stop();
                 this.isRecording = false;
-                this.elements.voiceRecordBtn.classList.remove('recording');
+                if (this.elements.voiceRecordBtn) this.elements.voiceRecordBtn.classList.remove('recording');
                 this.stopRecordTimer();
                 this.hideRecordingIndicator();
                 this.recordingBlob = null;
@@ -1970,7 +1907,7 @@
         showRecordingIndicator() {
             if (this.elements.voiceRecordingIndicator) {
                 this.elements.voiceRecordingIndicator.style.display = 'flex';
-                this.elements.recordingTimer.textContent = '00:00';
+                if (this.elements.recordingTimer) this.elements.recordingTimer.textContent = '00:00';
             }
         }
 
@@ -2039,8 +1976,8 @@
         }
 
         renderChatInfoTabs(media, files, voices, members, chatType) {
-            const tabsContainer = this.elements.chatInfoBody.querySelector('.chat-info-tabs');
-            const contentContainer = this.elements.chatInfoBody.querySelector('.chat-info-content');
+            const tabsContainer = this.elements.chatInfoBody?.querySelector('.chat-info-tabs');
+            const contentContainer = this.elements.chatInfoBody?.querySelector('.chat-info-content');
             if (!tabsContainer || !contentContainer) return;
 
             const membersTab = document.getElementById('members-tab-btn');
@@ -2065,7 +2002,7 @@
         }
 
         renderMediaTab(media) {
-            const container = this.elements.chatInfoBody.querySelector('.chat-info-content');
+            const container = this.elements.chatInfoBody?.querySelector('.chat-info-content');
             if (!container) return;
             if (media.length === 0) {
                 container.innerHTML = `<div class="empty-state">${translate('noMedia')}</div>`;
@@ -2089,7 +2026,7 @@
         }
 
         renderFilesTab(files) {
-            const container = this.elements.chatInfoBody.querySelector('.chat-info-content');
+            const container = this.elements.chatInfoBody?.querySelector('.chat-info-content');
             if (!container) return;
             if (files.length === 0) {
                 container.innerHTML = `<div class="empty-state">${translate('noFiles')}</div>`;
@@ -2120,7 +2057,7 @@
         }
 
         renderVoiceTab(voices) {
-            const container = this.elements.chatInfoBody.querySelector('.chat-info-content');
+            const container = this.elements.chatInfoBody?.querySelector('.chat-info-content');
             if (!container) return;
             if (voices.length === 0) {
                 container.innerHTML = `<div class="empty-state">${translate('noVoiceMessages')}</div>`;
@@ -2170,7 +2107,7 @@
         }
 
         renderMembersTab(members) {
-            const container = this.elements.chatInfoBody.querySelector('.chat-info-content');
+            const container = this.elements.chatInfoBody?.querySelector('.chat-info-content');
             if (!container) return;
             if (members.length === 0) {
                 container.innerHTML = `<div class="empty-state">${translate('noMembers')}</div>`;
@@ -2240,7 +2177,7 @@
         }
 
         getCurrentMessageById(msgId) {
-            const messages = Array.from(this.elements.messagesList.querySelectorAll('.message')).map(el => ({
+            const messages = Array.from(this.elements.messagesList?.querySelectorAll('.message') || []).map(el => ({
                 id: parseInt(el.dataset.msgId),
                 element: el
             }));
@@ -2290,7 +2227,7 @@
                             this.currentAudio = audio;
                             this.currentVoiceElement = voiceDiv;
                             
-                            progressBar.style.width = '0%';
+                            if (progressBar) progressBar.style.width = '0%';
                             if (timeLeftSpan) {
                                 timeLeftSpan.style.display = 'inline';
                                 timeLeftSpan.textContent = this.formatDuration(totalDuration);
@@ -2304,7 +2241,7 @@
                             const updateProgress = () => {
                                 if (audio.duration && !isNaN(audio.duration)) {
                                     const percent = (audio.currentTime / audio.duration) * 100;
-                                    progressBar.style.width = `${percent}%`;
+                                    if (progressBar) progressBar.style.width = `${percent}%`;
                                     const remaining = audio.duration - audio.currentTime;
                                     if (timeLeftSpan) {
                                         timeLeftSpan.textContent = this.formatDuration(remaining);
@@ -2319,7 +2256,7 @@
                             audio.onended = () => {
                                 icon.className = 'fas fa-play';
                                 if (waveContainer) waveContainer.classList.remove('active');
-                                progressBar.style.width = '0%';
+                                if (progressBar) progressBar.style.width = '0%';
                                 if (timeLeftSpan) {
                                     timeLeftSpan.style.display = 'none';
                                 }
@@ -2355,6 +2292,104 @@
 
                 await this.setupApiClient();
 
+                // إضافة عناصر مفقودة بشكل ديناميكي لتجنب أخطاء null
+                this.ensureRequiredElements();
+
+                // تعيين جميع المراجع للعناصر بعد التأكد من وجودها
+                this.elements = {
+                    chatsList: this.safeGetElement('chats-list'),
+                    welcomeScreen: this.safeGetElement('welcome-screen'),
+                    chatHeader: this.safeGetElement('chat-header'),
+                    messagesContainer: this.safeGetElement('messages-container'),
+                    messageInputArea: this.safeGetElement('message-input-area'),
+                    messagesList: this.safeGetElement('messages-list'),
+                    chatName: this.safeGetElement('chat-name'),
+                    chatStatus: this.safeGetElement('chat-status'),
+                    chatAvatarPlaceholder: this.safeGetElement('chat-avatar-placeholder'),
+                    chatAvatarImg: this.safeGetElement('chat-avatar-img'),
+                    messageInput: this.safeGetElement('message-input'),
+                    sendBtn: this.safeGetElement('send-message-btn'),
+                    chatsSearchInput: this.safeGetElement('chats-search-input'),
+                    newChatBtn: this.safeGetElement('new-chat-btn'),
+                    newGroupBtn: this.safeGetElement('new-group-btn'),
+                    newChatModal: this.safeGetElement('new-chat-modal'),
+                    newGroupModal: this.safeGetElement('new-group-modal'),
+                    contactsList: this.safeGetElement('contacts-list'),
+                    participantsList: this.safeGetElement('participants-list'),
+                    createGroupBtn: this.safeGetElement('create-group-btn'),
+                    cancelGroupBtn: this.safeGetElement('cancel-group-btn'),
+                    groupNameInput: this.safeGetElement('group-name-input'),
+                    participantsSearchInput: this.safeGetElement('participants-search-input'),
+                    newChatSearchInput: this.safeGetElement('new-chat-search-input'),
+                    newChatModalClose: this.safeGetElement('new-chat-modal-close'),
+                    newGroupModalClose: this.safeGetElement('new-group-modal-close'),
+                    startChatBtn: this.safeGetElement('start-chat-btn'),
+                    menuToggle: this.safeGetElement('menu-toggle'),
+                    sidebar: this.safeGetElement('dashboard-sidebar'),
+                    sidebarClose: this.safeGetElement('sidebar-close'),
+                    sidebarBackdrop: this.safeGetElement('sidebar-backdrop') || this.createSidebarBackdrop(),
+                    userProfileBtn: this.safeGetElement('user-profile-btn'),
+                    userDropdown: this.safeGetElement('.user-dropdown-content', false),
+                    emojiBtn: this.safeGetElement('emoji-btn'),
+                    attachBtn: this.safeGetElement('attach-btn'),
+                    emojiPanel: this.safeGetElement('emoji-panel'),
+                    imageViewerModal: this.safeGetElement('image-viewer-modal'),
+                    imageViewerImg: this.safeGetElement('image-viewer-img'),
+                    imageViewerDownload: this.safeGetElement('image-viewer-download'),
+                    imageViewerClose: this.safeGetElement('image-viewer-close'),
+                    chatArea: this.safeGetElement('chat-area'),
+                    mobileBackBtn: this.safeGetElement('mobile-back-btn'),
+                    employeeSearchInput: this.safeGetElement('employee-search-input'),
+                    employeeSearchResults: this.safeGetElement('employee-search-results'),
+                    currentViewIndicator: this.safeGetElement('current-view-indicator'),
+                    viewingUserName: this.safeGetElement('viewing-user-name'),
+                    resetViewBtn: this.safeGetElement('reset-view-btn'),
+                    groupInfoModal: this.safeGetElement('group-info-modal'),
+                    groupInfoBody: this.safeGetElement('group-info-body'),
+                    groupInfoFooter: this.safeGetElement('group-info-footer'),
+                    groupInfoClose: this.safeGetElement('group-info-close'),
+                    chatHeaderInfo: this.safeGetElement('chat-header-info'),
+                    addParticipantModal: this.safeGetElement('add-participant-modal'),
+                    addParticipantSearch: this.safeGetElement('add-participant-search'),
+                    addParticipantList: this.safeGetElement('add-participant-list'),
+                    cancelAddParticipantBtn: this.safeGetElement('cancel-add-participant-btn'),
+                    confirmAddParticipantBtn: this.safeGetElement('confirm-add-participant-btn'),
+                    addParticipantClose: this.safeGetElement('add-participant-close'),
+                    confirmationModal: this.safeGetElement('confirmation-modal'),
+                    confirmTitle: this.safeGetElement('confirm-title'),
+                    confirmMessage: this.safeGetElement('confirm-message'),
+                    confirmOk: this.safeGetElement('confirm-ok'),
+                    confirmCancel: this.safeGetElement('confirm-cancel'),
+                    confirmClose: this.safeGetElement('confirm-close'),
+                    replyPreview: this.safeGetElement('reply-preview'),
+                    replyText: document.querySelector('#reply-preview .reply-text'),
+                    cancelReplyBtn: this.safeGetElement('cancel-reply-btn'),
+                    localSearchBtn: this.safeGetElement('local-search-btn'),
+                    searchNavigation: this.safeGetElement('search-navigation'),
+                    searchPrev: this.safeGetElement('search-prev'),
+                    searchNext: this.safeGetElement('search-next'),
+                    searchCounter: this.safeGetElement('search-counter'),
+                    globalSearchBtn: this.safeGetElement('global-search-btn'),
+                    globalSearchModal: this.safeGetElement('global-search-modal'),
+                    globalSearchClose: this.safeGetElement('global-search-close'),
+                    globalSearchQuery: this.safeGetElement('global-search-query'),
+                    globalSearchResults: this.safeGetElement('global-search-results'),
+                    localSearchBar: this.safeGetElement('local-search-bar'),
+                    localSearchInput: this.safeGetElement('local-search-input'),
+                    localSearchCounter: this.safeGetElement('local-search-counter'),
+                    localSearchPrev: this.safeGetElement('local-search-prev'),
+                    localSearchNext: this.safeGetElement('local-search-next'),
+                    localSearchClose: this.safeGetElement('local-search-close'),
+                    voiceRecordBtn: this.safeGetElement('voice-record-btn'),
+                    voiceRecordingIndicator: this.safeGetElement('voice-recording-indicator'),
+                    recordingTimer: this.safeGetElement('recording-timer'),
+                    cancelRecordingBtn: this.safeGetElement('cancel-recording-btn'),
+                    chatInfoBtn: this.safeGetElement('chat-info-btn'),
+                    chatInfoModal: this.safeGetElement('chat-info-modal'),
+                    chatInfoBody: this.safeGetElement('chat-info-body'),
+                    chatInfoClose: this.safeGetElement('chat-info-close')
+                };
+
                 this.updateUserInfo();
 
                 await this.loadAllUsers();
@@ -2375,7 +2410,6 @@
             } catch (error) {
                 console.error('❌ Error initializing chat:', error);
                 this.showNotification('error', translate('error'), 'حدث خطأ أثناء تحميل الشات. يرجى تسجيل الدخول مرة أخرى.');
-                // Don't redirect immediately, let the user see the error
                 setTimeout(() => {
                     if (!this.currentUser) {
                         window.location.href = '../login/index.html';
@@ -2384,155 +2418,202 @@
             }
         }
 
+        // إنشاء العناصر المفقودة ديناميكياً
+        ensureRequiredElements() {
+            if (!document.getElementById('sidebar-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.id = 'sidebar-backdrop';
+                backdrop.className = 'sidebar-backdrop';
+                backdrop.style.display = 'none';
+                document.body.appendChild(backdrop);
+                console.log('✅ Created missing sidebar-backdrop element');
+            }
+        }
+
+        createSidebarBackdrop() {
+            let backdrop = document.getElementById('sidebar-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'sidebar-backdrop';
+                backdrop.className = 'sidebar-backdrop';
+                backdrop.style.display = 'none';
+                document.body.appendChild(backdrop);
+            }
+            return backdrop;
+        }
+
         setupEventListeners() {
-            if (this.elements.employeeSearchInput) {
-                this.elements.employeeSearchInput.addEventListener('input', (e) => {
-                    this.searchEmployees(e.target.value);
-                });
-                this.elements.employeeSearchInput.addEventListener('focus', () => {
-                    if (this.elements.employeeSearchInput.value.trim() !== '') {
-                        this.elements.employeeSearchResults.classList.add('show');
-                    }
-                });
-                document.addEventListener('click', (e) => {
-                    if (!this.elements.employeeSearchInput.contains(e.target) &&
-                        !this.elements.employeeSearchResults.contains(e.target)) {
-                        this.hideEmployeeSearchResults();
-                    }
+            // زر الإرسال
+            if (this.elements.sendBtn) {
+                this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
+            }
+
+            // حقل الإدخال (Enter)
+            if (this.elements.messageInput) {
+                this.elements.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
                 });
             }
 
-            if (this.elements.resetViewBtn) {
-                this.elements.resetViewBtn.addEventListener('click', () => this.resetViewToCurrentUser());
+            // البحث في المحادثات
+            if (this.elements.chatsSearchInput) {
+                this.elements.chatsSearchInput.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const items = document.querySelectorAll('.chat-item');
+                    items.forEach(item => {
+                        const name = item.querySelector('.chat-item-name')?.textContent.toLowerCase() || '';
+                        if (name.includes(term)) item.style.display = 'flex';
+                        else item.style.display = 'none';
+                    });
+                });
             }
 
-            this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
-            this.elements.messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.sendMessage();
-            });
-
-            this.elements.chatsSearchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                const items = document.querySelectorAll('.chat-item');
-                items.forEach(item => {
-                    const name = item.querySelector('.chat-item-name').textContent.toLowerCase();
-                    if (name.includes(term)) item.style.display = 'flex';
-                    else item.style.display = 'none';
+            // أزرار المحادثة الجديدة والمجموعة
+            if (this.elements.newChatBtn) {
+                this.elements.newChatBtn.addEventListener('click', () => {
+                    this.renderContacts();
+                    this.openModal(this.elements.newChatModal);
                 });
-            });
+            }
 
-            this.elements.newChatBtn.addEventListener('click', () => {
-                this.renderContacts();
-                this.openModal(this.elements.newChatModal);
-            });
+            if (this.elements.newGroupBtn) {
+                this.elements.newGroupBtn.addEventListener('click', () => {
+                    this.renderParticipants();
+                    this.openModal(this.elements.newGroupModal);
+                });
+            }
 
-            this.elements.newGroupBtn.addEventListener('click', () => {
-                this.renderParticipants();
-                this.openModal(this.elements.newGroupModal);
-            });
+            // إغلاق المودالات
+            if (this.elements.newChatModalClose) {
+                this.elements.newChatModalClose.addEventListener('click', () => this.closeModal(this.elements.newChatModal));
+            }
+            if (this.elements.newGroupModalClose) {
+                this.elements.newGroupModalClose.addEventListener('click', () => this.closeModal(this.elements.newGroupModal));
+            }
+            if (this.elements.cancelGroupBtn) {
+                this.elements.cancelGroupBtn.addEventListener('click', () => this.closeModal(this.elements.newGroupModal));
+            }
 
-            this.elements.newChatModalClose.addEventListener('click', () => this.closeModal(this.elements.newChatModal));
-            this.elements.newGroupModalClose.addEventListener('click', () => this.closeModal(this.elements.newGroupModal));
-            this.elements.cancelGroupBtn.addEventListener('click', () => this.closeModal(this.elements.newGroupModal));
-
+            // البحث في مودال المحادثة الجديدة
             let searchTimeout;
-            this.elements.newChatSearchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const val = e.target.value;
-                searchTimeout = setTimeout(() => this.renderContacts(val), 300);
-            });
-
-            this.elements.participantsSearchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const val = e.target.value;
-                searchTimeout = setTimeout(() => this.renderParticipants(val), 300);
-            });
-
-            this.elements.createGroupBtn.addEventListener('click', async () => {
-                const groupName = this.elements.groupNameInput.value.trim();
-                const selected = [];
-                document.querySelectorAll('#participants-list input:checked').forEach(cb => {
-                    selected.push(parseInt(cb.value));
+            if (this.elements.newChatSearchInput) {
+                this.elements.newChatSearchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    const val = e.target.value;
+                    searchTimeout = setTimeout(() => this.renderContacts(val), 300);
                 });
-                if (!groupName) {
-                    this.showNotification('error', translate('error'), `${translate('groupNamePlaceholder')} ${translate('required')}`);
-                    return;
-                }
-                if (selected.length === 0) {
-                    this.showNotification('error', translate('error'), translate('selectAtLeastOne'));
-                    return;
-                }
-                await this.createGroup(groupName, selected, null);
-                this.closeModal(this.elements.newGroupModal);
-                this.elements.groupNameInput.value = '';
-            });
+            }
 
-            this.elements.startChatBtn.addEventListener('click', () => {
-                this.elements.newChatBtn.click();
-            });
-
-            this.elements.emojiBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const panel = this.elements.emojiPanel;
-                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-            });
-
-            document.querySelectorAll('.emoji-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    this.elements.messageInput.value += item.textContent;
-                    this.elements.messageInput.focus();
-                    this.elements.emojiPanel.style.display = 'none';
+            if (this.elements.participantsSearchInput) {
+                this.elements.participantsSearchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    const val = e.target.value;
+                    searchTimeout = setTimeout(() => this.renderParticipants(val), 300);
                 });
-            });
+            }
 
-            document.addEventListener('click', (e) => {
-                if (!this.elements.emojiBtn.contains(e.target) && !this.elements.emojiPanel.contains(e.target)) {
-                    this.elements.emojiPanel.style.display = 'none';
-                }
-            });
+            // إنشاء مجموعة
+            if (this.elements.createGroupBtn) {
+                this.elements.createGroupBtn.addEventListener('click', async () => {
+                    const groupName = this.elements.groupNameInput?.value.trim();
+                    const selected = [];
+                    document.querySelectorAll('#participants-list input:checked').forEach(cb => {
+                        selected.push(parseInt(cb.value));
+                    });
+                    if (!groupName) {
+                        this.showNotification('error', translate('error'), `${translate('groupNamePlaceholder')} ${translate('required')}`);
+                        return;
+                    }
+                    if (selected.length === 0) {
+                        this.showNotification('error', translate('error'), translate('selectAtLeastOne'));
+                        return;
+                    }
+                    await this.createGroup(groupName, selected, null);
+                    this.closeModal(this.elements.newGroupModal);
+                    if (this.elements.groupNameInput) this.elements.groupNameInput.value = '';
+                });
+            }
 
-            this.elements.attachBtn.addEventListener('click', () => {
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = 'image/*, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, audio/*';
-                fileInput.onchange = (e) => {
-                    const file = fileInput.files[0];
-                    if (file) this.sendFile(file);
+            // زر بدء محادثة جديدة من شاشة الترحيب
+            if (this.elements.startChatBtn) {
+                this.elements.startChatBtn.addEventListener('click', () => {
+                    if (this.elements.newChatBtn) this.elements.newChatBtn.click();
+                });
+            }
+
+            // الإيموجي
+            if (this.elements.emojiBtn && this.elements.emojiPanel) {
+                this.elements.emojiBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const panel = this.elements.emojiPanel;
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                });
+
+                document.querySelectorAll('.emoji-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (this.elements.messageInput) {
+                            this.elements.messageInput.value += item.textContent;
+                            this.elements.messageInput.focus();
+                        }
+                        if (this.elements.emojiPanel) this.elements.emojiPanel.style.display = 'none';
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (this.elements.emojiBtn && !this.elements.emojiBtn.contains(e.target) && this.elements.emojiPanel && !this.elements.emojiPanel.contains(e.target)) {
+                        this.elements.emojiPanel.style.display = 'none';
+                    }
+                });
+            }
+
+            // إرفاق ملف
+            if (this.elements.attachBtn) {
+                this.elements.attachBtn.addEventListener('click', () => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, audio/*';
+                    fileInput.onchange = (e) => {
+                        const file = fileInput.files[0];
+                        if (file) this.sendFile(file);
+                    };
+                    fileInput.click();
+                });
+            }
+
+            // التسجيل الصوتي
+            if (this.elements.voiceRecordBtn) {
+                let pressTimer = null;
+                const startRecord = () => {
+                    pressTimer = setTimeout(() => {
+                        this.startVoiceRecording();
+                    }, 200);
                 };
-                fileInput.click();
-            });
+                const stopRecord = () => {
+                    if (pressTimer) clearTimeout(pressTimer);
+                    if (this.isRecording) this.stopVoiceRecording();
+                };
+                const cancelRecord = () => {
+                    if (pressTimer) clearTimeout(pressTimer);
+                    if (this.isRecording) this.cancelVoiceRecording();
+                };
 
-            let pressTimer = null;
-            const startRecord = () => {
-                pressTimer = setTimeout(() => {
-                    this.startVoiceRecording();
-                }, 200);
-            };
-            const stopRecord = () => {
-                if (pressTimer) clearTimeout(pressTimer);
-                if (this.isRecording) this.stopVoiceRecording();
-            };
-            const cancelRecord = () => {
-                if (pressTimer) clearTimeout(pressTimer);
-                if (this.isRecording) this.cancelVoiceRecording();
-            };
+                this.elements.voiceRecordBtn.addEventListener('mousedown', startRecord);
+                this.elements.voiceRecordBtn.addEventListener('mouseup', stopRecord);
+                this.elements.voiceRecordBtn.addEventListener('mouseleave', cancelRecord);
 
-            this.elements.voiceRecordBtn.addEventListener('mousedown', startRecord);
-            this.elements.voiceRecordBtn.addEventListener('mouseup', stopRecord);
-            this.elements.voiceRecordBtn.addEventListener('mouseleave', cancelRecord);
-
-            this.elements.voiceRecordBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                startRecord();
-            });
-            this.elements.voiceRecordBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                stopRecord();
-            });
-            this.elements.voiceRecordBtn.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                cancelRecord();
-            });
+                this.elements.voiceRecordBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startRecord();
+                });
+                this.elements.voiceRecordBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    stopRecord();
+                });
+                this.elements.voiceRecordBtn.addEventListener('touchcancel', (e) => {
+                    e.preventDefault();
+                    cancelRecord();
+                });
+            }
 
             if (this.elements.cancelRecordingBtn) {
                 this.elements.cancelRecordingBtn.addEventListener('click', () => {
@@ -2540,40 +2621,43 @@
                 });
             }
 
-            if (this.elements.menuToggle) {
+            // القائمة الجانبية (في حالة وجودها في الصفحة)
+            if (this.elements.menuToggle && this.elements.sidebar) {
                 this.elements.menuToggle.addEventListener('click', () => {
                     this.elements.sidebar.classList.add('active');
-                    this.elements.sidebarBackdrop.classList.add('active');
+                    if (this.elements.sidebarBackdrop) this.elements.sidebarBackdrop.classList.add('active');
                     document.body.style.overflow = 'hidden';
                 });
             }
-            if (this.elements.sidebarClose) {
+            if (this.elements.sidebarClose && this.elements.sidebar) {
                 this.elements.sidebarClose.addEventListener('click', () => {
                     this.elements.sidebar.classList.remove('active');
+                    if (this.elements.sidebarBackdrop) this.elements.sidebarBackdrop.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+            if (this.elements.sidebarBackdrop) {
+                this.elements.sidebarBackdrop.addEventListener('click', () => {
+                    if (this.elements.sidebar) this.elements.sidebar.classList.remove('active');
                     this.elements.sidebarBackdrop.classList.remove('active');
                     document.body.style.overflow = '';
                 });
             }
-            this.elements.sidebarBackdrop.addEventListener('click', () => {
-                this.elements.sidebar.classList.remove('active');
-                this.elements.sidebarBackdrop.classList.remove('active');
-                document.body.style.overflow = '';
-            });
 
-            if (this.elements.userProfileBtn) {
+            // القائمة المنسدلة للمستخدم
+            if (this.elements.userProfileBtn && this.elements.userDropdown) {
                 this.elements.userProfileBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (this.elements.userDropdown) {
-                        this.elements.userDropdown.classList.toggle('show');
+                    this.elements.userDropdown.classList.toggle('show');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!this.elements.userProfileBtn.contains(e.target) && this.elements.userDropdown) {
+                        this.elements.userDropdown.classList.remove('show');
                     }
                 });
             }
-            document.addEventListener('click', (e) => {
-                if (this.elements.userProfileBtn && !this.elements.userProfileBtn.contains(e.target) && this.elements.userDropdown) {
-                    this.elements.userDropdown.classList.remove('show');
-                }
-            });
 
+            // تسجيل الخروج
             const logoutLink = document.querySelector('.dropdown-item.logout');
             if (logoutLink) {
                 logoutLink.addEventListener('click', (e) => {
@@ -2584,13 +2668,15 @@
                 });
             }
 
+            // إغلاق مودال عرض الصورة
             if (this.elements.imageViewerClose) {
                 this.elements.imageViewerClose.addEventListener('click', () => this.closeModal(this.elements.imageViewerModal));
             }
 
+            // زر الرجوع للجوال
             if (this.elements.mobileBackBtn) {
                 this.elements.mobileBackBtn.addEventListener('click', () => {
-                    if (this.isMobile()) {
+                    if (this.isMobile() && this.elements.chatArea) {
                         this.elements.chatArea.classList.remove('active');
                         document.body.classList.remove('chat-open');
                     }
@@ -2598,12 +2684,13 @@
             }
 
             window.addEventListener('resize', () => {
-                if (window.innerWidth > 768 && this.elements.chatArea.classList.contains('active')) {
+                if (window.innerWidth > 768 && this.elements.chatArea && this.elements.chatArea.classList.contains('active')) {
                     this.elements.chatArea.classList.remove('active');
                     document.body.classList.remove('chat-open');
                 }
             });
 
+            // معلومات المجموعة
             if (this.elements.chatHeaderInfo) {
                 this.elements.chatHeaderInfo.addEventListener('click', () => {
                     if (this.activeChatType === 'group') {
@@ -2616,6 +2703,7 @@
                 this.elements.groupInfoClose.addEventListener('click', () => this.closeModal(this.elements.groupInfoModal));
             }
 
+            // إضافة أعضاء للمجموعة
             if (this.elements.addParticipantClose) {
                 this.elements.addParticipantClose.addEventListener('click', () => this.closeModal(this.elements.addParticipantModal));
             }
@@ -2656,6 +2744,7 @@
                 });
             }
 
+            // تأكيد الحوار
             if (this.elements.confirmOk) {
                 this.elements.confirmOk.addEventListener('click', () => {
                     if (this.confirmResolve) {
@@ -2684,6 +2773,7 @@
                 });
             }
 
+            // الرد على رسالة
             document.addEventListener('click', (e) => {
                 const replyBtn = e.target.closest('.reply-btn');
                 if (replyBtn) {
@@ -2694,32 +2784,79 @@
                     e.preventDefault();
                 }
             });
-            this.elements.cancelReplyBtn.addEventListener('click', () => this.clearReply());
+            if (this.elements.cancelReplyBtn) {
+                this.elements.cancelReplyBtn.addEventListener('click', () => this.clearReply());
+            }
 
-            this.elements.localSearchBtn.addEventListener('click', () => {
-                this.showLocalSearchBar();
-            });
-            this.elements.localSearchClose.addEventListener('click', () => {
-                this.clearLocalSearch();
-            });
-            this.elements.localSearchInput.addEventListener('input', (e) => {
-                this.performLocalSearch(e.target.value);
-            });
-            this.elements.localSearchPrev.addEventListener('click', () => this.prevMatch());
-            this.elements.localSearchNext.addEventListener('click', () => this.nextMatch());
+            // البحث المحلي
+            if (this.elements.localSearchBtn) {
+                this.elements.localSearchBtn.addEventListener('click', () => {
+                    this.showLocalSearchBar();
+                });
+            }
+            if (this.elements.localSearchClose) {
+                this.elements.localSearchClose.addEventListener('click', () => {
+                    this.clearLocalSearch();
+                });
+            }
+            if (this.elements.localSearchInput) {
+                this.elements.localSearchInput.addEventListener('input', (e) => {
+                    this.performLocalSearch(e.target.value);
+                });
+            }
+            if (this.elements.localSearchPrev) {
+                this.elements.localSearchPrev.addEventListener('click', () => this.prevMatch());
+            }
+            if (this.elements.localSearchNext) {
+                this.elements.localSearchNext.addEventListener('click', () => this.nextMatch());
+            }
 
-            this.elements.globalSearchBtn.addEventListener('click', () => {
-                this.openModal(this.elements.globalSearchModal);
-                this.elements.globalSearchQuery.value = '';
-                this.elements.globalSearchResults.innerHTML = '';
-            });
-            this.elements.globalSearchClose.addEventListener('click', () => this.closeModal(this.elements.globalSearchModal));
-            this.elements.globalSearchQuery.addEventListener('input', () => this.performGlobalSearch());
+            // البحث العام
+            if (this.elements.globalSearchBtn) {
+                this.elements.globalSearchBtn.addEventListener('click', () => {
+                    this.openModal(this.elements.globalSearchModal);
+                    if (this.elements.globalSearchQuery) this.elements.globalSearchQuery.value = '';
+                    if (this.elements.globalSearchResults) this.elements.globalSearchResults.innerHTML = '';
+                });
+            }
+            if (this.elements.globalSearchClose) {
+                this.elements.globalSearchClose.addEventListener('click', () => this.closeModal(this.elements.globalSearchModal));
+            }
+            if (this.elements.globalSearchQuery) {
+                this.elements.globalSearchQuery.addEventListener('input', () => this.performGlobalSearch());
+            }
 
-            this.elements.chatInfoBtn.addEventListener('click', () => {
-                this.showChatInfo();
-            });
-            this.elements.chatInfoClose.addEventListener('click', () => this.closeModal(this.elements.chatInfoModal));
+            // معلومات الشات
+            if (this.elements.chatInfoBtn) {
+                this.elements.chatInfoBtn.addEventListener('click', () => {
+                    this.showChatInfo();
+                });
+            }
+            if (this.elements.chatInfoClose) {
+                this.elements.chatInfoClose.addEventListener('click', () => this.closeModal(this.elements.chatInfoModal));
+            }
+
+            // البحث عن الموظفين (للمشرف العام)
+            if (this.elements.employeeSearchInput) {
+                this.elements.employeeSearchInput.addEventListener('input', (e) => {
+                    this.searchEmployees(e.target.value);
+                });
+                this.elements.employeeSearchInput.addEventListener('focus', () => {
+                    if (this.elements.employeeSearchInput.value.trim() !== '') {
+                        if (this.elements.employeeSearchResults) this.elements.employeeSearchResults.classList.add('show');
+                    }
+                });
+                document.addEventListener('click', (e) => {
+                    if (this.elements.employeeSearchInput && !this.elements.employeeSearchInput.contains(e.target) &&
+                        this.elements.employeeSearchResults && !this.elements.employeeSearchResults.contains(e.target)) {
+                        this.hideEmployeeSearchResults();
+                    }
+                });
+            }
+
+            if (this.elements.resetViewBtn) {
+                this.elements.resetViewBtn.addEventListener('click', () => this.resetViewToCurrentUser());
+            }
         }
 
         setupMobileEnhancements() {
