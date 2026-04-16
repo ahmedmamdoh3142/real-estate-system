@@ -3,6 +3,7 @@ require('dotenv').config({ path: __dirname + '/.env' });
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = require('./app');
 const sql = require('mssql');
 
@@ -16,8 +17,8 @@ const dbConfig = {
     database: process.env.DB_NAME,
     port: parseInt(process.env.DB_PORT) || 1433,
     options: {
-        encrypt: false,          // للتشغيل المحلي بدون SSL
-        trustServerCertificate: true,  // يسمح بشهادات ذاتية التوقيع
+        encrypt: false,
+        trustServerCertificate: true,
         enableArithAbort: true,
         connectTimeout: 30000,
         requestTimeout: 30000
@@ -37,9 +38,40 @@ console.log('📅 التاريخ:', new Date().toLocaleString('ar-SA'));
 console.log('💻 المنفذ:', PORT);
 
 // ==================== إضافة خدمة الملفات الثابتة (Static Files) ====================
-// هذا السطر يجعل جميع الملفات داخل مجلد "uploads" قابلة للوصول عبر الرابط /uploads/...
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-console.log('📁 تم تفعيل خدمة الملفات الثابتة للمجلد: uploads');
+const uploadsPath = path.join(__dirname, 'uploads');
+console.log(`📁 مسار مجلد المرفقات: ${uploadsPath}`);
+
+// التأكد من وجود المجلد
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+    console.log('📁 تم إنشاء مجلد uploads');
+}
+
+// الحل الأول: استخدام express.static (الأفضل)
+app.use('/uploads', express.static(uploadsPath));
+console.log('✅ تم تفعيل خدمة الملفات الثابتة للمجلد: uploads');
+
+// الحل الثاني: مسار مخصص كنسخة احتياطية (للتأكد من العمل في كل الأحوال)
+app.get('/uploads/*', (req, res) => {
+    // استخراج المسار بعد /uploads/
+    const filePath = req.params[0];
+    const fullPath = path.join(uploadsPath, filePath);
+    
+    // التحقق من وجود الملف
+    fs.access(fullPath, fs.constants.F_OK, (err) => {
+        if (err) {
+            console.warn(`⚠️ ملف غير موجود: ${fullPath}`);
+            return res.status(404).json({ 
+                success: false, 
+                message: 'الملف غير موجود',
+                path: req.path
+            });
+        }
+        // إرسال الملف
+        res.sendFile(fullPath);
+    });
+});
+console.log('✅ تم تفعيل المسار المخصص للملفات كنسخة احتياطية');
 
 // ==================== الاتصال بقاعدة البيانات ====================
 let pool = null;
@@ -47,12 +79,11 @@ let pool = null;
 async function connectToDatabase() {
     try {
         pool = await sql.connect(dbConfig);
-        global.dbPool = pool;   // <-- أضف هذا السطر
+        global.dbPool = pool;
         console.log('✅ قاعدة البيانات متصلة بنجاح!');
         app.locals.dbConnected = true;
         app.locals.dbPool = pool;
 
-        // جلب إحصائيات سريعة
         try {
             const result = await pool.request().query(`
                 SELECT 
@@ -75,7 +106,6 @@ async function connectToDatabase() {
 
 // ==================== بدء الخادم ====================
 async function startServer() {
-    // محاولة الاتصال بقاعدة البيانات (لا تمنع تشغيل الخادم في حالة الفشل)
     await connectToDatabase();
 
     const server = app.listen(PORT, () => {
@@ -98,7 +128,6 @@ async function startServer() {
         }
     });
 
-    // إغلاق نظيف
     process.on('SIGINT', async () => {
         console.log('\n👋 إيقاف الخادم...');
         if (pool) {
