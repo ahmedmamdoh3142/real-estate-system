@@ -24,6 +24,123 @@
     <!-- 🔔 منطقة الإشعارات العائمة -->
     <div id="notification-area" class="notification-container"></div>
 
+    <!-- 🎯 القائمة الجانبية (مطابقة للصفحات السابقة) -->
+    <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header">
+            <button class="sidebar-close" id="sidebar-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="main">الرئيسية</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../dashboard/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="dashboard">لوحة التحكم</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="propertyManagement">إدارة العقارات</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../projects-management/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="projects">المشاريع</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../contracts/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="contracts">العقود</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../payments/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="payments">المدفوعات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../bills/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="bills">الفواتير</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="customerManagement">إدارة العملاء</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../inquiries/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="inquiries">الاستفسارات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../leeds/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="clients">العملاء</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="section-title" data-i18n="administration">الإدارة</h3>
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="../users/index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="users">المستخدمين</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="index.html" class="nav-link">
+                            <div class="nav-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <span class="nav-text" data-i18n="instantMessaging">التواصل الفوري</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <div class="status-indicator active"></div>
+                <span class="status-text" data-i18n="systemActive">متصل</span>
+            </div>
+            <div class="system-time" id="system-time"></div>
+        </div>
+    </aside>
+
+    <!-- طبقة خلفية للقائمة الجانبية -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <!-- 🎯 المحتوى الرئيسي للشات -->
     <main class="chat-main">
