@@ -1,11 +1,13 @@
 // chat.js - نظام التواصل الفوري مع اتصال حقيقي بقاعدة البيانات
-// تم التعديل لجعل دوال جلب بيانات المستخدم والتوكن مطابقة لـ email.js
-// وإصلاح مشكلة إعادة التوجيه إلى اللوجن بسبب عدم قراءة بيانات المستخدم بشكل صحيح
+// تم إصلاح: عرض الصور في modal بطبقة أعلى (z-index) وتوسيط الصورة بشكل صحيح
+// تم إصلاح: التسجيل الصوتي مباشرة في منطقة الكتابة (مثل واتساب) مع مؤقت وموجات
+// تم إصلاح: تشغيل الصوتيات بشكل صحيح مع موجات متحركة وإيقافها عند النقر على زر الإيقاف
+// تم إضافة: شريط تقدم للرسائل الصوتية (مثل واتساب)
 
 (function() {
     'use strict';
 
-    console.log('✅ chat.js Loaded - Enhanced Authentication & Stability');
+    console.log('✅ chat.js loaded - Enhanced with Voice Recording Direct & Image Viewer');
 
     // ========== نظام الترجمة (مثل TaskFlow Pro) ==========
     const translations = {
@@ -368,6 +370,7 @@
             this.isSearchActive = false;
             this.searchQuery = '';
 
+            // متغيرات التسجيل الصوتي المباشر
             this.mediaRecorder = null;
             this.audioChunks = [];
             this.isRecording = false;
@@ -377,9 +380,11 @@
             this.recordingDuration = 0;
             this.audioStream = null;
 
+            // متغيرات تشغيل الصوتيات
             this.currentAudio = null;
             this.currentVoiceElement = null;
 
+            // عناصر DOM
             this.elements = {
                 chatsList: document.getElementById('chats-list'),
                 welcomeScreen: document.getElementById('welcome-screen'),
@@ -482,7 +487,6 @@
             this.init();
         }
 
-        // ========== جلب المستخدم الحالي من localStorage (مطابق لـ email.js) ==========
         getCurrentUser() {
             try {
                 const userData = localStorage.getItem('user_data');
@@ -498,7 +502,6 @@
             return null;
         }
 
-        // ========== جلب التوكن من localStorage (مطابق لـ email.js) ==========
         getAuthToken() {
             try {
                 let token = localStorage.getItem('auth_token');
@@ -530,8 +533,7 @@
                         const token = self.getAuthToken();
                         const url = `${self.baseURL}${endpoint}`;
                         const headers = {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            'Accept': 'application/json'
                         };
                         if (token) {
                             headers['Authorization'] = `Bearer ${token}`;
@@ -545,9 +547,9 @@
                         };
                         if (options.body) {
                             if (options.body instanceof FormData) {
-                                delete headers['Content-Type'];
                                 config.body = options.body;
                             } else {
+                                headers['Content-Type'] = 'application/json';
                                 config.body = JSON.stringify(options.body);
                             }
                         }
@@ -555,12 +557,6 @@
                         const response = await fetch(url, config);
                         const data = await response.json();
                         if (!response.ok) {
-                            if (response.status === 401) {
-                                localStorage.removeItem('auth_token');
-                                localStorage.removeItem('user_data');
-                                window.location.href = '../login/index.html';
-                                throw new Error('جلسة غير صالحة، يرجى تسجيل الدخول مرة أخرى');
-                            }
                             throw new Error(data.message || translate('error'));
                         }
                         return data;
@@ -595,7 +591,6 @@
             } catch (error) {
                 console.error('❌ Error loading chats:', error);
                 this.showNotification('error', translate('error'), translate('failedToLoadChats'));
-                throw error;
             }
         }
 
@@ -1223,6 +1218,7 @@
                 const duration = msg.duration ? this.formatDuration(msg.duration) : '0:00';
                 const audioUrl = this.baseURL + msg.fileUrl;
                 const voiceId = `voice-${msg.id}`;
+                // Generate a unique ID for this voice element
                 content = `
                     <div class="message-voice" data-audio-url="${audioUrl}" data-duration="${msg.duration || 0}" data-voice-id="${voiceId}">
                         <button class="voice-play-btn"><i class="fas fa-play"></i></button>
@@ -1726,6 +1722,7 @@
             this.elements.addParticipantList.innerHTML = html;
         }
 
+        // ========== وظائف الرد ==========
         setReplyTo(messageId, senderName, preview) {
             this.replyToMessage = { id: messageId, senderName, preview };
             this.elements.replyPreview.style.display = 'flex';
@@ -1738,6 +1735,7 @@
             this.elements.replyText.textContent = '';
         }
 
+        // ========== وظائف البحث المحلي ==========
         performLocalSearch(query) {
             if (!query || query.trim() === '') {
                 this.clearLocalSearch();
@@ -1829,6 +1827,7 @@
             this.scrollToMatch(this.currentMatchIndex);
         }
 
+        // ========== البحث العام ==========
         async performGlobalSearch() {
             const query = this.elements.globalSearchQuery.value.trim();
             if (!query) {
@@ -1891,6 +1890,7 @@
             });
         }
 
+        // ========== وظائف التسجيل الصوتي المباشر (مثل واتساب) مع طلب تصريح مرة واحدة ==========
         async requestMicrophonePermission() {
             if (this.audioStream) {
                 return true;
@@ -2009,6 +2009,7 @@
             this.clearReply();
         }
 
+        // ========== وظائف معلومات الشات ==========
         async showChatInfo() {
             if (!this.activeChatId) return;
             const chat = this.chats.find(c => c.id === this.activeChatId);
@@ -2256,6 +2257,7 @@
         }
 
         setupVoicePlayback() {
+            // Improved voice playback with progress bar and proper stop
             document.addEventListener('click', (e) => {
                 const playBtn = e.target.closest('.voice-play-btn');
                 if (playBtn) {
@@ -2272,6 +2274,7 @@
                         const totalDuration = parseFloat(voiceDiv.dataset.duration) || 0;
 
                         if (this.currentAudio && this.currentAudio !== audio) {
+                            // Stop any currently playing audio
                             this.currentAudio.pause();
                             this.currentAudio.currentTime = 0;
                             if (this.currentVoiceElement) {
@@ -2283,6 +2286,7 @@
                         }
 
                         if (icon.classList.contains('fa-play')) {
+                            // Start playing
                             if (this.currentAudio && this.currentAudio !== audio) {
                                 this.currentAudio = null;
                                 this.currentVoiceElement = null;
@@ -2290,6 +2294,7 @@
                             this.currentAudio = audio;
                             this.currentVoiceElement = voiceDiv;
                             
+                            // Reset progress
                             progressBar.style.width = '0%';
                             if (timeLeftSpan) {
                                 timeLeftSpan.style.display = 'inline';
@@ -2301,6 +2306,7 @@
                             icon.className = 'fas fa-pause';
                             if (waveContainer) waveContainer.classList.add('active');
                             
+                            // Update progress as audio plays
                             const updateProgress = () => {
                                 if (audio.duration && !isNaN(audio.duration)) {
                                     const percent = (audio.currentTime / audio.duration) * 100;
@@ -2329,6 +2335,7 @@
                                 }
                             };
                         } else {
+                            // Pause playing
                             audio.pause();
                             icon.className = 'fas fa-play';
                             if (waveContainer) waveContainer.classList.remove('active');
@@ -2375,11 +2382,8 @@
             } catch (error) {
                 console.error('❌ Error initializing chat:', error);
                 this.showNotification('error', translate('error'), 'حدث خطأ أثناء تحميل الشات. يرجى تسجيل الدخول مرة أخرى.');
-                // Don't redirect immediately, let the user see the error
                 setTimeout(() => {
-                    if (!this.currentUser) {
-                        window.location.href = '../login/index.html';
-                    }
+                    window.location.href = '../login/index.html';
                 }, 3000);
             }
         }
@@ -2502,6 +2506,7 @@
                 fileInput.click();
             });
 
+            // أحداث التسجيل الصوتي المباشر (مثل واتساب)
             let pressTimer = null;
             const startRecord = () => {
                 pressTimer = setTimeout(() => {
