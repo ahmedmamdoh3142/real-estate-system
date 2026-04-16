@@ -1,6 +1,8 @@
 // Backend/server.js - Production Ready with mssql (tedious)
 require('dotenv').config({ path: __dirname + '/.env' });
 
+const express = require('express');
+const path = require('path');
 const app = require('./app');
 const sql = require('mssql');
 
@@ -33,6 +35,11 @@ console.log('بدء تشغيل نظام إدارة العقارات');
 console.log('='.repeat(50));
 console.log('📅 التاريخ:', new Date().toLocaleString('ar-SA'));
 console.log('💻 المنفذ:', PORT);
+
+// ==================== إضافة خدمة الملفات الثابتة (Static Files) ====================
+// هذا السطر يجعل جميع الملفات داخل مجلد "uploads" قابلة للوصول عبر الرابط /uploads/...
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+console.log('📁 تم تفعيل خدمة الملفات الثابتة للمجلد: uploads');
 
 // ==================== الاتصال بقاعدة البيانات ====================
 let pool = null;
@@ -75,11 +82,12 @@ async function startServer() {
         console.log('\n' + '🎉'.repeat(10));
         console.log('✅ نظام إدارة العقارات يعمل الآن!');
         console.log('='.repeat(50));
-        console.log(`📍 الرابط: /api:${PORT}`);
+        console.log(`📍 الرابط: http://localhost:${PORT}`);
         console.log('📡 APIs متاحة:');
         console.log('   GET  /api/health');
         console.log('   GET  /api/public/home/stats');
         console.log('   GET  /api/public/home/featured-projects');
+        console.log('   GET  /uploads/* (الملفات المرفوعة)');
         console.log('\n⚡ جاهز لاستقبال الطلبات!');
 
         if (!app.locals.dbConnected) {
