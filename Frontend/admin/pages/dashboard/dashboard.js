@@ -7,7 +7,7 @@
 
     class Dashboard {
         constructor() {
-            this.apiBaseUrl = 'http://localhost:3001/api/admin/dashboard';
+            this.apiBaseUrl = '';
             this.charts = {};
             this.data = {
                 stats: null,
