@@ -16,7 +16,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(2px);
     z-index: -1;
 }
@@ -70,7 +70,7 @@ body {
 }
 
 .container {
-    max-width: 1600px;
+    max-width: 3000px;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -687,7 +687,7 @@ body {
 }
 
 .overview-card {
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.4), rgba(20, 20, 20, 0.5));
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.6), rgba(20, 20, 20, 0.7));
     border: 1px solid rgba(203, 205, 205, 0.12);
     border-radius: var(--border-radius-lg);
     padding: 1.5rem;
@@ -824,7 +824,7 @@ body {
 
 /* جدول المشاريع - تصميم محسّن */
 .main-content-card {
-    background: rgba(25, 25, 25, 0.4);
+    background: rgba(25, 25, 25, 0.6);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(203, 205, 205, 0.12);
     border-radius: var(--border-radius-lg);
@@ -1752,7 +1752,7 @@ body {
 }
 
 .stat-card {
-    background: rgba(25, 25, 25, 0.4);
+    background: rgba(25, 25, 25, 0.6);
     border: 1px solid rgba(203, 205, 205, 0.12);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
@@ -3832,7 +3832,7 @@ body.sidebar-open {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
@@ -3862,7 +3862,7 @@ body.sidebar-open {
 }
 
 .modal-content {
-    background: rgba(25, 25, 25, 0.4);
+    background: rgba(25, 25, 25, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(203, 205, 205, 0.15);
     border-radius: var(--border-radius-lg);
@@ -4572,7 +4572,7 @@ body.sidebar-open {
 /* ============================================ */
 
 #project-form-modal .modal-body {
-    background: linear-gradient(145deg, rgba(20,20,20,0.4), rgba(15,15,15,0.3));
+    background: linear-gradient(145deg, rgba(20,20,20,0.6), rgba(15,15,15,0.7));
 }
 
 #project-form-modal .form-group {

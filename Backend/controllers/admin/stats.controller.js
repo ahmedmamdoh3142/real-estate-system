@@ -50,6 +50,18 @@ exports.getOverallStats = async (req, res) => {
     }
 };
 
+// ========== جميع الموظفين (بدون فلتر قسم) ==========
+exports.getAllEmployees = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const employees = await statsService.getAllEmployees(startDate, endDate);
+        res.json({ success: true, data: employees });
+    } catch (error) {
+        console.error('❌ getAllEmployees error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // ========== موظفو القسم ==========
 exports.getEmployeesByDepartment = async (req, res) => {
     try {
@@ -112,6 +124,30 @@ exports.getTasksChartData = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ getTasksChartData error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ========== حذف جزاء عادي ==========
+exports.deleteRegularPenalty = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await statsService.deleteRegularPenalty(id);
+        res.json({ success: true, message: 'تم حذف الجزاء بنجاح' });
+    } catch (error) {
+        console.error('❌ deleteRegularPenalty error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ========== حذف جزاء يدوي ==========
+exports.deleteManualPenalty = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await statsService.deleteManualPenalty(id);
+        res.json({ success: true, message: 'تم حذف الجزاء اليدوي بنجاح' });
+    } catch (error) {
+        console.error('❌ deleteManualPenalty error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

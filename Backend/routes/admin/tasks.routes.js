@@ -68,6 +68,7 @@ router.put('/notifications/read-all', tasksController.markAllNotificationsAsRead
 router.get('/inbox', tasksController.getInbox);
 router.get('/sent', tasksController.getSent);
 router.get('/subtasks', tasksController.getSubtasks);
+router.get('/followed', tasksController.getFollowed);
 router.get('/archived', tasksController.getArchived);
 router.get('/:id', tasksController.getTaskById);
 

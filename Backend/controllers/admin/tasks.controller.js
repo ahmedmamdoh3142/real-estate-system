@@ -78,6 +78,18 @@ exports.getSubtasks = async (req, res) => {
     }
 };
 
+exports.getFollowed = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const page = safeParseInt(req.query.page, 1);
+        const limit = safeParseInt(req.query.limit, 25);
+        const result = await tasksService.getUserTasks(userId, 'followed', page, limit);
+        res.json({ success: true, data: result.tasks, pagination: result.pagination });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
 exports.getArchived = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -108,6 +120,7 @@ exports.createTask = async (req, res) => {
         let taskData = req.body;
         if (taskData.assignees && typeof taskData.assignees === 'string') taskData.assignees = JSON.parse(taskData.assignees);
         if (taskData.dependencies && typeof taskData.dependencies === 'string') taskData.dependencies = JSON.parse(taskData.dependencies);
+        if (taskData.followers && typeof taskData.followers === 'string') taskData.followers = JSON.parse(taskData.followers);
         const result = await tasksService.createTask(taskData, userId);
         res.json({ success: true, data: result });
     } catch (error) {
@@ -121,6 +134,7 @@ exports.updateTask = async (req, res) => {
         const userId = req.user.id;
         let updateData = req.body;
         if (updateData.assignees && typeof updateData.assignees === 'string') updateData.assignees = JSON.parse(updateData.assignees);
+        if (updateData.followers && typeof updateData.followers === 'string') updateData.followers = JSON.parse(updateData.followers);
         const result = await tasksService.updateTask(parseInt(id), updateData, userId);
         res.json({ success: true, message: 'Task updated', data: result });
     } catch (error) {

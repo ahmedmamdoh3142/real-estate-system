@@ -1,4 +1,5 @@
 // Frontend/admin/pages/dashboard/dashboard.js - النسخة الديناميكية بالكامل معتمدة على API الصلاحيات
+// تم التعديل: تحسين القائمة المنسدلة للمستخدم (تفتح وتغلق بالنقر فقط، وتبقى مفتوحة حتى النقر خارجها)
 (function() {
     'use strict';
     
@@ -6,7 +7,7 @@
 
     class Dashboard {
         constructor() {
-            this.apiBaseUrl = '/api/admin/dashboard';
+            this.apiBaseUrl = 'http://localhost:3001/api/admin/dashboard';
             this.charts = {};
             this.data = {
                 stats: null,
@@ -134,6 +135,73 @@
             if (this.isMobile) {
                 this.setupMobileFeatures();
             }
+            
+            // ===== إعداد القائمة المنسدلة للمستخدم (تحسين الإغلاق عند النقر خارجها) =====
+            this.setupUserDropdown();
+        }
+        
+        // ===== دالة جديدة لتحسين القائمة المنسدلة للمستخدم =====
+        setupUserDropdown() {
+            const userBtn = document.querySelector('.user-profile-btn');
+            const dropdown = document.querySelector('.user-dropdown-content');
+            
+            if (!userBtn || !dropdown) return;
+            
+            // إزالة أي مستمعات سابقة (لضمان عدم تكرار)
+            const newBtn = userBtn.cloneNode(true);
+            userBtn.parentNode.replaceChild(newBtn, userBtn);
+            const newDropdown = dropdown.cloneNode(true);
+            dropdown.parentNode.replaceChild(newDropdown, dropdown);
+            
+            const finalBtn = document.querySelector('.user-profile-btn');
+            const finalDropdown = document.querySelector('.user-dropdown-content');
+            
+            if (!finalBtn || !finalDropdown) return;
+            
+            // دالة فتح القائمة
+            const openDropdown = () => {
+                finalDropdown.classList.add('open');
+            };
+            
+            // دالة إغلاق القائمة
+            const closeDropdown = () => {
+                finalDropdown.classList.remove('open');
+            };
+            
+            // دالة تبديل الحالة
+            const toggleDropdown = (e) => {
+                e.stopPropagation();
+                if (finalDropdown.classList.contains('open')) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            };
+            
+            // النقر على الزر يفتح/يغلق
+            finalBtn.addEventListener('click', toggleDropdown);
+            
+            // النقر في أي مكان خارج القائمة والزر يغلقها
+            document.addEventListener('click', function(event) {
+                if (!finalBtn.contains(event.target) && !finalDropdown.contains(event.target)) {
+                    closeDropdown();
+                }
+            });
+            
+            // منع إغلاق القائمة عند النقر داخلها (مثل اختيار عنصر)
+            finalDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // عند النقر على أي عنصر داخل القائمة (مثل تسجيل الخروج أو الملف الشخصي)، نغلق القائمة
+            const dropdownItems = finalDropdown.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    closeDropdown();
+                });
+            });
+            
+            console.log('✅ User dropdown configured with click-to-open and click-outside-to-close');
         }
         
         updateUserInfo() {
@@ -400,14 +468,7 @@
                 btn.addEventListener('click', (e) => this.handleQuickAction(e.currentTarget.id));
             });
             
-            const userProfileBtn = document.querySelector('.user-profile-btn');
-            if (userProfileBtn) {
-                userProfileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const dropdown = userProfileBtn.nextElementSibling;
-                    if (dropdown) dropdown.classList.toggle('show');
-                });
-            }
+            // تم نقل إعداد قائمة المستخدم إلى دالة منفصلة setupUserDropdown
         }
         
         setupTableTabs() {
@@ -661,7 +722,7 @@
                 const tableBodies = document.querySelectorAll('.data-table tbody');
                 tableBodies.forEach(tbody => {
                     if (tbody.children.length === 0 || !tbody.querySelector('.loading-row')) {
-                        tbody.innerHTML = `<tr class="loading-row"><td colspan="6"><div class="loading-spinner"></div><span>جاري تحميل البيانات من قاعدة البيانات...</span></td></tr>`;
+                        tbody.innerHTML = `<tr class="loading-row"><td colspan="6"><div class="loading-spinner"></div><span>جاري تحميل البيانات من قاعدة البيانات...</span></tr></tr>`;
                     }
                 });
             } else {

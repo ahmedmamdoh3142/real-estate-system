@@ -19,7 +19,6 @@ const authMiddleware = async (req, res, next) => {
         const token = authHeader.substring(7);
         console.log(`🔑 Token received (first 20 chars): ${token.substring(0, 20)}...`);
 
-        // دعم التوكن الوهمي للتطوير
         if (token.startsWith('mock_jwt_token_')) {
             console.log('🔧 Mock token detected');
             const parts = token.split('_');
@@ -35,7 +34,6 @@ const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'توكن غير صالح' });
         }
 
-        // التحقق من التوكن الحقيقي
         let decoded;
         try {
             decoded = jwt.verify(token, JWT_SECRET);
@@ -68,10 +66,15 @@ router.get('/departments', statsController.getAllDepartments);
 router.get('/departments/:id', statsController.getDepartmentById);
 router.get('/departments-stats', statsController.getDepartmentsStats);
 router.get('/overall-stats', statsController.getOverallStats);
+router.get('/all-employees', statsController.getAllEmployees);                 // <-- جديد
 router.get('/departments/:id/employees', statsController.getEmployeesByDepartment);
 router.get('/departments/:id/tasks-stats', statsController.getDepartmentTasksStats);
 router.get('/top-employees', statsController.getTopEmployees);
 router.get('/employees/:id', statsController.getEmployeeDetails);
 router.get('/tasks-chart', statsController.getTasksChartData);
+
+// Routes الحذف
+router.delete('/penalties/:id', statsController.deleteRegularPenalty);        // <-- جديد
+router.delete('/manual-penalties/:id', statsController.deleteManualPenalty);  // <-- جديد
 
 module.exports = router;

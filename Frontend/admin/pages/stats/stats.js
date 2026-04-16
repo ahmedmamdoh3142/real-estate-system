@@ -1,15 +1,13 @@
 // stats.js - صفحة إدارة الأقسام والموظفين (متكاملة مع APIs وفلتر التاريخ)
-// تم إصلاح التقييم ليعتمد على الفترة ويعرض "-" إذا لم توجد تقييمات
-// تم إضافة عرض الجزاءات اليدوية ونسبة الخصم مع ربطها بفلتر التاريخ
-// تم تعديل ألوان الجزاءات: أحمر للجزاءات > 0، أخضر لعدم وجود جزاءات
-// تم تحسين عرض الجزاءات في المودال بشكل احترافي (بطاقات منفصلة)
+// تم إضافة: 
+// 1. التمرير التلقائي للجدول عند عرض الموظفين
+// 2. أيقونة حذف الجزاء في المودال مع تكامل خلفي
+// 3. النقر على كرت إجمالي الموظفين لعرض جدول بجميع الموظفين مع تمرير تلقائي
+
 (function() {
     'use strict';
 
-    console.log('✅ stats.js loaded - Rating depends on date range, shows "-" if no ratings');
-    console.log('✅ Manual penalties and discount percentage integrated with date filter');
-    console.log('✅ Penalty colors: red for >0 penalties, green for none');
-    console.log('✅ Modal penalties display professional cards');
+    console.log('✅ stats.js loaded - Auto-scroll, delete penalty, all employees');
 
     // ========== نظام الترجمة (i18n) ==========
     const translations = {
@@ -450,7 +448,17 @@
                 }
                 const response = await this.request(`/api/admin/stats/departments/${departmentId}/employees?${params.toString()}`);
                 if (response.success && response.data) {
-                    this.renderEmployeesTable(response.data, departmentId);
+                    // الحصول على اسم القسم لعرضه في العنوان
+                    let deptName = '';
+                    try {
+                        const deptResponse = await this.request(`/api/admin/stats/departments/${departmentId}`);
+                        if (deptResponse.success && deptResponse.data) {
+                            deptName = deptResponse.data.name;
+                        }
+                    } catch(e) {}
+                    this.renderEmployeesTable(response.data, deptName);
+                    // التمرير التلقائي إلى الجدول
+                    this.scrollToTable();
                 }
             } catch (error) {
                 console.error('❌ loadDepartmentEmployees error:', error);
@@ -458,23 +466,41 @@
             }
         }
 
-        async renderEmployeesTable(employees, departmentId) {
+        // دالة جديدة: عرض جميع الموظفين (بدون فلتر قسم)
+        async loadAllEmployees() {
+            try {
+                this.selectedDepartmentId = null;
+                const params = new URLSearchParams();
+                if (this.dateRange.start && this.dateRange.end) {
+                    params.append('startDate', this.dateRange.start);
+                    params.append('endDate', this.dateRange.end);
+                }
+                const response = await this.request(`/api/admin/stats/all-employees?${params.toString()}`);
+                if (response.success && response.data) {
+                    this.renderEmployeesTable(response.data, 'جميع الموظفين');
+                    this.scrollToTable();
+                }
+            } catch (error) {
+                console.error('❌ loadAllEmployees error:', error);
+                this.showNotification('error', 'خطأ', 'فشل تحميل جميع الموظفين');
+            }
+        }
+
+        scrollToTable() {
+            const tableCard = document.getElementById('department-details-card');
+            if (tableCard && tableCard.style.display !== 'none') {
+                tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        async renderEmployeesTable(employees, title) {
             const card = document.getElementById('department-details-card');
             const titleEl = document.getElementById('selected-department-title');
-            
-            let deptName = '';
-            try {
-                const deptResponse = await this.request(`/api/admin/stats/departments/${departmentId}`);
-                if (deptResponse.success && deptResponse.data) {
-                    deptName = deptResponse.data.name;
-                }
-            } catch(e) {}
-            
-            titleEl.innerHTML = `<i class="fas fa-users card-title-icon"></i> موظفو قسم ${deptName || departmentId}`;
+            titleEl.innerHTML = `<i class="fas fa-users card-title-icon"></i> موظفو ${title}`;
             
             const tbody = document.getElementById('employees-table-body');
             if (!employees || employees.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا يوجد موظفون في هذا القسم</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا يوجد موظفون</td></tr>';
                 card.style.display = 'block';
                 return;
             }
@@ -484,11 +510,8 @@
                 const ratingDisplay = formatRating(emp.rating);
                 const discountPercentage = formatDiscountPercentage(emp.manualPenaltiesTotalPercentage || 0);
                 
-                // تحديد class للجزاءات: danger إذا كان هناك جزاءات (عدد > 0)، success إذا لم يكن هناك جزاءات
                 const penaltiesCount = emp.penaltiesCount || 0;
                 const penaltyClass = penaltiesCount > 0 ? 'danger' : 'success';
-                
-                // نفس الشيء لنسبة الخصم اليدوية
                 const discountClass = (emp.manualPenaltiesTotalPercentage || 0) > 0 ? 'danger' : 'success';
                 
                 html += `
@@ -528,8 +551,8 @@
                             <button class="action-btn btn-view view-employee-btn" data-employee-id="${emp.id}" title="عرض التفاصيل">
                                 <i class="fas fa-eye"></i>
                             </button>
-                        </td>
-                    </tr>
+                         </td>
+                     </tr>
                 `;
             });
 
@@ -593,26 +616,27 @@
                                 <td><span class="task-status-badge ${statusClass}">${statusText}</span></td>
                                 <td>${task.dueDate ? new Date(task.dueDate).toLocaleDateString('ar-SA') : '--'}</td>
                                 <td>${task.completedAt ? new Date(task.completedAt).toLocaleDateString('ar-SA') : '--'}</td>
-                            </tr>
+                             </tr>
                         `;
                     });
                 } else {
                     tasksRows = '<tr><td colspan="4" style="text-align:center; padding:2rem;">لا توجد مهام لهذا الموظف</td></tr>';
                 }
 
-                // عرض الجزاءات العادية بشكل احترافي (بطاقات)
+                // عرض الجزاءات العادية مع أيقونة حذف
                 let penaltiesHtml = '';
                 const penalties = employee.penalties || [];
                 if (penalties.length > 0) {
                     penaltiesHtml = '<div class="penalties-section"><div class="penalties-title"><i class="fas fa-gavel"></i> الجزاءات العادية</div><div class="penalties-list-cards">';
                     penalties.forEach(p => {
                         penaltiesHtml += `
-                            <div class="penalty-card">
+                            <div class="penalty-card" data-penalty-id="${p.id}" data-penalty-type="regular">
                                 <div class="penalty-info">
                                     <div class="penalty-date"><i class="far fa-calendar-alt"></i> ${new Date(p.issuedAt).toLocaleDateString('ar-SA')}</div>
                                     <div class="penalty-reason">${this.escapeHtml(p.reason)}</div>
                                 </div>
                                 <div class="penalty-amount">${p.amount ? `${p.amount} جنيه` : 'بدون مبلغ'}</div>
+                                <button class="delete-penalty-btn" data-id="${p.id}" data-type="regular" title="حذف الجزاء"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         `;
                     });
@@ -621,19 +645,20 @@
                     penaltiesHtml = '<div class="penalties-section"><div class="penalties-title"><i class="fas fa-gavel"></i> الجزاءات العادية</div><div class="empty-penalties">لا توجد جزاءات عادية خلال الفترة المحددة</div></div>';
                 }
 
-                // عرض الجزاءات اليدوية بشكل احترافي (بطاقات)
+                // عرض الجزاءات اليدوية مع أيقونة حذف
                 let manualPenaltiesHtml = '';
                 const manualPenalties = employee.manualPenalties || [];
                 if (manualPenalties.length > 0) {
                     manualPenaltiesHtml = '<div class="penalties-section"><div class="penalties-title"><i class="fas fa-hand-paper"></i> الجزاءات اليدوية (نسبة الخصم)</div><div class="penalties-list-cards">';
                     manualPenalties.forEach(mp => {
                         manualPenaltiesHtml += `
-                            <div class="penalty-card">
+                            <div class="penalty-card" data-penalty-id="${mp.id}" data-penalty-type="manual">
                                 <div class="penalty-info">
                                     <div class="penalty-date"><i class="far fa-calendar-alt"></i> ${new Date(mp.createdAt).toLocaleDateString('ar-SA')}</div>
                                     <div class="penalty-reason">${this.escapeHtml(mp.reason)}</div>
                                 </div>
                                 <div class="penalty-percentage">${mp.percentage}% ${mp.status === 'removed' ? '(ملغى)' : ''}</div>
+                                <button class="delete-penalty-btn" data-id="${mp.id}" data-type="manual" title="حذف الجزاء"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         `;
                     });
@@ -699,7 +724,7 @@
                                             <th>الحالة</th>
                                             <th>تاريخ الاستحقاق</th>
                                             <th>تاريخ الإنجاز</th>
-                                        </tr>
+                                         </tr>
                                     </thead>
                                     <tbody>
                                         ${tasksRows}
@@ -712,6 +737,20 @@
 
                 modal.classList.add('active');
 
+                // ربط أحداث حذف الجزاءات
+                document.querySelectorAll('.delete-penalty-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const penaltyId = btn.dataset.id;
+                        const penaltyType = btn.dataset.type;
+                        if (confirm('هل أنت متأكد من حذف هذا الجزاء؟')) {
+                            await this.deletePenalty(penaltyId, penaltyType);
+                            // إعادة تحميل تفاصيل الموظف بعد الحذف
+                            await this.showEmployeeDetails(employeeId);
+                        }
+                    });
+                });
+
                 const closeModal = () => modal.classList.remove('active');
                 document.getElementById('modal-close-btn').onclick = closeModal;
                 document.getElementById('modal-close-btn-2').onclick = closeModal;
@@ -723,6 +762,26 @@
             } catch (error) {
                 console.error('❌ showEmployeeDetails error:', error);
                 this.showNotification('error', 'خطأ', 'فشل تحميل تفاصيل الموظف');
+            }
+        }
+
+        async deletePenalty(penaltyId, type) {
+            try {
+                let endpoint = '';
+                if (type === 'regular') {
+                    endpoint = `/api/admin/stats/penalties/${penaltyId}`;
+                } else {
+                    endpoint = `/api/admin/stats/manual-penalties/${penaltyId}`;
+                }
+                const response = await this.request(endpoint, { method: 'DELETE' });
+                if (response.success) {
+                    this.showNotification('success', 'تم الحذف', 'تم حذف الجزاء بنجاح');
+                } else {
+                    throw new Error(response.message || 'فشل الحذف');
+                }
+            } catch (error) {
+                console.error('❌ deletePenalty error:', error);
+                this.showNotification('error', 'خطأ', 'فشل حذف الجزاء');
             }
         }
 
@@ -758,7 +817,7 @@
                         <td>${statusText}</td>
                         <td>${task.dueDate ? new Date(task.dueDate).toLocaleDateString('ar-SA') : '--'}</td>
                         <td>${task.completedAt ? new Date(task.completedAt).toLocaleDateString('ar-SA') : '--'}</td>
-                    </tr>
+                     </tr>
                 `;
             });
             if (tasksList.length === 0) {
@@ -997,6 +1056,14 @@
                 viewTopLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.showNotification('info', 'قريباً', 'سيتم عرض جميع الموظفين المتميزين');
+                });
+            }
+
+            // إضافة مستمع لكرت إجمالي الموظفين
+            const totalCard = document.getElementById('overview-card-total');
+            if (totalCard) {
+                totalCard.addEventListener('click', () => {
+                    this.loadAllEmployees();
                 });
             }
 

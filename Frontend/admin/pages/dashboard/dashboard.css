@@ -17,7 +17,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(3px);
     z-index: -1;
 }
@@ -403,6 +403,7 @@ body::before {
     font-size: 0.9rem;
 }
 
+/* ===== تعديل القائمة المنسدلة لتعمل بالنقر (وليس hover) ===== */
 .user-dropdown-content {
     position: absolute;
     top: calc(100% + 10px);
@@ -416,14 +417,20 @@ body::before {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: var(--transition-smooth);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
     z-index: 1001;
 }
 
-.user-profile-dropdown:hover .user-dropdown-content {
+/* عندما تكون القائمة مفتوحة (نضيف class "open") */
+.user-dropdown-content.open {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+/* إزالة سلوك hover السابق */
+.user-profile-dropdown:hover .user-dropdown-content {
+    /* لا شيء - نتحكم بالـ JS فقط */
 }
 
 .dropdown-item {
@@ -483,7 +490,7 @@ body::before {
     right: 0;
     width: 280px;
     height: calc(100vh - 70px);
-    background: rgba(15, 15, 15, 0.4);
+    background: rgba(15, 15, 15, 0.6);
     backdrop-filter: blur(20px);
     border-left: 1px solid rgba(203, 205, 205, 0.08);
     padding: 1.5rem 0;
@@ -716,8 +723,8 @@ gap: 1.5rem;
 
 .stat-card {
 background: linear-gradient(135deg,
-rgba(30, 30, 30, 0.4) 0%,
-rgba(20, 20, 20, 0.5) 100%
+rgba(30, 30, 30, 0.6) 0%,
+rgba(20, 20, 20, 0.7) 100%
 );
 border-radius: 20px;
 padding: 1.8rem;
@@ -921,8 +928,8 @@ transform: translateX(-3px);
 
 .chart-card {
     background: linear-gradient(135deg, 
-        rgba(25, 25, 25, 0.4) 0%, 
-        rgba(20, 20, 20, 0.5) 100%
+        rgba(25, 25, 25, 0.6) 0%, 
+        rgba(20, 20, 20, 0.7) 100%
     );
     border-radius: 20px;
     padding: 1.8rem;
@@ -1039,8 +1046,8 @@ transform: translateX(-3px);
 
 .unified-table {
     background: linear-gradient(135deg, 
-        rgba(25, 25, 25, 0.4) 0%, 
-        rgba(20, 20, 20, 0.5) 100%
+        rgba(25, 25, 25, 0.6) 0%, 
+        rgba(20, 20, 20, 0.7) 100%
     );
     border-radius: 20px;
     border: 1px solid rgba(203, 205, 205, 0.08);

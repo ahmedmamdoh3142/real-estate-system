@@ -264,12 +264,87 @@ class StatsService {
         };
     }
 
+    // جميع الموظفين (بدون فلتر قسم) مع إحصائياتهم
+    async getAllEmployees(startDate, endDate) {
+        let query = `
+            SELECT 
+                u.id,
+                u.fullName,
+                u.email,
+                u.phone,
+                u.role,
+                u.profileImage,
+                u.department as departmentName,
+                ISNULL((
+                    SELECT AVG(CAST(tr.finalScore AS FLOAT))
+                    FROM TaskAssignees ta2
+                    INNER JOIN Tasks t ON ta2.taskId = t.id
+                    INNER JOIN TaskRatings tr ON t.id = tr.taskId
+                    WHERE ta2.userId = u.id
+                      AND (tr.ratedAt IS NOT NULL)
+                      ${startDate && endDate ? 'AND CAST(tr.ratedAt AS DATE) BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)' : ''}
+                ), NULL) as ratingFromPeriod,
+                ISNULL((
+                    SELECT COUNT(DISTINCT t.id)
+                    FROM TaskAssignees ta2
+                    INNER JOIN Tasks t ON ta2.taskId = t.id
+                    WHERE ta2.userId = u.id
+                      AND t.status IN ('done', 'archived')
+                      AND (t.dueDate IS NULL OR CAST(t.completedAt AS DATE) <= CAST(t.dueDate AS DATE))
+                      ${startDate && endDate ? 'AND CAST(t.dueDate AS DATE) BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)' : ''}
+                ), 0) as tasksOnTime,
+                ISNULL((
+                    SELECT COUNT(DISTINCT t.id)
+                    FROM TaskAssignees ta2
+                    INNER JOIN Tasks t ON ta2.taskId = t.id
+                    WHERE ta2.userId = u.id
+                      AND t.status IN ('in-progress', 'review', 'todo')
+                      AND (t.dueDate IS NULL OR CAST(t.dueDate AS DATE) >= CAST(GETDATE() AS DATE))
+                      ${startDate && endDate ? 'AND CAST(t.dueDate AS DATE) BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)' : ''}
+                ), 0) as tasksInProgress,
+                ISNULL((
+                    SELECT COUNT(DISTINCT t.id)
+                    FROM TaskAssignees ta2
+                    INNER JOIN Tasks t ON ta2.taskId = t.id
+                    WHERE ta2.userId = u.id
+                      AND (
+                          (t.status IN ('done', 'archived') AND t.dueDate IS NOT NULL AND CAST(t.completedAt AS DATE) > CAST(t.dueDate AS DATE))
+                          OR
+                          (t.status IN ('in-progress', 'review', 'todo') AND t.dueDate IS NOT NULL AND CAST(t.dueDate AS DATE) < CAST(GETDATE() AS DATE))
+                      )
+                      ${startDate && endDate ? 'AND CAST(t.dueDate AS DATE) BETWEEN CAST(? AS DATE) AND CAST(? AS DATE)' : ''}
+                ), 0) as tasksOverdue
+            FROM Users u
+            WHERE u.isActive = 1
+            ORDER BY u.fullName
+        `;
+
+        let queryParams = [];
+        if (startDate && endDate) {
+            // ratingFromPeriod (2) + tasksOnTime (2) + tasksInProgress (2) + tasksOverdue (2)
+            queryParams = [startDate, endDate, startDate, endDate, startDate, endDate, startDate, endDate];
+        }
+
+        const result = await this.queryAsync(query, queryParams);
+        const employeesWithPenalties = [];
+        for (const row of result) {
+            const manualTotalPercentage = await this.getManualPenaltiesSumPercentage(row.id, startDate, endDate);
+            const regularPenaltiesCount = await this.getEmployeeRegularPenaltiesCount(row.id, startDate, endDate);
+            employeesWithPenalties.push({
+                ...row,
+                rating: row.ratingFromPeriod !== null ? parseFloat(row.ratingFromPeriod) : null,
+                manualPenaltiesTotalPercentage: manualTotalPercentage,
+                penaltiesCount: regularPenaltiesCount
+            });
+        }
+        return employeesWithPenalties;
+    }
+
     // موظفو قسم معين مع إحصائياتهم (مع فلتر التاريخ والتقييم المحسوب من الفترة)
     async getEmployeesByDepartment(deptId, startDate, endDate) {
         const deptName = await this.getDepartmentNameFromId(deptId);
         if (!deptName) return [];
 
-        // استعلام واحد يجلب الموظفين وإحصائيات مهامهم وتقييمهم خلال الفترة
         let query = `
             SELECT 
                 u.id,
@@ -324,7 +399,7 @@ class StatsService {
 
         let queryParams = [];
         if (startDate && endDate) {
-            // ratingFromPeriod (2 تواريخ) + tasksOnTime (2) + tasksInProgress (2) + tasksOverdue (2) + departmentName
+            // ratingFromPeriod (2) + tasksOnTime (2) + tasksInProgress (2) + tasksOverdue (2) + departmentName
             queryParams = [startDate, endDate, startDate, endDate, startDate, endDate, startDate, endDate, deptName];
         } else {
             queryParams = [deptName];
@@ -332,7 +407,6 @@ class StatsService {
 
         try {
             const result = await this.queryAsync(query, queryParams);
-            // إضافة manual penalties و regular penalties لكل موظف مع الفلتر
             const employeesWithPenalties = [];
             for (const row of result) {
                 const manualTotalPercentage = await this.getManualPenaltiesSumPercentage(row.id, startDate, endDate);
@@ -347,7 +421,7 @@ class StatsService {
             return employeesWithPenalties;
         } catch (error) {
             console.error('❌ Error in getEmployeesByDepartment:', error);
-            // Fallback: جلب بدون فلتر تاريخ مع احتساب الجزاءات حسب الفترة فقط (لن يتم تطبيق الفلتر على المهام ولكن سيتم على الجزاءات)
+            // Fallback: جلب بدون فلتر تاريخ مع احتساب الجزاءات حسب الفترة فقط
             const fallbackQuery = `
                 SELECT 
                     u.id, u.fullName, u.email, u.phone, u.role, u.profileImage,
@@ -451,7 +525,6 @@ class StatsService {
             `;
             queryParams = [startDate, endDate];
         } else {
-            // بدون فلتر: استخدام averageScore المخزن
             query = `
                 SELECT TOP ${parseInt(limit)}
                     u.id,
@@ -473,7 +546,6 @@ class StatsService {
 
     // تفاصيل موظف معين (مع المهام والجزاءات والتقييمات – التقييم والجزاءات تعتمد على الفترة)
     async getEmployeeDetails(employeeId, startDate, endDate) {
-        // معلومات الموظف الأساسية
         const employeeQuery = `
             SELECT 
                 u.id,
@@ -490,7 +562,6 @@ class StatsService {
         const employee = employeeResult[0];
         if (!employee) return null;
 
-        // حساب متوسط التقييم خلال الفترة (إن وجد)
         let ratingQuery = `
             SELECT AVG(CAST(tr.finalScore AS FLOAT)) as avgRating
             FROM TaskAssignees ta
@@ -508,7 +579,6 @@ class StatsService {
         const avgRating = ratingResult[0]?.avgRating !== undefined && ratingResult[0]?.avgRating !== null ? parseFloat(ratingResult[0].avgRating) : null;
         employee.rating = avgRating;
 
-        // إحصائيات المهام خلال الفترة
         let statsQuery = `
             SELECT 
                 COUNT(DISTINCT CASE 
@@ -549,7 +619,6 @@ class StatsService {
             tasksReview: 0
         };
 
-        // قائمة المهام مع حالتها (خلال الفترة)
         let tasksQuery = `
             SELECT 
                 t.id,
@@ -584,17 +653,14 @@ class StatsService {
         tasksQuery += ` ORDER BY t.dueDate ASC`;
         employee.tasksList = await this.queryAsync(tasksQuery, tasksParams);
 
-        // الجزاءات العادية مع فلتر التاريخ (issuedAt)
         const regularPenalties = await this.getEmployeeRegularPenalties(parseInt(employeeId), startDate, endDate);
         employee.penalties = regularPenalties;
         employee.penaltiesCount = regularPenalties.length;
 
-        // الجزاءات اليدوية مع الفلتر
         const manualPenalties = await this.getEmployeeManualPenalties(parseInt(employeeId), startDate, endDate);
         employee.manualPenalties = manualPenalties;
         employee.manualPenaltiesTotalPercentage = await this.getManualPenaltiesSumPercentage(parseInt(employeeId), startDate, endDate);
 
-        // التقييمات التفصيلية (مع فلتر تاريخ إن وجد)
         let ratingsQuery = `
             SELECT tr.id, tr.qualityScore, tr.timeScore, tr.finalScore, tr.ratedAt, tr.notes, t.title as taskTitle
             FROM TaskRatings tr

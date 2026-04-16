@@ -201,7 +201,6 @@ class TasksService {
         let rows = await this.queryAsync(query, [userId]);
         let permissions = rows.map(row => row.name);
         
-        // إضافة صلاحية الجزاءات للمشرف العام تلقائياً
         const isGM = await this._isGeneralManager(userId);
         if (isGM && !permissions.includes('penalties')) {
             permissions.push('penalties');
@@ -312,6 +311,37 @@ class TasksService {
                 `;
                 countParams = [userId];
                 break;
+            case 'followed':
+                query = `
+                    SELECT 
+                        t.id, t.title, t.description, t.priority, t.status, t.progress, t.dueDate, t.completedAt,
+                        t.projectId, t.senderId, t.parentTaskId, t.createdAt, t.updatedAt,
+                        t.isOverdue, t.daysOverdue, t.escalated, t.escalationLevel,
+                        t.recurringPattern, t.reminderDateTime, t.reminderSent,
+                        u.fullName AS senderName,
+                        (SELECT COUNT(*) FROM TaskComments WHERE taskId = t.id) AS commentsCount,
+                        (SELECT COUNT(*) FROM TaskAttachments WHERE taskId = t.id) AS attachmentsCount,
+                        'followed' AS type
+                    FROM Tasks t
+                    INNER JOIN TaskFollowers tf ON t.id = tf.taskId
+                    LEFT JOIN Users u ON t.senderId = u.id
+                    WHERE tf.userId = ?
+                      AND t.isArchived = 0
+                      AND t.status != 'archived'
+                    ORDER BY t.createdAt DESC
+                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                `;
+                params = [userId, offset, limit];
+                countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM Tasks t
+                    INNER JOIN TaskFollowers tf ON t.id = tf.taskId
+                    WHERE tf.userId = ?
+                      AND t.isArchived = 0
+                      AND t.status != 'archived'
+                `;
+                countParams = [userId];
+                break;
             case 'archived':
                 query = `
                     SELECT 
@@ -366,6 +396,11 @@ class TasksService {
                 averageScore: a.averageScore || 0
             }));
 
+            // جلب المتابعين
+            const followersQuery = `SELECT userId FROM TaskFollowers WHERE taskId = ?`;
+            const followers = await this.queryAsync(followersQuery, [task.id]);
+            task.followers = followers.map(f => f.userId);
+
             const subtasksQuery = `
                 SELECT id, title, progress, status, dueDate, completedAt
                 FROM Tasks
@@ -407,10 +442,11 @@ class TasksService {
                 SELECT 1
                 FROM Tasks t
                 LEFT JOIN TaskAssignees ta ON t.id = ta.taskId
+                LEFT JOIN TaskFollowers tf ON t.id = tf.taskId
                 WHERE t.id = ?
-                  AND (t.senderId = ? OR ta.userId = ?)
+                  AND (t.senderId = ? OR ta.userId = ? OR tf.userId = ?)
             `;
-            checkParams = [taskId, userId, userId];
+            checkParams = [taskId, userId, userId, userId];
         }
         
         const check = await this.queryAsync(checkQuery, checkParams);
@@ -454,6 +490,11 @@ class TasksService {
             avatar: a.profileImage || `https://i.pravatar.cc/150?img=${a.id}`,
             averageScore: a.averageScore || 0
         }));
+
+        // جلب المتابعين
+        const followersQuery = `SELECT userId FROM TaskFollowers WHERE taskId = ?`;
+        const followers = await this.queryAsync(followersQuery, [taskId]);
+        task.followers = followers.map(f => f.userId);
 
         const commentsQuery = `
             SELECT tc.id, tc.comment, tc.createdAt, u.fullName, u.role, u.profileImage
@@ -506,6 +547,7 @@ class TasksService {
             projectId = null,
             parentTaskId = null,
             assignees = [],
+            followers = [],
             recurringPattern = null,
             dependencies = [],
             reminderDateTime = null
@@ -573,6 +615,21 @@ class TasksService {
             }
         }
 
+        // إضافة المتابعين
+        for (const followerId of followers) {
+            const safeFollowerId = this._toSafeInt(followerId);
+            if (safeFollowerId && await this.userExists(safeFollowerId)) {
+                try {
+                    await this.executeAsync(`
+                        INSERT INTO TaskFollowers (taskId, userId, followedAt)
+                        VALUES (?, ?, GETDATE())
+                    `, [taskId, safeFollowerId]);
+                } catch (err) {
+                    console.error(`Failed to add follower ${safeFollowerId} to task ${taskId}:`, err);
+                }
+            }
+        }
+
         for (const depId of dependencies) {
             const safeDepId = this._toSafeInt(depId);
             if (safeDepId) {
@@ -598,6 +655,18 @@ class TasksService {
                 'task',
                 taskId,
                 { createdBy: senderName, taskTitle: title }
+            );
+        }
+        // إشعار للمتابعين
+        for (const followerId of followers) {
+            await this._createNotification(
+                followerId,
+                'task_assigned',
+                `متابعة مهمة: ${title}`,
+                `${senderName} أضافك كمتابع لمهمة "${title}".`,
+                'task',
+                taskId,
+                { taskTitle: title, addedBy: senderName }
             );
         }
 
@@ -714,6 +783,39 @@ class TasksService {
                         'task',
                         taskId,
                         { taskTitle: task.title, assignedBy: senderName }
+                    );
+                }
+            }
+        }
+
+        // تحديث المتابعين
+        if (data.followers !== undefined && Array.isArray(data.followers)) {
+            const currentFollowers = await this.queryAsync(`SELECT userId FROM TaskFollowers WHERE taskId = ?`, [taskId]);
+            const currentFollowerIds = currentFollowers.map(f => f.userId);
+            await this.executeAsync(`DELETE FROM TaskFollowers WHERE taskId = ?`, [taskId]);
+            for (const followerId of data.followers) {
+                const safeFollowerId = this._toSafeInt(followerId);
+                if (safeFollowerId && await this.userExists(safeFollowerId)) {
+                    await this.executeAsync(`
+                        INSERT INTO TaskFollowers (taskId, userId, followedAt)
+                        VALUES (?, ?, GETDATE())
+                    `, [taskId, safeFollowerId]);
+                }
+            }
+            const addedFollowers = data.followers.filter(f => !currentFollowerIds.includes(f));
+            if (addedFollowers.length) {
+                const task = await this.getTaskById(taskId, userId);
+                const updater = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
+                const updaterName = updater[0]?.fullName || 'مستخدم';
+                for (const fid of addedFollowers) {
+                    await this._createNotification(
+                        fid,
+                        'task_assigned',
+                        `متابعة مهمة: ${task.title}`,
+                        `${updaterName} أضافك كمتابع لمهمة "${task.title}".`,
+                        'task',
+                        taskId,
+                        { taskTitle: task.title, addedBy: updaterName }
                     );
                 }
             }
@@ -2056,7 +2158,6 @@ class TasksService {
         const isGM = await this._isGeneralManager(userId);
 
         if (isGM) {
-            // المشرف العام يرى جميع الجزاءات
             query = `
                 SELECT p.*, t.title AS taskTitle, u.fullName AS userName
                 FROM Penalties p
@@ -2110,12 +2211,10 @@ class TasksService {
 
         const isGM = await this._isGeneralManager(userId);
         if (isGM) {
-            // المشرف العام يمكنه حذف أي جزاء
             await this.executeAsync(`DELETE FROM Penalties WHERE id = ?`, [penaltyId]);
             return { success: true };
         }
 
-        // تحقق إذا كان المستخدم هو منشئ المهمة أو مسؤول عنها
         const check = await this.queryAsync(`
             SELECT p.id
             FROM Penalties p
