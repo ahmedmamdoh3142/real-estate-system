@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 });
 
 // ✅ خدمة الملفات الثابتة للصور المرفوعة
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static('/var/www/real-estate/uploads'));
 
 // Middleware لمعالجة JSON
 app.use(express.json({ limit: '50mb' }));
