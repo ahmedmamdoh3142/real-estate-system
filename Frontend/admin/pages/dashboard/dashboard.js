@@ -1,13 +1,14 @@
 // Frontend/admin/pages/dashboard/dashboard.js - النسخة الديناميكية بالكامل معتمدة على API الصلاحيات
-// تم التعديل: تحسين القائمة المنسدلة للمستخدم (تفتح وتغلق بالنقر فقط، وتبقى مفتوحة حتى النقر خارجها)
+// تم التعديل: جاهز للرفع على السيرفر (API مسار نسبي)
 (function() {
     'use strict';
     
-    console.log('✅ dashboard.js loaded - DYNAMIC PERMISSIONS VERSION');
+    console.log('✅ dashboard.js loaded - DYNAMIC PERMISSIONS VERSION (SERVER READY)');
 
     class Dashboard {
         constructor() {
-            this.apiBaseUrl = '';
+            // ✅ استخدام مسار نسبي بدلاً من localhost ليعمل على السيرفر مباشرة
+            this.apiBaseUrl = '/api/admin/dashboard';
             this.charts = {};
             this.data = {
                 stats: null,
@@ -140,7 +141,7 @@
             this.setupUserDropdown();
         }
         
-        // ===== دالة جديدة لتحسين القائمة المنسدلة للمستخدم =====
+        // ===== دالة لتحسين القائمة المنسدلة للمستخدم =====
         setupUserDropdown() {
             const userBtn = document.querySelector('.user-profile-btn');
             const dropdown = document.querySelector('.user-dropdown-content');
@@ -722,7 +723,7 @@
                 const tableBodies = document.querySelectorAll('.data-table tbody');
                 tableBodies.forEach(tbody => {
                     if (tbody.children.length === 0 || !tbody.querySelector('.loading-row')) {
-                        tbody.innerHTML = `<tr class="loading-row"><td colspan="6"><div class="loading-spinner"></div><span>جاري تحميل البيانات من قاعدة البيانات...</span></tr></tr>`;
+                        tbody.innerHTML = `<tr class="loading-row"><td colspan="6"><div class="loading-spinner"></div><span>جاري تحميل البيانات من قاعدة البيانات...</span></td></tr>`;
                     }
                 });
             } else {
