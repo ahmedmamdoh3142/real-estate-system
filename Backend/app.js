@@ -33,14 +33,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// ✅ منع أي طلب لـ /uploads من الوصول إلى الـ API نهائياً (يجب أن تخدمه Nginx)
-app.use('/uploads', (req, res) => {
-    // عدم الرد بـ JSON، بل إرجاع 404 عادي
-    res.status(404).send('Not Found');
-});
-
-// ✅ خدمة الملفات الثابتة للصور المرفوعة (معطل، لأن Nginx هو من يخدمها)
-// app.use('/uploads', express.static('/var/www/real-estate/uploads'));
+// ✅ خدمة الملفات الثابتة للصور المرفوعة
+//app.use('/uploads', express.static('/var/www/real-estate/uploads'));
 
 // Middleware لمعالجة JSON
 app.use(express.json({ limit: '50mb' }));

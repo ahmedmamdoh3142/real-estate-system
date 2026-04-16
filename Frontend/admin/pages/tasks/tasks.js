@@ -4129,7 +4129,10 @@
                     list.innerHTML = '';
                     if (task.attachments && task.attachments.length > 0) {
                         task.attachments.forEach(att => {
-                            const fileUrl = att.fileUrl.startsWith('http') ? att.fileUrl : `http://localhost:3001${att.fileUrl}`;
+                            const BASE_URL = "https://abh-properties.com";
+                            const fileUrl = att.fileUrl.startsWith('http')
+                            ? att.fileUrl
+                            : `${BASE_URL}${att.fileUrl}`;
                             list.innerHTML += `
                                 <div class="attachment-item">
                                     <div class="attachment-icon"><i class="fas ${att.mimeType?.startsWith('image/') ? 'fa-image' : 'fa-file'}"></i></div>
