@@ -6,7 +6,7 @@
     
     class ProjectDetailsPage {
         constructor() {
-            this.apiBaseUrl = 'http://localhost:3001/api/public';
+            this.apiBaseUrl = '/api/public';
             this.projectId = this.getProjectIdFromURL();
             this.projectData = null;
             this.relatedProjects = [];

@@ -1,4 +1,4 @@
-// ===== صفحة الاستفسارات - النسخة الكاملة النهائية مع AOS =====
+// ===== صفحة الاستفسارات - النسخة الكاملة النهائية مع AOS والأنيميشن =====
 (function() {
     'use strict';
     
@@ -829,7 +829,7 @@
             
             try {
                 // استخدام API الحقيقي
-                const response = await fetch('http://localhost:3001/api/public/inquiry/submit', {
+                const response = await fetch('/api/public/inquiry/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1053,11 +1053,11 @@
     function initialize() {
         try {
             window.inquiryPage = new InquiryPage();
-            console.log('✅ InquiryPage initialized successfully');
+            console.log('✅ InquiryPage initialized successfully with AOS animations');
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
-                fetch('http://localhost:3001/api/public/inquiry/test')
+                fetch('/api/public/inquiry/test')
                     .then(r => r.json())
                     .then(data => console.log('Inquiry API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ Inquiry API Connection failed - Running in demo mode'));
