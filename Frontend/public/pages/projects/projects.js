@@ -1,8 +1,8 @@
-// ===== صفحة العقارات - منطق JS كامل معدل =====
+// ===== صفحة العقارات - منطق JS كامل مع AOS Animation =====
 (function() {
     'use strict';
     
-    console.log('✅ projects.js loaded - ULTIMATE WORKING VERSION WITH REAL CITIES API');
+    console.log('✅ projects.js loaded - ULTIMATE VERSION WITH AOS ANIMATIONS');
     
     class ProjectsPage {
         constructor() {
@@ -43,6 +43,9 @@
         async setupPage() {
             console.log('🔧 Setting up projects page...');
             
+            // تهيئة AOS للأنيميشن عند التمرير (مع تكرار الأنيميشن)
+            this.initAOS();
+            
             // إعداد القائمة المتنقلة وإضافة زر الإدارة
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
@@ -64,6 +67,23 @@
             
             // تحميل العقارات
             this.loadProjects();
+        }
+        
+        initAOS() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,       // مدة الأنيميشن
+                    easing: 'ease-in-out-cubic',
+                    once: false,          // الأنيميشن يتكرر كلما ظهر العنصر
+                    mirror: true,         // يعكس الأنيميشن عند التمرير لأعلى ولأسفل
+                    offset: 100,          // المسافة قبل بدء الأنيميشن
+                    delay: 100,           // تأخير افتراضي
+                    anchorPlacement: 'top-bottom'
+                });
+                console.log('✨ AOS initialized with mirror: true, once: false');
+            } else {
+                console.warn('⚠️ AOS library not loaded');
+            }
         }
         
         setupMobileMenu() {
@@ -331,6 +351,13 @@
                 gridView.style.display = 'none';
                 listView.style.display = 'flex';
             }
+            
+            // تحديث AOS للعناصر الجديدة بعد تبديل العرض
+            setTimeout(() => {
+                if (typeof AOS !== 'undefined') {
+                    AOS.refresh();
+                }
+            }, 100);
         }
         
         async loadCities() {
@@ -565,7 +592,7 @@
             let gridHtml = '';
             let listHtml = '';
             
-            projects.forEach(project => {
+            projects.forEach((project, index) => {
                 // معالجة البيانات
                 const id = project.id || 0;
                 const name = project.projectName || 'عقار';
@@ -589,9 +616,12 @@
                 // الموقع
                 const location = district ? `${city}، ${district}` : city;
                 
+                // تأخير AOS للبطاقات (يتزايد مع الفهرس)
+                const aosDelay = 100 + (index * 50);
+                
                 // البطاقة الشبكية
                 gridHtml += `
-                    <div class="project-card" data-project-id="${id}">
+                    <div class="project-card" data-project-id="${id}" data-aos="fade-up" data-aos-delay="${aosDelay}">
                         <div class="project-image">
                             <img src="${image}" alt="${name}" class="project-image">
                             <div class="project-overlay">
@@ -658,7 +688,7 @@
                 
                 // البطاقة القائمة
                 listHtml += `
-                    <div class="project-list-item" data-project-id="${id}">
+                    <div class="project-list-item" data-project-id="${id}" data-aos="fade-up" data-aos-delay="${aosDelay}">
                         <div class="list-image">
                             <img src="${image}" alt="${name}">
                             <div class="list-overlay"></div>
@@ -714,8 +744,14 @@
             gridContainer.innerHTML = gridHtml;
             listContainer.innerHTML = listHtml;
             
-            // إضافة تأثيرات
-            this.animateProjects();
+            // إعادة تهيئة AOS للعناصر الجديدة (لأنها أضيفت ديناميكياً)
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => {
+                    AOS.refresh();
+                }, 100);
+            }
+            
+            // لا نحتاج إلى animateProjects اليدوية لأن AOS يتولى ذلك
         }
         
         updateProjectsCount() {
@@ -772,20 +808,11 @@
                 `${startIndex.toLocaleString('ar-SA')}-${endIndex.toLocaleString('ar-SA')}`;
             document.getElementById('total-projects').textContent = 
                 this.filteredProjects.length.toLocaleString('ar-SA');
-        }
-        
-        animateProjects() {
-            const projects = document.querySelectorAll('.project-card, .project-list-item');
-            projects.forEach((project, index) => {
-                project.style.opacity = '0';
-                project.style.transform = 'translateY(20px)';
-                
-                setTimeout(() => {
-                    project.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    project.style.opacity = '1';
-                    project.style.transform = 'translateY(0)';
-                }, index * 50);
-            });
+            
+            // تحديث AOS لعناصر الترقيم
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => AOS.refresh(), 50);
+            }
         }
         
         showFallbackProjects() {
@@ -793,7 +820,7 @@
             this.allProjects = [
                 {
                     id: 1,
-                    projectName: 'فيلاتت النخيل الراقية',
+                    projectName: 'فيلات النخيل الراقية',
                     projectType: 'سكني',
                     city: 'الرياض',
                     district: 'النخيل',
@@ -861,7 +888,7 @@
                 },
                 {
                     id: 5,
-                    projectName: 'فندق ومنتجعع الضيافة',
+                    projectName: 'فندق ومنتجع الضيافة',
                     projectType: 'فندقي',
                     city: 'الرياض',
                     district: 'الملك_عبدالله',

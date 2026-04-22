@@ -1,8 +1,8 @@
-// ===== صفحة الاستفسارات - النسخة الكاملة النهائية =====
+// ===== صفحة الاستفسارات - النسخة الكاملة النهائية مع AOS والأنيميشن =====
 (function() {
     'use strict';
     
-    console.log('✅ inquiry.js loaded - INQUIRY SYSTEM READY');
+    console.log('✅ inquiry.js loaded - INQUIRY SYSTEM WITH AOS ANIMATIONS');
     
     class InquiryPage {
         constructor() {
@@ -73,6 +73,9 @@
         setupPage() {
             console.log('🔧 Setting up inquiry page...');
             
+            // تهيئة AOS للأنيميشن عند التمرير (مع تكرار الأنيميشن)
+            this.initAOS();
+            
             // إعداد القائمة المتنقلة
             this.setupMobileMenu();
             
@@ -99,6 +102,23 @@
             
             // تحسينات إضافية للجوال
             this.setupMobileEnhancements();
+        }
+        
+        initAOS() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,       // مدة الأنيميشن
+                    easing: 'ease-in-out-cubic',
+                    once: false,          // الأنيميشن يتكرر كلما ظهر العنصر
+                    mirror: true,         // يعكس الأنيميشن عند التمرير لأعلى ولأسفل
+                    offset: 100,          // المسافة قبل بدء الأنيميشن
+                    delay: 100,           // تأخير افتراضي
+                    anchorPlacement: 'top-bottom'
+                });
+                console.log('✨ AOS initialized with mirror: true, once: false');
+            } else {
+                console.warn('⚠️ AOS library not loaded');
+            }
         }
         
         setupMobileMenu() {
@@ -1033,7 +1053,7 @@
     function initialize() {
         try {
             window.inquiryPage = new InquiryPage();
-            console.log('✅ InquiryPage initialized successfully');
+            console.log('✅ InquiryPage initialized successfully with AOS animations');
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {

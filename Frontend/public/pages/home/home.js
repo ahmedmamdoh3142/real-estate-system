@@ -1,8 +1,8 @@
-// ===== الصفحة الرئيسية - الإصدار المصحح نهائياً =====
+// ===== الصفحة الرئيسية - الإصدار المصحح مع تحسينات AOS والأنيميشن =====
 (function() {
     'use strict';
     
-    console.log('✅ home.js loaded - ULTIMATE SIMPLE FIX');
+    console.log('✅ home.js loaded - ULTIMATE SIMPLE FIX with AOS & Animations');
     
     class HomePage {
         constructor() {
@@ -27,6 +27,9 @@
         setupPage() {
             console.log('🔧 Setting up page...');
             
+            // تهيئة AOS للأنيميشن عند التمرير
+            this.initAOS();
+            
             // تحميل البيانات مباشرة
             this.loadStatistics();
             this.loadFeaturedProjects();
@@ -34,6 +37,23 @@
             // إعداد القائمة المتنقلة وإضافة زر الإدارة
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
+        }
+        
+        initAOS() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,       // مدة الأنيميشن
+                    easing: 'ease-in-out-cubic',
+                    once: false,           // الأنيميشن يحدث مرة واحدة فقط
+                    mirror: true,        // عدم عكس الأنيميشن عند التمرير لأعلى
+                    offset: 120,          // المسافة قبل بدء الأنيميشن
+                    delay: 100,           // تأخير افتراضي
+                    anchorPlacement: 'top-bottom'
+                });
+                console.log('✨ AOS initialized');
+            } else {
+                console.warn('⚠️ AOS library not loaded');
+            }
         }
         
         setupMobileMenu() {
@@ -178,6 +198,8 @@
                 
                 if (data.success) {
                     this.displayStatistics(data.data);
+                } else {
+                    this.showDefaultStats();
                 }
             } catch (error) {
                 console.error('❌ Error loading stats:', error);
@@ -188,15 +210,45 @@
         displayStatistics(stats) {
             console.log('📊 Displaying stats:', stats);
             
-            // تحديث الأرقام مباشرة
-            document.getElementById('total-projects').querySelector('.counter').textContent = 
-                (stats.totalProjects || 0).toLocaleString('ar-SA');
-            document.getElementById('total-units').querySelector('.counter').textContent = 
-                (stats.totalUnits || 0).toLocaleString('ar-SA');
-            document.getElementById('total-clients').querySelector('.counter').textContent = 
-                (stats.totalClients || 0).toLocaleString('ar-SA');
-            document.getElementById('total-cities').querySelector('.counter').textContent = 
-                (stats.totalCities || 0).toLocaleString('ar-SA');
+            // تحديث الأرقام مع تأثير العد المتحرك
+            const elements = {
+                'total-projects': stats.totalProjects || 0,
+                'total-units': stats.totalUnits || 0,
+                'total-clients': stats.totalClients || 0,
+                'total-cities': stats.totalCities || 0
+            };
+            
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    const counterElement = element.querySelector('.counter');
+                    if (counterElement) {
+                        this.animateCounter(counterElement, 0, value);
+                    }
+                }
+            }
+        }
+        
+        animateCounter(element, start, end) {
+            if (!element) return;
+            
+            const duration = 2000;
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const increment = (end - start) / steps;
+            let current = start;
+            let step = 0;
+            
+            const timer = setInterval(() => {
+                step++;
+                current += increment;
+                if (step >= steps) {
+                    element.textContent = end.toLocaleString('ar-SA');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString('ar-SA');
+                }
+            }, stepTime);
         }
         
         showDefaultStats() {
@@ -208,7 +260,7 @@
                 if (element) {
                     const counter = element.querySelector('.counter');
                     if (counter) {
-                        counter.textContent = defaults[index].toLocaleString('ar-SA');
+                        this.animateCounter(counter, 0, defaults[index]);
                     }
                 }
             });
@@ -226,7 +278,7 @@
                 
                 // إظهار حالة التحميل
                 container.innerHTML = `
-                    <div class="loading-projects">
+                    <div class="loading-projects" data-aos="fade-up">
                         <div class="loading-spinner"></div>
                         <p>جاري تحميل العقارات المميزة...</p>
                     </div>
@@ -259,7 +311,7 @@
             
             let html = '';
             
-            projects.forEach(project => {
+            projects.forEach((project, index) => {
                 // معالجة البيانات
                 const id = project.id || 0;
                 const name = project.projectName || 'عقار مميز';
@@ -282,8 +334,11 @@
                 // الموقع
                 const location = district ? `${city}، ${district}` : city;
                 
+                // إضافة data-aos للبطاقة مع تأخير متزايد
+                const aosDelay = 100 + (index * 100);
+                
                 html += `
-                    <div class="project-card-grid" data-project-id="${id}">
+                    <div class="project-card-grid" data-project-id="${id}" data-aos="fade-up" data-aos-delay="${aosDelay}">
                         <div class="project-image-grid">
                             <img src="${image}" alt="${name}" class="project-image">
                             <div class="project-overlay-grid">
@@ -345,7 +400,14 @@
             // تعيين HTML
             container.innerHTML = html;
             
-            // إضافة تأثيرات
+            // إعادة تهيئة AOS للعناصر الجديدة (لأنها أضيفت ديناميكياً)
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => {
+                    AOS.refresh();
+                }, 100);
+            }
+            
+            // إضافة تأثيرات إضافية
             setTimeout(() => this.animateProjects(), 100);
         }
         
@@ -383,6 +445,21 @@
                     isFeatured: true,
                     status: 'مكتمل',
                     mainImage: '/global/assets/images/project-placeholder.jpg'
+                },
+                {
+                    id: 3,
+                    projectName: 'شقق الريان السكنية',
+                    projectType: 'سكني',
+                    city: 'جدة',
+                    district: 'الريان',
+                    area: 180,
+                    bedrooms: 3,
+                    bathrooms: 2,
+                    price: 4500,
+                    priceType: 'إيجار',
+                    isFeatured: true,
+                    status: 'نشط',
+                    mainImage: '/global/assets/images/project-placeholder.jpg'
                 }
             ];
             
@@ -396,7 +473,7 @@
                 project.style.transform = 'translateY(20px)';
                 
                 setTimeout(() => {
-                    project.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    project.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
                     project.style.opacity = '1';
                     project.style.transform = 'translateY(0)';
                 }, index * 100);
@@ -455,7 +532,7 @@
     function initialize() {
         try {
             window.homePage = new HomePage();
-            console.log('✅ HomePage initialized successfully');
+            console.log('✅ HomePage initialized successfully with AOS & animations');
             
             // اختبار الاتصال بالخادم
             setTimeout(() => {
