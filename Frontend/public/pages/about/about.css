@@ -36,7 +36,7 @@ body {
 }
 
 .container {
-    max-width: 1600px;
+    max-width: 3000px;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -1573,4 +1573,9 @@ body {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* أنماط إضافية لـ AOS */
+[data-aos] {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

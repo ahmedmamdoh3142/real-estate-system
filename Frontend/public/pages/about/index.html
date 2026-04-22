@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="../../../global/css/utilities.css">
     <link rel="stylesheet" href="../../../global/css/animations.css">
     
+    <!-- AOS Animation Library CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
     <!-- CSS الخاص بالصفحة -->
     <link rel="stylesheet" href="about.css">
     
@@ -90,12 +93,12 @@
     </nav>
 
     <!-- 🎪 قسم الهيرو البروفيشونال لصفحة "من نحن" -->
-    <section class="hero-section premium-hero about-hero">
+    <section class="hero-section premium-hero about-hero" data-aos="fade-in" data-aos-duration="1200">
         <div class="hero-gradient-overlay"></div>
         
         <div class="container hero-container">
             <div class="hero-content">
-                <div class="hero-badge premium-badge">
+                <div class="hero-badge premium-badge" data-aos="fade-down" data-aos-delay="200">
                     <span class="badge badge-premium glow">
                         <i class="fas fa-handshake"></i>
                         <span class="badge-text">شركاؤك في النجاح العقاري</span>
@@ -103,19 +106,19 @@
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line animate-text">تعرف على</span>
-                    <span class="title-line highlight premium-highlight">
+                    <span class="title-line animate-text" data-aos="fade-up" data-aos-delay="400">تعرف على</span>
+                    <span class="title-line highlight premium-highlight" data-aos="fade-up" data-aos-delay="600">
                         <span class="highlight-text">ABH HOLDING GROUP</span>
                         <span class="highlight-glow"></span>
                     </span>
                 </h1>
                 
-                <p class="hero-description premium-description">
+                <p class="hero-description premium-description" data-aos="fade-up" data-aos-delay="800">
                     منذ تأسيسنا عام 2010، نعمل على تقديم أفضل الحلول العقارية للإيجار في المملكة العربية السعودية. 
                     نحن نؤمن بأن المنزل أو المكتب المناسب هو أساس النجاح الشخصي والمهني.
                 </p>
                 
-                <div class="hero-actions">
+                <div class="hero-actions" data-aos="fade-up" data-aos-delay="1000">
                     <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-btn-primary">
                         <div class="btn-icon-wrapper">
                             <i class="fas fa-comments"></i>
@@ -148,7 +151,7 @@
     <!-- 📊 قسم قيم الشركة - تم تحسينه -->
     <section class="values-section premium-section">
         <div class="container">
-            <div class="section-header premium-header text-center">
+            <div class="section-header premium-header text-center" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-gem"></i>
@@ -165,7 +168,7 @@
             </div>
             
             <div class="values-grid premium-grid">
-                <div class="value-card premium-card">
+                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="value-icon premium-icon">
                         <div class="icon-bg"></div>
                         <i class="fas fa-shield-alt"></i>
@@ -187,7 +190,7 @@
                     </div>
                 </div>
                 
-                <div class="value-card premium-card">
+                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="200">
                     <div class="value-icon premium-icon">
                         <div class="icon-bg"></div>
                         <i class="fas fa-bullseye"></i>
@@ -209,7 +212,7 @@
                     </div>
                 </div>
                 
-                <div class="value-card premium-card">
+                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="300">
                     <div class="value-icon premium-icon">
                         <div class="icon-bg"></div>
                         <i class="fas fa-headset"></i>
@@ -231,7 +234,7 @@
                     </div>
                 </div>
                 
-                <div class="value-card premium-card">
+                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="400">
                     <div class="value-icon premium-icon">
                         <div class="icon-bg"></div>
                         <i class="fas fa-lightbulb"></i>
@@ -258,10 +261,10 @@
 
     <div class="section-divider"></div>
 
-    <!-- 📱 قسم الرسالة والرؤية - تم تحسينه -->
+    <!-- 📱 قسم الرسالة والرؤية - تم تحسينه مع أنيميشن متسلسل -->
     <section class="mission-section premium-section">
         <div class="container">
-            <div class="mission-header premium-header text-center">
+            <div class="mission-header premium-header text-center" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-rocket"></i>
@@ -277,7 +280,8 @@
             </div>
             
             <div class="mission-grid">
-                <div class="mission-card premium-card vision-card">
+                <!-- بطاقة الرؤية -->
+                <div class="mission-card premium-card vision-card" data-aos="fade-up" data-aos-delay="200">
                     <div class="mission-card-inner">
                         <div class="mission-header">
                             <div class="mission-icon">
@@ -293,7 +297,7 @@
                                 من خلال تقديم تجربة استثنائية للعملاء تعتمد على الابتكار والجودة والثقة.
                             </p>
                             <div class="mission-goals">
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="400" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
                                         <i class="fas fa-crown"></i>
                                     </div>
@@ -302,7 +306,7 @@
                                         <p>أن نكون الخيار الأول في السوق العقاري للإيجار</p>
                                     </div>
                                 </div>
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="500" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
                                         <i class="fas fa-star"></i>
                                     </div>
@@ -311,7 +315,7 @@
                                         <p>توفير تجربة لا تُنسى لكل عميل</p>
                                     </div>
                                 </div>
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="600" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
                                         <i class="fas fa-expand"></i>
                                     </div>
@@ -325,7 +329,8 @@
                     </div>
                 </div>
                 
-                <div class="mission-card premium-card mission-card">
+                <!-- بطاقة الرسالة -->
+                <div class="mission-card premium-card mission-card" data-aos="fade-up" data-aos-delay="200">
                     <div class="mission-card-inner">
                         <div class="mission-header">
                             <div class="mission-icon">
@@ -341,7 +346,7 @@
                                 نساعد عملائنا في إيجاد المسكن أو المكتب المناسب الذي يلبي احتياجاتهم ويتوافق مع تطلعاتهم.
                             </p>
                             <div class="mission-goals">
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="400" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
                                         <i class="fas fa-lightbulb"></i>
                                     </div>
@@ -350,7 +355,7 @@
                                         <p>توفير حلول عقارية مبتكرة وذكية</p>
                                     </div>
                                 </div>
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="500" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
                                         <i class="fas fa-heart"></i>
                                     </div>
@@ -359,7 +364,7 @@
                                         <p>ضمان رضا العملاء الدائم والمستمر</p>
                                     </div>
                                 </div>
-                                <div class="goal">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="600" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
                                         <i class="fas fa-handshake"></i>
                                     </div>
@@ -381,14 +386,14 @@
     <!-- 📱 قسم CTA البروفيشونال -->
     <section class="cta-section premium-cta">
         <div class="container">
-            <div class="cta-card premium-cta-card">
+            <div class="cta-card premium-cta-card" data-aos="fade-up" data-aos-duration="1000">
                 <div class="cta-content">
-                    <h2 class="cta-title">ابدأ رحلة نجاحك العقاري معنا</h2>
-                    <p class="cta-description">
+                    <h2 class="cta-title" data-aos="fade-right" data-aos-delay="200">ابدأ رحلة نجاحك العقاري معنا</h2>
+                    <p class="cta-description" data-aos="fade-right" data-aos-delay="400">
                         فريقنا من الخبراء مستعد لمساعدتك في إيجاد العقار المناسب مع ضمان الجودة 
                         والموثوقية وأفضل شروط الإيجار. تواصل معنا اليوم.
                     </p>
-                    <div class="cta-actions">
+                    <div class="cta-actions" data-aos="fade-right" data-aos-delay="600">
                         <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
                             <i class="fas fa-phone-alt"></i>
                             <span>تواصل مع خبير عقاري</span>
@@ -401,7 +406,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="cta-image">
+                <div class="cta-image" data-aos="fade-left" data-aos-delay="400">
                     <div class="image-placeholder premium-image">
                         <div class="main-icon">
                             <i class="fas fa-handshake"></i>
@@ -421,7 +426,7 @@
         <div class="container">
             <div class="footer-grid">
                 <!-- العمود الأول: معلومات المجموعة -->
-                <div class="footer-col footer-about">
+                <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
                     <div class="footer-logo">
                         <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
                     </div>
@@ -452,7 +457,7 @@
                 </div>
 
                 <!-- العمود الثاني: معلومات الاتصال -->
-                <div class="footer-col footer-contact">
+                <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
                     <h3 class="footer-title">تواصل معنا</h3>
                     <ul class="footer-contact-list">
                         <li>
@@ -493,9 +498,14 @@
     <!-- 📜 ملفات JavaScript -->
     <script src="../../../global/js/core.js"></script>
     <script src="../../../global/js/api-client.js"></script>
-    <script src="about.js"></script>
+    
+    <!-- AOS Animation Library JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     
     <!-- Particles.js library -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    
+    <!-- about.js الجديد -->
+    <script src="about.js"></script>
 </body>
 </html>

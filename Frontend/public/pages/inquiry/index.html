@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="../../../global/css/utilities.css">
     <link rel="stylesheet" href="../../../global/css/animations.css">
     
+    <!-- AOS Animation Library CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
     <!-- CSS الخاص بالصفحة -->
     <link rel="stylesheet" href="inquiry.css">
     
@@ -93,13 +96,13 @@
         <div class="navbar-glow-line"></div>
     </nav>
 
-    <!-- 🎪 قسم الهيدر الخاص بصفحة الاستفسار -->
-    <section class="inquiry-hero-section premium-hero">
+    <!-- 🎪 قسم الهيدر الخاص بصفحة الاستفسار (بدون إحصائيات) -->
+    <section class="inquiry-hero-section premium-hero" data-aos="fade-in" data-aos-duration="1200">
         <div class="hero-gradient-overlay"></div>
         
         <div class="container hero-container">
             <div class="hero-content">
-                <div class="hero-badge premium-badge">
+                <div class="hero-badge premium-badge" data-aos="fade-down" data-aos-delay="200">
                     <span class="badge badge-premium glow">
                         <i class="fas fa-comments"></i>
                         <span class="badge-text">تواصل مع خبرائنا</span>
@@ -107,81 +110,16 @@
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line animate-text">استفسر عن</span>
-                    <span class="title-line highlight premium-highlight">
+                    <span class="title-line animate-text" data-aos="fade-up" data-aos-delay="400">استفسر عن</span>
+                    <span class="title-line highlight premium-highlight" data-aos="fade-up" data-aos-delay="600">
                         <span class="highlight-text">عقارك المثالي</span>
                         <span class="highlight-glow"></span>
                     </span>
                 </h1>
                 
-                <p class="hero-description premium-description">
+                <p class="hero-description premium-description" data-aos="fade-up" data-aos-delay="800">
                     نحن هنا للإجابة على جميع استفساراتك. املأ النموذج وسيقوم فريقنا المختص بالتواصل معك خلال 24 ساعة.
                 </p>
-            </div>
-            
-            <!-- 🏆 قسم الإحصائيات الخاصة بالاستفسارات -->
-            <div class="hero-stats premium-stats">
-                <div class="stats-grid">
-                    <div class="stat-card premium-stat pulse-animation">
-                        <div class="stat-icon premium-icon">
-                            <i class="fas fa-clock"></i>
-                            <div class="icon-glow"></div>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value">
-                                <span class="counter">24</span>
-                                <span class="hour">ساعة</span>
-                            </h3>
-                            <p class="stat-label">متوسط وقت الرد</p>
-                        </div>
-                        <div class="stat-glow"></div>
-                    </div>
-                    
-                    <div class="stat-card premium-stat pulse-animation delay-1">
-                        <div class="stat-icon premium-icon">
-                            <i class="fas fa-check-circle"></i>
-                            <div class="icon-glow"></div>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value">
-                                <span class="counter">98</span>
-                                <span class="percent">%</span>
-                            </h3>
-                            <p class="stat-label">رضا العملاء</p>
-                        </div>
-                        <div class="stat-glow"></div>
-                    </div>
-                    
-                    <div class="stat-card premium-stat pulse-animation delay-2">
-                        <div class="stat-icon premium-icon">
-                            <i class="fas fa-headset"></i>
-                            <div class="icon-glow"></div>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value">
-                                <span class="counter">7</span>
-                                <span class="days">/7</span>
-                            </h3>
-                            <p class="stat-label">دعم فني متواصل</p>
-                        </div>
-                        <div class="stat-glow"></div>
-                    </div>
-                    
-                    <div class="stat-card premium-stat pulse-animation delay-3">
-                        <div class="stat-icon premium-icon">
-                            <i class="fas fa-comments"></i>
-                            <div class="icon-glow"></div>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value">
-                                <span class="counter">500</span>
-                                <span class="plus">+</span>
-                            </h3>
-                            <p class="stat-label">استفسار تم الرد عليه</p>
-                        </div>
-                        <div class="stat-glow"></div>
-                    </div>
-                </div>
             </div>
         </div>
         
@@ -194,12 +132,92 @@
         </div>
     </section>
 
+    <!-- 📊 قسم الإحصائيات البسيط والمبهر (سكشن منفصل تحت الهيرو) -->
+    <section class="stats-ribbon-section premium-stats-ribbon">
+        <!-- خلفية زخرفية -->
+        <div class="stats-bg-glow"></div>
+        <div class="stats-bg-particles"></div>
+        
+        <div class="container">
+            <div class="stats-ribbon" data-aos="fade-up" data-aos-duration="1000">
+                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="stat-ribbon-icon">
+                        <i class="fas fa-clock"></i>
+                        <span class="icon-pulse"></span>
+                    </div>
+                    <div class="stat-ribbon-content">
+                        <h3 class="stat-ribbon-value">
+                            <span class="counter" id="stat-response-time">24</span>
+                            <span class="unit">ساعة</span>
+                        </h3>
+                        <p class="stat-ribbon-label">متوسط وقت الرد</p>
+                    </div>
+                    <div class="stat-hover-glow"></div>
+                </div>
+                
+                <div class="stat-ribbon-divider"></div>
+                
+                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="stat-ribbon-icon">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="icon-pulse"></span>
+                    </div>
+                    <div class="stat-ribbon-content">
+                        <h3 class="stat-ribbon-value">
+                            <span class="counter" id="stat-satisfaction">98</span>
+                            <span class="unit">%</span>
+                        </h3>
+                        <p class="stat-ribbon-label">رضا العملاء</p>
+                    </div>
+                    <div class="stat-hover-glow"></div>
+                </div>
+                
+                <div class="stat-ribbon-divider"></div>
+                
+                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="stat-ribbon-icon">
+                        <i class="fas fa-headset"></i>
+                        <span class="icon-pulse"></span>
+                    </div>
+                    <div class="stat-ribbon-content">
+                        <h3 class="stat-ribbon-value">
+                            <span class="counter" id="stat-support">7</span>
+                            <span class="unit">/7</span>
+                        </h3>
+                        <p class="stat-ribbon-label">دعم فني متواصل</p>
+                    </div>
+                    <div class="stat-hover-glow"></div>
+                </div>
+                
+                <div class="stat-ribbon-divider"></div>
+                
+                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="stat-ribbon-icon">
+                        <i class="fas fa-comments"></i>
+                        <span class="icon-pulse"></span>
+                    </div>
+                    <div class="stat-ribbon-content">
+                        <h3 class="stat-ribbon-value">
+                            <span class="counter" id="stat-inquiries">500</span>
+                            <span class="unit">+</span>
+                        </h3>
+                        <p class="stat-ribbon-label">استفسار تم الرد عليه</p>
+                    </div>
+                    <div class="stat-hover-glow"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- خط فاصل لامع -->
+        <div class="stats-divider-glow"></div>
+    </section>
+
     <div class="section-divider"></div>
 
     <!-- 📝 قسم الفورم مع CTA جنبه -->
     <section class="inquiry-main-section">
         <div class="container">
-            <div class="section-header premium-header">
+            <div class="section-header premium-header" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-edit"></i>
@@ -217,7 +235,7 @@
             
             <div class="form-cta-container">
                 <!-- 🌟 معلومات الاستفسار الأساسية -->
-                <div class="inquiry-info-card premium-info-card">
+                <div class="inquiry-info-card premium-info-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="info-header">
                         <div class="info-icon">
                             <i class="fas fa-info-circle"></i>
@@ -251,7 +269,7 @@
                 <!-- 📋 الفورم مع CTA -->
                 <div class="form-cta-grid">
                     <!-- 🎯 قسم CTA البروفيشونال -->
-                    <div class="cta-section premium-cta">
+                    <div class="cta-section premium-cta" data-aos="fade-right" data-aos-delay="200">
                         <div class="cta-header">
                             <div class="cta-icon">
                                 <i class="fas fa-rocket"></i>
@@ -326,7 +344,7 @@
                     </div>
 
                     <!-- النموذج -->
-                    <form id="inquiryForm" class="inquiry-form premium-form">
+                    <form id="inquiryForm" class="inquiry-form premium-form" data-aos="fade-left" data-aos-delay="200">
                         <div class="form-grid">
                             <!-- البيانات الشخصية -->
                             <div class="form-section">
@@ -481,6 +499,23 @@
                                 </div>
                                 
                                 <div class="preference-options">
+                                    <div class="preference-option">
+                                        <input 
+                                            type="checkbox" 
+                                            id="prefEmail" 
+                                            name="contactPreferences" 
+                                            value="email"
+                                        >
+                                        <label for="prefEmail" class="preference-label">
+                                            <div class="preference-icon">
+                                                <i class="fas fa-envelope"></i>
+                                            </div>
+                                            <div class="preference-content">
+                                                <span class="preference-title">البريد الإلكتروني</span>
+                                                <span class="preference-desc">للردود الرسمية والمفصلة</span>
+                                            </div>
+                                        </label>
+                                    </div>
                                     
                                     <div class="preference-option">
                                         <input 
@@ -540,6 +575,23 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- شروط الخصوصية -->
+                                <div class="form-terms">
+                                    <div class="terms-checkbox">
+                                        <input 
+                                            type="checkbox" 
+                                            id="agreeTerms" 
+                                            name="agreeTerms"
+                                            required
+                                        >
+                                        <label for="agreeTerms" class="terms-label">
+                                            <span class="checkmark"></span>
+                                            <span>أوافق على <a href="#" class="terms-link">الشروط والأحكام</a> وسياسة الخصوصية</span>
+                                        </label>
+                                    </div>
+                                    <div class="validation-message" id="termsValidation"></div>
+                                </div>
                             </div>
                         </div>
                         
@@ -578,7 +630,7 @@
     <!-- 🗺️ قسم الخريطة البروفيشونال -->
     <section class="map-section premium-map-section">
         <div class="container">
-            <div class="section-header premium-header">
+            <div class="section-header premium-header" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-map-marked-alt"></i>
@@ -594,7 +646,7 @@
                 </p>
             </div>
             
-            <div class="map-container premium-map-container">
+            <div class="map-container premium-map-container" data-aos="fade-up" data-aos-delay="200">
                 <div class="map-sidebar">
                     <div class="sidebar-header">
                         <h3><i class="fas fa-location-dot"></i> فروعنا</h3>
@@ -682,7 +734,7 @@
     <!-- ❓ قسم الأسئلة الشائعة المحسن -->
     <section class="faq-section premium-faq">
         <div class="container">
-            <div class="section-header premium-header">
+            <div class="section-header premium-header" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-question-circle"></i>
@@ -701,7 +753,7 @@
             <div class="faq-container premium-faq-container">
                 <div class="faq-grid">
                     <!-- العمود الأول -->
-                    <div class="faq-column">
+                    <div class="faq-column" data-aos="fade-right" data-aos-delay="100">
                         <div class="faq-item premium-faq-item active">
                             <button class="faq-question premium-faq-question">
                                 <span class="question-icon">
@@ -749,7 +801,7 @@
                     </div>
                     
                     <!-- العمود الثاني -->
-                    <div class="faq-column">
+                    <div class="faq-column" data-aos="fade-left" data-aos-delay="200">
                         <div class="faq-item premium-faq-item">
                             <button class="faq-question premium-faq-question">
                                 <span class="question-icon">
@@ -811,7 +863,7 @@
         <div class="container">
             <div class="footer-grid">
                 <!-- العمود الأول: معلومات المجموعة -->
-                <div class="footer-col footer-about">
+                <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
                     <div class="footer-logo">
                         <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
                     </div>
@@ -842,7 +894,7 @@
                 </div>
 
                 <!-- العمود الثاني: معلومات الاتصال -->
-                <div class="footer-col footer-contact">
+                <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
                     <h3 class="footer-title">تواصل معنا</h3>
                     <ul class="footer-contact-list">
                         <li>
@@ -923,6 +975,8 @@
     <!-- 📜 ملفات JavaScript -->
     <script src="../../../global/js/core.js"></script>
     <script src="../../../global/js/api-client.js"></script>
+    <!-- AOS Animation Library JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <!-- Leaflet Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="inquiry.js"></script>

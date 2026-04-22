@@ -1,8 +1,8 @@
-// ===== الصفحة الرئيسية - الإصدار المصحح نهائياً =====
+// ===== الصفحة الرئيسية - الإصدار المحسن مع AOS Animation =====
 (function() {
     'use strict';
     
-    console.log('✅ home.js loaded - ULTIMATE SIMPLE FIX');
+    console.log('✅ home.js loaded - Premium Visual Edition with AOS');
     
     class HomePage {
         constructor() {
@@ -27,6 +27,9 @@
         setupPage() {
             console.log('🔧 Setting up page...');
             
+            // تهيئة AOS للأنيميشن عند التمرير
+            this.initAOS();
+            
             // تحميل البيانات مباشرة
             this.loadStatistics();
             this.loadFeaturedProjects();
@@ -34,6 +37,23 @@
             // إعداد القائمة المتنقلة وإضافة زر الإدارة
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
+        }
+        
+        initAOS() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,       // مدة الأنيميشن
+                    easing: 'ease-in-out-cubic',
+                    once: false,           // الأنيميشن يحدث مرة واحدة فقط
+                    mirror: true,        // عدم عكس الأنيميشن عند التمرير لأعلى
+                    offset: 120,          // المسافة قبل بدء الأنيميشن
+                    delay: 100,           // تأخير افتراضي
+                    anchorPlacement: 'top-bottom'
+                });
+                console.log('✨ AOS initialized');
+            } else {
+                console.warn('⚠️ AOS library not loaded');
+            }
         }
         
         setupMobileMenu() {
@@ -120,50 +140,6 @@
             
             // إضافة زر الإدارة إلى القائمة
             navMenu.appendChild(adminButton);
-            
-            // إضافة أنماط CSS للزر في الجوال
-            this.addMobileAdminButtonStyles();
-        }
-        
-        addMobileAdminButtonStyles() {
-            // إضافة أنماط CSS للزر في الجوال فقط
-            const style = document.createElement('style');
-            style.textContent = `
-                /* زر الإدارة في القائمة الجانبية للجوال */
-                @media (max-width: 768px) {
-                    .mobile-admin-btn {
-                        margin-top: auto;
-                        padding-top: 1.5rem;
-                        border-top: 1px solid rgba(203, 205, 205, 0.08);
-                        display: block !important;
-                    }
-                    
-                    .mobile-admin-btn .premium-link {
-                        background: rgba(203, 205, 205, 0.05) !important;
-                        border: 1px solid rgba(203, 205, 205, 0.1) !important;
-                        color: var(--color-text-primary) !important;
-                        font-weight: 600 !important;
-                    }
-                    
-                    .mobile-admin-btn .premium-link:hover {
-                        background: rgba(203, 205, 205, 0.08) !important;
-                        border-color: rgba(203, 205, 205, 0.2) !important;
-                    }
-                    
-                    .mobile-admin-btn .nav-icon-wrapper {
-                        background: rgba(203, 205, 205, 0.08) !important;
-                    }
-                }
-                
-                /* إخفاء زر الإدارة في القائمة الجانبية على سطح المكتب */
-                @media (min-width: 769px) {
-                    .mobile-admin-btn {
-                        display: none !important;
-                    }
-                }
-            `;
-            
-            document.head.appendChild(style);
         }
         
         async loadStatistics() {
@@ -171,13 +147,15 @@
                 console.log('📊 Loading statistics...');
                 
                 // استخدام fetch مباشرة
-                const response = await fetch('/api/public/home/stats');
+                const response = await fetch('http://localhost:3001/api/public/home/stats');
                 if (!response.ok) throw new Error('Failed to load stats');
                 
                 const data = await response.json();
                 
                 if (data.success) {
                     this.displayStatistics(data.data);
+                } else {
+                    this.showDefaultStats();
                 }
             } catch (error) {
                 console.error('❌ Error loading stats:', error);
@@ -188,28 +166,56 @@
         displayStatistics(stats) {
             console.log('📊 Displaying stats:', stats);
             
-            // تحديث الأرقام مباشرة
-            document.getElementById('total-projects').querySelector('.counter').textContent = 
-                (stats.totalProjects || 0).toLocaleString('ar-SA');
-            document.getElementById('total-units').querySelector('.counter').textContent = 
-                (stats.totalUnits || 0).toLocaleString('ar-SA');
-            document.getElementById('total-clients').querySelector('.counter').textContent = 
-                (stats.totalClients || 0).toLocaleString('ar-SA');
-            document.getElementById('total-cities').querySelector('.counter').textContent = 
-                (stats.totalCities || 0).toLocaleString('ar-SA');
+            // تحديث الأرقام في قسم الإحصائيات الرفيع
+            const statProjects = document.getElementById('stat-projects');
+            const statUnits = document.getElementById('stat-units');
+            const statClients = document.getElementById('stat-clients');
+            const statCities = document.getElementById('stat-cities');
+            
+            if (statProjects) {
+                this.animateCounter(statProjects, 0, stats.totalProjects || 0);
+            }
+            if (statUnits) {
+                this.animateCounter(statUnits, 0, stats.totalUnits || 0);
+            }
+            if (statClients) {
+                this.animateCounter(statClients, 0, stats.totalClients || 0);
+            }
+            if (statCities) {
+                this.animateCounter(statCities, 0, stats.totalCities || 0);
+            }
+        }
+        
+        animateCounter(element, start, end) {
+            if (!element) return;
+            
+            const duration = 2000;
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const increment = (end - start) / steps;
+            let current = start;
+            let step = 0;
+            
+            const timer = setInterval(() => {
+                step++;
+                current += increment;
+                if (step >= steps) {
+                    element.textContent = end.toLocaleString('ar-SA');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString('ar-SA');
+                }
+            }, stepTime);
         }
         
         showDefaultStats() {
             const defaults = [5, 66, 2, 1];
-            const ids = ['total-projects', 'total-units', 'total-clients', 'total-cities'];
+            const ids = ['stat-projects', 'stat-units', 'stat-clients', 'stat-cities'];
             
             ids.forEach((id, index) => {
                 const element = document.getElementById(id);
                 if (element) {
-                    const counter = element.querySelector('.counter');
-                    if (counter) {
-                        counter.textContent = defaults[index].toLocaleString('ar-SA');
-                    }
+                    this.animateCounter(element, 0, defaults[index]);
                 }
             });
         }
@@ -226,14 +232,14 @@
                 
                 // إظهار حالة التحميل
                 container.innerHTML = `
-                    <div class="loading-projects">
-                        <div class="loading-spinner"></div>
+                    <div class="loading-projects" data-aos="fade-up">
+                        <div class="loading-spinner premium-spinner"></div>
                         <p>جاري تحميل العقارات المميزة...</p>
                     </div>
                 `;
                 
                 // جلب البيانات
-                const response = await fetch('/api/public/home/featured-projects');
+                const response = await fetch('http://localhost:3001/api/public/home/featured-projects');
                 if (!response.ok) throw new Error('Failed to load projects');
                 
                 const data = await response.json();
@@ -259,7 +265,7 @@
             
             let html = '';
             
-            projects.forEach(project => {
+            projects.forEach((project, index) => {
                 // معالجة البيانات
                 const id = project.id || 0;
                 const name = project.projectName || 'عقار مميز';
@@ -282,8 +288,11 @@
                 // الموقع
                 const location = district ? `${city}، ${district}` : city;
                 
+                // إضافة data-aos للبطاقة مع تأخير متزايد
+                const aosDelay = 100 + (index * 100);
+                
                 html += `
-                    <div class="project-card-grid" data-project-id="${id}">
+                    <div class="project-card-grid" data-project-id="${id}" data-aos="fade-up" data-aos-delay="${aosDelay}">
                         <div class="project-image-grid">
                             <img src="${image}" alt="${name}" class="project-image">
                             <div class="project-overlay-grid">
@@ -345,6 +354,13 @@
             // تعيين HTML
             container.innerHTML = html;
             
+            // إعادة تهيئة AOS للعناصر الجديدة (لأنها أضيفت ديناميكياً)
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => {
+                    AOS.refresh();
+                }, 100);
+            }
+            
             // إضافة تأثيرات
             setTimeout(() => this.animateProjects(), 100);
         }
@@ -383,6 +399,21 @@
                     isFeatured: true,
                     status: 'مكتمل',
                     mainImage: '/global/assets/images/project-placeholder.jpg'
+                },
+                {
+                    id: 3,
+                    projectName: 'شقق الريان السكنية',
+                    projectType: 'سكني',
+                    city: 'جدة',
+                    district: 'الريان',
+                    area: 180,
+                    bedrooms: 3,
+                    bathrooms: 2,
+                    price: 4500,
+                    priceType: 'إيجار',
+                    isFeatured: true,
+                    status: 'نشط',
+                    mainImage: '/global/assets/images/project-placeholder.jpg'
                 }
             ];
             
@@ -396,7 +427,7 @@
                 project.style.transform = 'translateY(20px)';
                 
                 setTimeout(() => {
-                    project.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    project.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
                     project.style.opacity = '1';
                     project.style.transform = 'translateY(0)';
                 }, index * 100);
@@ -457,9 +488,9 @@
             window.homePage = new HomePage();
             console.log('✅ HomePage initialized successfully');
             
-            // اختبار الاتصال بالخادم
+            // اختبار الاتصال بالخادم (اختياري)
             setTimeout(() => {
-                fetch('/api/public/home/featured-projects')
+                fetch('http://localhost:3001/api/public/home/featured-projects')
                     .then(r => r.json())
                     .then(data => console.log('API Test:', data.success ? '✅ Connected' : '❌ Failed'))
                     .catch(() => console.log('❌ API Connection failed'));
@@ -476,5 +507,4 @@
     } else {
         initialize();
     }
-
 })();
