@@ -6,9 +6,6 @@
     <meta name="description" content="أفضل العقارات السكنية والتجارية للإيجار - نظام إدارة العقارات المؤسسي">
     <title>عقارات للإيجار | أفضل العقارات السكنية والتجارية</title>
     
-    <!-- AOS Animation Library CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-    
     <!-- نظام التصميم العالمي -->
     <link rel="stylesheet" href="../../../global/css/design-system.css">
     <link rel="stylesheet" href="../../../global/css/utilities.css">
@@ -33,6 +30,7 @@
             <!-- الشعار المميز -->
             <div class="nav-brand">
                 <a href="../../../admin/pages/login/index.html" class="logo-link">
+                    <!-- REPLACE LOGO HERE -->
                     <div class="upper-logo">
                         <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
                     </div>
@@ -91,14 +89,14 @@
         <div class="navbar-glow-line"></div>
     </nav>
 
-    <!-- 🎪 قسم الهيرو البروفيشونال المبهر (بدون إحصائيات) - لم يتم تغييره -->
-    <section class="hero-section premium-hero" data-aos="fade-in" data-aos-duration="1200">
+    <!-- 🎪 قسم الهيرو البروفيشونال المبهر -->
+    <section class="hero-section premium-hero">
         <div class="hero-gradient-overlay"></div>
         <div class="hero-particles" id="hero-particles"></div>
         
         <div class="container hero-container">
             <div class="hero-content">
-                <div class="hero-badge premium-badge" data-aos="fade-down" data-aos-delay="200">
+                <div class="hero-badge premium-badge">
                     <span class="badge badge-premium glow">
                         <i class="fas fa-crown"></i>
                         <span class="badge-text">عقارات حصرية للإيجار</span>
@@ -106,19 +104,19 @@
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line animate-text" data-aos="fade-up" data-aos-delay="400">اكتشف عقارات</span>
-                    <span class="title-line highlight premium-highlight" data-aos="fade-up" data-aos-delay="600">
+                    <span class="title-line animate-text">اكتشف عقارات</span>
+                    <span class="title-line highlight premium-highlight">
                         <span class="highlight-text">فاخرة للإيجار</span>
                         <span class="highlight-glow"></span>
                     </span>
                 </h1>
                 
-                <p class="hero-description premium-description" data-aos="fade-up" data-aos-delay="800">
+                <p class="hero-description premium-description">
                     نقدم لك أفضل العقارات السكنية والتجارية والفلل للإيجار مع ضمان الجودة والمواقع المتميزة. 
                     أكثر من 200 عقار متاح في أفضل الأحياء.
                 </p>
                 
-                <div class="hero-actions" data-aos="fade-up" data-aos-delay="1000">
+                <div class="hero-actions">
                     <a href="../projects/index.html" class="btn btn-primary btn-lg premium-btn-primary">
                         <div class="btn-icon-wrapper">
                             <i class="fas fa-search"></i>
@@ -133,6 +131,71 @@
                         <span>حجز معاينة</span>
                         <div class="btn-hover-effect"></div>
                     </a>
+                </div>
+            </div>
+            
+            <!-- 🏆 قسم الإحصائيات البروفيشونال المبهر -->
+            <div class="hero-stats premium-stats">
+                <div class="stats-grid">
+                    <div class="stat-card premium-stat pulse-animation">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-building"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-projects">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عقار متاح</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-1">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-home"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-units">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عقار مؤجر</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-2">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-users"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-clients">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">عميل راضٍ</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card premium-stat pulse-animation delay-3">
+                        <div class="stat-icon premium-icon">
+                            <i class="fas fa-city"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-value" id="total-cities">
+                                <span class="counter">0</span>
+                                <span class="plus">+</span>
+                            </h3>
+                            <p class="stat-label">حي سكني</p>
+                        </div>
+                        <div class="stat-glow"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,84 +219,12 @@
         </div>
     </section>
 
-    <!-- 📊 قسم الإحصائيات الرفيع البروفيشونال (تم تحسينه بصرياً بشكل احترافي) -->
-    <section class="stats-ribbon-section">
-        <!-- إضافة خلفية زخرفية متحركة دقيقة -->
-        <div class="stats-bg-glow"></div>
-        <div class="stats-bg-particles"></div>
-        <div class="container">
-            <div class="stats-ribbon" data-aos="fade-up" data-aos-duration="1000">
-                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="100">
-                    <div class="stat-ribbon-icon">
-                        <i class="fas fa-building"></i>
-                        <span class="icon-pulse"></span>
-                    </div>
-                    <div class="stat-ribbon-content">
-                        <h3 class="stat-ribbon-value">
-                            <span class="counter" id="stat-projects">0</span>
-                            <span class="plus">+</span>
-                        </h3>
-                        <p class="stat-ribbon-label">عقار متاح</p>
-                    </div>
-                    <div class="stat-hover-glow"></div>
-                </div>
-                <div class="stat-ribbon-divider"></div>
-                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="200">
-                    <div class="stat-ribbon-icon">
-                        <i class="fas fa-home"></i>
-                        <span class="icon-pulse"></span>
-                    </div>
-                    <div class="stat-ribbon-content">
-                        <h3 class="stat-ribbon-value">
-                            <span class="counter" id="stat-units">0</span>
-                            <span class="plus">+</span>
-                        </h3>
-                        <p class="stat-ribbon-label">عقار مؤجر</p>
-                    </div>
-                    <div class="stat-hover-glow"></div>
-                </div>
-                <div class="stat-ribbon-divider"></div>
-                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="300">
-                    <div class="stat-ribbon-icon">
-                        <i class="fas fa-users"></i>
-                        <span class="icon-pulse"></span>
-                    </div>
-                    <div class="stat-ribbon-content">
-                        <h3 class="stat-ribbon-value">
-                            <span class="counter" id="stat-clients">0</span>
-                            <span class="plus">+</span>
-                        </h3>
-                        <p class="stat-ribbon-label">عميل راضٍ</p>
-                    </div>
-                    <div class="stat-hover-glow"></div>
-                </div>
-                <div class="stat-ribbon-divider"></div>
-                <div class="stat-ribbon-item" data-aos="zoom-in" data-aos-delay="400">
-                    <div class="stat-ribbon-icon">
-                        <i class="fas fa-city"></i>
-                        <span class="icon-pulse"></span>
-                    </div>
-                    <div class="stat-ribbon-content">
-                        <h3 class="stat-ribbon-value">
-                            <span class="counter" id="stat-cities">0</span>
-                            <span class="plus">+</span>
-                        </h3>
-                        <p class="stat-ribbon-label">حي سكني</p>
-                    </div>
-                    <div class="stat-hover-glow"></div>
-                </div>
-            </div>
-        </div>
-        <!-- خط فاصل لامع أسفل الإحصائيات -->
-        <div class="stats-divider-glow"></div>
-    </section>
-
     <div class="section-divider"></div>
 
-    <!-- 🏢 قسم العقارات المميزة (عرض شبكي) - تحسينات بصرية -->
+    <!-- 🏢 قسم العقارات المميزة (عرض شبكي) -->
     <section class="featured-section premium-featured">
         <div class="container">
-            <div class="section-header premium-header" data-aos="fade-up">
+            <div class="section-header premium-header">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-star"></i>
@@ -252,13 +243,13 @@
             <!-- عرض شبكي للعقارات -->
             <div class="featured-projects-grid" id="featured-projects-grid">
                 <!-- العقارات المميزة سيتم تحميلها عبر JavaScript -->
-                <div class="loading-projects" data-aos="fade-up">
+                <div class="loading-projects">
                     <div class="loading-spinner premium-spinner"></div>
                     <p>جاري تحميل العقارات المميزة...</p>
                 </div>
             </div>
             
-            <div class="section-footer" data-aos="fade-up" data-aos-delay="200">
+            <div class="section-footer">
                 <a href="../projects/index.html" class="btn btn-outline btn-lg premium-view-all">
                     <span>عرض جميع العقارات</span>
                     <i class="fas fa-arrow-left"></i>
@@ -267,17 +258,16 @@
             </div>
         </div>
         
-        <!-- خلفية زخرفية محسنة -->
+        <!-- خلفية زخرفية -->
         <div class="featured-bg-pattern"></div>
-        <div class="featured-glow-orb"></div>
     </section>
 
     <div class="section-divider"></div>
 
-    <!-- 📊 قسم المزايا والخدمات - تحسينات بصرية -->
+    <!-- 📊 قسم المزايا والخدمات -->
     <section class="benefits-section premium-benefits">
         <div class="container">
-            <div class="section-header text-center premium-header" data-aos="fade-up">
+            <div class="section-header text-center premium-header">
                 <h2 class="section-title premium-title">لماذا تختار <span class="highlight premium-highlight-text">ABH Holding Group؟</span></h2>
                 <p class="section-description premium-description">
                     نقدم مزايا وخدمات استثنائية تجعل تجربة إيجار العقار سهلة وآمنة
@@ -285,78 +275,73 @@
             </div>
             
             <div class="benefits-grid premium-grid">
-                <div class="benefit-card premium-benefit-card" data-aos="flip-left" data-aos-delay="100">
+                <div class="benefit-card premium-benefit-card">
                     <div class="benefit-icon premium-benefit-icon">
                         <i class="fas fa-shield-alt"></i>
-                        <div class="icon-glow"></div>
+                        <div classicon-glow></div>
                     </div>
                     <h3 class="benefit-title">عقود إيجار موثقة</h3>
                     <p class="benefit-description">
                         عقود إيجار رسمية موثقة من الجهات المختصة مع كامل الضمانات القانونية لحمايتك.
                     </p>
                     <div class="benefit-overlay"></div>
-                    <div class="benefit-card-glow"></div>
                 </div>
                 
-                <div class="benefit-card premium-benefit-card" data-aos="flip-left" data-aos-delay="200">
+                <div class="benefit-card premium-benefit-card">
                     <div class="benefit-icon premium-benefit-icon">
                         <i class="fas fa-home"></i>
-                        <div class="icon-glow"></div>
+                        <div classicon-glow></div>
                     </div>
                     <h3 class="benefit-title">تنوع في الخيارات</h3>
                     <p class="benefit-description">
                         شقق سكنية، مكاتب تجارية، فلل، ومحلات تجارية في أفضل المواقع والأحياء.
                     </p>
                     <div class="benefit-overlay"></div>
-                    <div class="benefit-card-glow"></div>
                 </div>
                 
-                <div class="benefit-card premium-benefit-card" data-aos="flip-left" data-aos-delay="300">
+                <div class="benefit-card premium-benefit-card">
                     <div class="benefit-icon premium-benefit-icon">
                         <i class="fas fa-headset"></i>
-                        <div class="icon-glow"></div>
+                        <div classicon-glow></div>
                     </div>
                     <h3 class="benefit-title">دعم ومتابعة مستمرة</h3>
                     <p class="benefit-description">
                         فريق متخصص لخدمتك 24/7 لمتابعة صيانة العقار وتقديم الدعم خلال فترة الإيجار.
                     </p>
                     <div class="benefit-overlay"></div>
-                    <div class="benefit-card-glow"></div>
                 </div>
                 
-                <div class="benefit-card premium-benefit-card" data-aos="flip-left" data-aos-delay="400">
+                <div class="benefit-card premium-benefit-card">
                     <div class="benefit-icon premium-benefit-icon">
                         <i class="fas fa-map-marked-alt"></i>
-                        <div class="icon-glow"></div>
+                        <div classicon-glow></div>
                     </div>
                     <h3 class="benefit-title">مواقع استراتيجية</h3>
                     <p class="benefit-description">
                         عقاراتنا في أفضل المواقع الحيوية والقريبة من الخدمات والمرافق الأساسية.
                     </p>
                     <div class="benefit-overlay"></div>
-                    <div class="benefit-card-glow"></div>
                 </div>
             </div>
         </div>
         
-        <!-- خلفية متحركة محسنة -->
+        <!-- خلفية متحركة -->
         <div class="benefits-bg-animation"></div>
-        <div class="benefits-orb"></div>
     </section>
 
     <div class="section-divider"></div>
 
-    <!-- 📱 قسم حجز المعاينة - تحسينات بصرية -->
+    <!-- 📱 قسم حجز المعاينة -->
     <section class="cta-section premium-cta">
         <div class="container">
-            <div class="cta-card premium-cta-card" data-aos="fade-up" data-aos-duration="1000">
+            <div class="cta-card premium-cta-card">
                 <div class="cta-content">
-                    <h2 class="cta-title" data-aos="fade-right" data-aos-delay="200">هل تبحث عن <span class="highlight premium-highlight-text">عقار للإيجار؟</span></h2>
-                    <p class="cta-description" data-aos="fade-right" data-aos-delay="400">
+                    <h2 class="cta-title">هل تبحث عن <span class="highlight premium-highlight-text">عقار للإيجار؟</span></h2>
+                    <p class="cta-description">
                         تواصل مع فريقنا الآن لحجز معاينة العقار المناسب لك والحصول على أفضل عروض الإيجار
                         مع ضمان الجودة والموثوقية.
                     </p>
-                    <div class="cta-actions" data-aos="fade-right" data-aos-delay="600">
+                    <div class="cta-actions">
                         <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
                             <i class="fas fa-phone-alt"></i>
                             <span>اتصل لحجز معاينة</span>
@@ -364,7 +349,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="cta-image" data-aos="fade-left" data-aos-delay="400">
+                <div class="cta-image">
                     <div class="image-placeholder premium-image">
                         <div class="floating-elements">
                             <div class="float-element element-1">
@@ -381,7 +366,6 @@
                             <i class="fas fa-handshake"></i>
                         </div>
                         <div class="image-glow"></div>
-                        <div class="image-shine"></div>
                     </div>
                 </div>
                 
@@ -389,18 +373,19 @@
                 <div class="cta-ornament ornament-1"></div>
                 <div class="cta-ornament ornament-2"></div>
                 <div class="cta-ornament ornament-3"></div>
-                <div class="cta-border-glow"></div>
             </div>
         </div>
     </section>
 
-    <!-- الفوتر المبسط والاحترافي - تحسينات بصرية -->
+    <!-- ==============================================
+     الفوتر المبسط والاحترافي
+     ============================================== -->
     <footer class="footer">
         <div class="footer-main">
             <div class="container">
                 <div class="footer-grid">
                     <!-- العمود الأول: معلومات المجموعة -->
-                    <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
+                    <div class="footer-col footer-about">
                         <div class="footer-logo">
                             <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
                         </div>
@@ -423,7 +408,7 @@
                             <a href="#" class="social-link" aria-label="Instagram">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 7.22768 13.4229 7.09402 12.5923C6.96035 11.7616 7.09206 10.9099 7.47032 10.1584C7.84858 9.40685 8.45418 8.79374 9.201 8.40624C9.9478 8.01875 10.7978 7.87659 11.63 8C12.4789 8.12588 13.2648 8.52146 13.8716 9.12831C14.4785 9.73515 14.8741 10.5211 15 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 8.22768 13.4229 8.09402 12.5923C7.96035 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45418 8.79374 10.201 8.40624C10.9478 8.01875 11.7978 7.87659 12.63 8C13.4789 8.12588 14.2648 8.52146 14.8716 9.12831C15.4785 9.73515 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M17.5 6.5H17.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </a>
@@ -431,7 +416,7 @@
                     </div>
 
                     <!-- العمود الثاني: معلومات الاتصال -->
-                    <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
+                    <div class="footer-col footer-contact">
                         <h3 class="footer-title">تواصل معنا</h3>
                         <ul class="footer-contact-list">
                             <li>
@@ -472,14 +457,9 @@
     <!-- 📜 ملفات JavaScript -->
     <script src="../../../global/js/core.js"></script>
     <script src="../../../global/js/api-client.js"></script>
-    
-    <!-- AOS Animation Library JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="home.js"></script>
     
     <!-- Particles.js library -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    
-    <!-- home.js المعدل مع AOS -->
-    <script src="home.js"></script>
 </body>
 </html>

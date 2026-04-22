@@ -36,7 +36,7 @@ body {
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -72,33 +72,37 @@ body {
     align-items: center;
 }
 
-.logo-link {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    z-index: 1001;
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  z-index: 1001;
 }
 
+/* wrapper الصورة */
 .upper-logo {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;   /* يوسّط الصورة رأسياً */
+    justify-content: center; /* لو تحب أفقياً في المنتصف */
     height: 100%;
-    line-height: 0;
+    line-height: 0;         /* يمنع أي فجوة أسفل الصورة */
 }
 
+/* الصورة نفسها */
 .upper-logo img {
     width: 110px;
     height: auto;
     display: block;
     margin: 0;
     object-fit: contain;
-    transition: width 0.3s ease;
+    transition: width var(--transition-normal);
 }
 
+/* تصغير اللوجو عند التمرير على الموبايل */
 @media (max-width: 768px) {
     .navbar.scrolled .upper-logo img {
         width: 90px !important;
+        transition: width var(--transition-normal);
     }
 }
 
@@ -159,7 +163,35 @@ body {
     background: rgba(203, 205, 205, 0.08);
 }
 
-/* زر القائمة المتنقلة */
+/* زر دخول الإدارة */
+.nav-tools {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.premium-btn {
+    background: rgba(203, 205, 205, 0.05);
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    color: var(--color-text-primary);
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition-smooth);
+}
+
+.premium-btn:hover {
+    background: rgba(203, 205, 205, 0.08);
+    border-color: rgba(203, 205, 205, 0.2);
+    transform: translateY(-1px);
+}
+
+/* إخفاء زر القائمة في سطح المكتب */
 .mobile-toggle {
     display: none;
     background: none;
@@ -182,28 +214,17 @@ body {
     border-radius: 1px;
 }
 
-/* 🎪 قسم الهيرو المحسن (بدون إحصائيات) - لم يتم تغييره */
+/* 🎪 قسم الهيرو المحسن - محتوى في النص بالضبط */
 .premium-hero {
     position: relative;
     min-height: 100vh;
     background: 
-        linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.95)),
-        url('../../../global/assets/images/hero-companies.jpg') center/cover no-repeat;
+        linear-gradient(rgba(10, 10, 10, 0.9), rgba(10, 10, 10, 0.95)),
+        url('/global/assets/images/hero-companies.jpg') center/cover no-repeat;
     display: flex;
     align-items: center;
     padding-top: 90px;
     text-align: center;
-    overflow: hidden;
-}
-
-.hero-gradient-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 50% 50%, rgba(203, 205, 205, 0.05) 0%, transparent 70%);
-    pointer-events: none;
 }
 
 .hero-container {
@@ -221,6 +242,11 @@ body {
     margin: 0 auto;
     text-align: center;
     animation: fadeInUp 1s ease-out;
+}
+
+/* إزالة الرسوم المتحركة الجانبية */
+.hero-particles, .hero-waves {
+    display: none;
 }
 
 .hero-badge {
@@ -290,7 +316,6 @@ body {
 }
 
 .hero-actions {
-    margin-top: 3rem;
     display: flex;
     gap: 1rem;
     justify-content: center;
@@ -311,7 +336,6 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-decoration: none;
 }
 
 .premium-btn-primary:hover {
@@ -333,7 +357,6 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-decoration: none;
 }
 
 .premium-btn-outline:hover {
@@ -342,316 +365,236 @@ body {
     transform: translateY(-2px);
 }
 
-/* موجات تصميمية */
-.hero-waves {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+/* ==================== */
+/* 🏆 قسم الإحصائيات الجديد - تصميم بروفيشونال مبهر */
+/* ==================== */
+.premium-stats {
+    margin-top: 5rem;
+    animation: fadeInUp 1s ease-out 0.3s both;
     width: 100%;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.premium-stat {
+    background: linear-gradient(135deg, 
+        rgba(30, 30, 30, 0.8) 0%, 
+        rgba(15, 15, 15, 0.9) 100%
+    );
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    position: relative;
     overflow: hidden;
-    line-height: 0;
-    transform: rotate(180deg);
-}
-
-.wave {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    background-repeat: repeat-x;
-    background-size: 1000px 100px;
-}
-
-.wave-1 {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath fill='rgba(203,205,205,0.05)' d='M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,80C1120,85,1280,75,1360,69.3L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z'%3E%3C/path%3E%3C/svg%3E");
-    animation: waveAnim 25s linear infinite;
-    opacity: 0.5;
-}
-
-.wave-2 {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath fill='rgba(203,205,205,0.08)' d='M0,96L80,101.3C160,107,320,117,480,112C640,107,800,85,960,80C1120,75,1280,85,1360,90.7L1440,96L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z'%3E%3C/path%3E%3C/svg%3E");
-    animation: waveAnim 15s linear infinite;
-    opacity: 0.3;
-}
-
-.wave-3 {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath fill='rgba(203,205,205,0.03)' d='M0,32L80,37.3C160,43,320,53,480,58.7C640,64,800,64,960,58.7C1120,53,1280,43,1360,37.3L1440,32L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z'%3E%3C/path%3E%3C/svg%3E");
-    animation: waveAnim 35s linear infinite;
-    opacity: 0.2;
-}
-
-@keyframes waveAnim {
-    0% { background-position-x: 0; }
-    100% { background-position-x: 1000px; }
-}
-
-/* زر التمرير */
-.scroll-indicator {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
+    transition: var(--transition-smooth);
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    z-index: 10;
+    border: 1px solid rgba(203, 205, 205, 0.1);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    z-index: 1;
 }
 
-.mouse {
-    width: 26px;
-    height: 42px;
-    border: 2px solid rgba(203, 205, 205, 0.5);
-    border-radius: 20px;
-    position: relative;
-}
-
-.wheel {
-    width: 4px;
-    height: 8px;
-    background: rgba(203, 205, 205, 0.8);
-    border-radius: 2px;
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: wheelAnim 1.5s ease infinite;
-}
-
-@keyframes wheelAnim {
-    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(15px); }
-}
-
-.arrow {
-    width: 10px;
-    height: 10px;
-    border-right: 2px solid rgba(203, 205, 205, 0.5);
-    border-bottom: 2px solid rgba(203, 205, 205, 0.5);
-    transform: rotate(45deg);
-    animation: arrowAnim 1.5s ease infinite;
-}
-
-.arrow-1 { animation-delay: 0s; }
-.arrow-2 { animation-delay: 0.2s; }
-.arrow-3 { animation-delay: 0.4s; }
-
-@keyframes arrowAnim {
-    0% { opacity: 0; transform: rotate(45deg) translate(-5px, -5px); }
-    50% { opacity: 1; }
-    100% { opacity: 0; transform: rotate(45deg) translate(5px, 5px); }
-}
-
-/* ==================== */
-/* 📊 قسم الإحصائيات الرفيع الجديد (شريط أفقي أنيق) - تحسينات بصرية احترافية */
-/* ==================== */
-.stats-ribbon-section {
-    background: linear-gradient(135deg, #0A0A0A 0%, #111111 100%);
-    padding: 2rem 0;
-    position: relative;
-    z-index: 5;
-    border-bottom: 1px solid rgba(203, 205, 205, 0.05);
-    border-top: 1px solid rgba(203, 205, 205, 0.05);
-    overflow: hidden;
-}
-
-/* خلفية زخرفية متحركة للإحصائيات */
-.stats-bg-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    height: 100%;
-    background: radial-gradient(circle at center, rgba(203,205,205,0.03) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.stats-bg-particles {
+.premium-stat::before {
+    content: '';
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 20% 40%, rgba(203,205,205,0.02) 1px, transparent 1px),
-        radial-gradient(circle at 80% 60%, rgba(203,205,205,0.02) 1px, transparent 1px),
-        radial-gradient(circle at 40% 80%, rgba(203,205,205,0.02) 1px, transparent 1px);
-    background-size: 100px 100px;
-    opacity: 0.5;
-    pointer-events: none;
-    z-index: 0;
-    animation: particleFloat 20s linear infinite;
-}
-
-@keyframes particleFloat {
-    0% { transform: translateY(0) translateX(0); }
-    25% { transform: translateY(-10px) translateX(5px); }
-    50% { transform: translateY(0) translateX(10px); }
-    75% { transform: translateY(10px) translateX(5px); }
-    100% { transform: translateY(0) translateX(0); }
-}
-
-.stats-ribbon {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
-}
-
-.stat-ribbon-item {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    padding: 0.75rem 1.8rem;
+    background: linear-gradient(135deg, 
+        rgba(203, 205, 205, 0.03) 0%, 
+        transparent 50%
+    );
+    opacity: 0;
     transition: var(--transition-smooth);
-    border-radius: 16px;
-    flex: 1;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+    z-index: -1;
 }
 
-.stat-ribbon-item:hover {
-    background: rgba(203, 205, 205, 0.03);
-    transform: translateY(-3px);
+.premium-stat::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        transparent 0%, 
+        rgba(203, 205, 205, 0.02) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: var(--transition-smooth);
+    z-index: -1;
 }
 
-.stat-ribbon-icon {
-    width: 54px;
-    height: 54px;
-    background: rgba(203, 205, 205, 0.04);
-    border-radius: 14px;
+.premium-stat:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(203, 205, 205, 0.2);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.premium-stat:hover::before {
+    opacity: 1;
+}
+
+.premium-stat:hover::after {
+    opacity: 1;
+}
+
+/* تصميم الأيقونات الجديد */
+.premium-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, 
+        rgba(203, 205, 205, 0.08) 0%, 
+        rgba(203, 205, 205, 0.02) 100%
+    );
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition-smooth);
+    margin-bottom: 2rem;
     position: relative;
-    border: 1px solid rgba(203, 205, 205, 0.08);
-    backdrop-filter: blur(5px);
+    z-index: 1;
+    transition: var(--transition-smooth);
+    border: 1px solid rgba(203, 205, 205, 0.1);
 }
 
-.stat-ribbon-icon i {
-    font-size: 1.8rem;
+.premium-stat:hover .premium-icon {
+    background: linear-gradient(135deg, 
+        rgba(203, 205, 205, 0.12) 0%, 
+        rgba(203, 205, 205, 0.04) 100%
+    );
+    transform: scale(1.1) rotate(5deg);
+    border-color: rgba(203, 205, 205, 0.2);
+}
+
+.premium-icon i {
+    font-size: 2rem;
     background: linear-gradient(135deg, #fff 0%, #cbcdcd 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    transition: transform 0.3s ease;
-    z-index: 2;
+    transition: var(--transition-smooth);
 }
 
-.icon-pulse {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    border-radius: 14px;
-    background: radial-gradient(circle, rgba(203,205,205,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.stat-ribbon-item:hover .stat-ribbon-icon {
-    background: rgba(203, 205, 205, 0.08);
-    border-color: rgba(203, 205, 205, 0.15);
-    transform: scale(1.05);
-}
-
-.stat-ribbon-item:hover .icon-pulse {
-    opacity: 1;
-    animation: iconPulse 1.5s infinite;
-}
-
-.stat-ribbon-item:hover .stat-ribbon-icon i {
+.premium-stat:hover .premium-icon i {
     transform: scale(1.1);
 }
 
-@keyframes iconPulse {
-    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+.icon-glow {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%);
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #fff 0%, #cbcdcd 100%);
+    border-radius: 50%;
+    opacity: 0.05;
+    filter: blur(15px);
+    z-index: 0;
+    transition: var(--transition-smooth);
 }
 
-.stat-ribbon-content {
-    text-align: center;
+.premium-stat:hover .icon-glow {
+    opacity: 0.1;
+    filter: blur(20px);
+    transform: translate(50%, -50%) scale(1.2);
+}
+
+/* تصميم المحتوى */
+.stat-content {
     position: relative;
+    z-index: 1;
 }
 
-.stat-ribbon-value {
-    font-size: 2rem;
+.stat-value {
+    font-size: 3.5rem;
     font-weight: 800;
     color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: baseline;
-    gap: 0.2rem;
     justify-content: center;
-    text-shadow: 0 2px 10px rgba(203,205,205,0.1);
+    gap: 0.2rem;
+    font-family: 'Tajawal', sans-serif;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.stat-ribbon-value .counter {
+.counter {
+    font-weight: 800;
     background: linear-gradient(135deg, #fff 0%, #cbcdcd 80%, #999 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    position: relative;
 }
 
-.stat-ribbon-value .plus {
-    color: rgba(203, 205, 205, 0.6);
-    font-size: 1.3rem;
+.plus {
+    color: rgba(203, 205, 205, 0.5);
+    font-size: 2.2rem;
     font-weight: 300;
+    margin-right: 5px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.stat-ribbon-label {
-    font-size: 0.9rem;
+.stat-label {
+    font-size: 1.1rem;
     color: var(--color-text-secondary);
     font-weight: 500;
     letter-spacing: 0.5px;
-    text-transform: uppercase;
-    opacity: 0.9;
+    line-height: 1.4;
+    position: relative;
+    padding-top: 0.8rem;
 }
 
-.stat-hover-glow {
+.stat-label::before {
+    content: '';
     position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
+    top: 0;
+    right: 50%;
+    transform: translateX(50%);
+    width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(203,205,205,0.8), transparent);
-    transition: width 0.4s ease;
-    border-radius: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(203, 205, 205, 0.3), 
+        transparent
+    );
 }
 
-.stat-ribbon-item:hover .stat-hover-glow {
-    width: 60%;
-}
-
-.stat-ribbon-divider {
-    width: 1px;
-    height: 50px;
-    background: linear-gradient(180deg, transparent, rgba(203, 205, 205, 0.2), transparent);
-}
-
-.stats-divider-glow {
+/* تأثير إشعاعي */
+.stat-glow {
     position: absolute;
-    bottom: 0;
-    left: 10%;
-    width: 80%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(203,205,205,0.1), transparent);
-    filter: blur(2px);
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(
+        circle at center,
+        rgba(203, 205, 205, 0.03) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: var(--transition-smooth);
+    z-index: 0;
+}
+
+.premium-stat:hover .stat-glow {
+    opacity: 1;
 }
 
 /* خط فاصل أنيق */
@@ -669,12 +612,11 @@ body {
     max-width: 1200px;
 }
 
-/* 🏢 قسم العقارات المميزة */
+/* 🏢 قسم العقارات المميزة - تصميم داكن متجانس مع الصفحة */
 .premium-featured {
     background: var(--color-black-dark);
     padding: 6rem 0;
     position: relative;
-    overflow: hidden;
 }
 
 .premium-header {
@@ -720,14 +662,12 @@ body {
     text-align: center;
 }
 
-/* شبكة العقارات المميزة */
+/* شبكة العقارات المميزة - تصميم داكن محسن */
 .featured-projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2.5rem;
     margin: 3rem 0;
-    position: relative;
-    z-index: 2;
 }
 
 .project-card-grid {
@@ -737,14 +677,14 @@ body {
     );
     backdrop-filter: blur(10px);
     border: 1px solid rgba(203, 205, 205, 0.08);
-    border-radius: 24px;
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-smooth);
     display: flex;
     flex-direction: column;
     box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.3),
+        0 8px 25px rgba(0, 0, 0, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     z-index: 1;
 }
@@ -761,17 +701,16 @@ body {
         transparent 50%
     );
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: var(--transition-smooth);
     z-index: -1;
 }
 
 .project-card-grid:hover {
-    transform: translateY(-12px) scale(1.02);
-    border-color: rgba(203, 205, 205, 0.25);
+    transform: translateY(-12px);
+    border-color: rgba(203, 205, 205, 0.2);
     box-shadow: 
-        0 25px 40px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 0 20px rgba(203,205,205,0.1);
+        0 20px 40px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .project-card-grid:hover::before {
@@ -788,11 +727,11 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.5s ease;
 }
 
 .project-card-grid:hover .project-image-grid img {
-    transform: scale(1.08);
+    transform: scale(1.05);
 }
 
 .project-overlay-grid {
@@ -952,13 +891,13 @@ body {
 
 .project-action-grid .btn {
     padding: 0.7rem 1.5rem;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 600;
     font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(203, 205, 205, 0.06);
+    background: rgba(203, 205, 205, 0.08);
     border: 1px solid rgba(203, 205, 205, 0.12);
     color: var(--color-text-primary);
     transition: var(--transition-smooth);
@@ -967,63 +906,35 @@ body {
 
 .project-action-grid .btn:hover {
     background: rgba(203, 205, 205, 0.12);
-    border-color: rgba(203, 205, 205, 0.25);
+    border-color: rgba(203, 205, 205, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .premium-view-all {
     margin: 3rem auto 0;
     padding: 1rem 2.5rem;
-    border-radius: 14px;
+    border-radius: 10px;
     font-weight: 600;
     font-size: 1rem;
     display: block;
     width: fit-content;
-    border: 1px solid rgba(203, 205, 205, 0.15);
+    border: 1px solid rgba(203, 205, 205, 0.1);
     transition: var(--transition-smooth);
     text-decoration: none;
     color: var(--color-text-primary);
     text-align: center;
     background: rgba(203, 205, 205, 0.03);
-    backdrop-filter: blur(5px);
 }
 
 .premium-view-all:hover {
-    border-color: rgba(203, 205, 205, 0.3);
+    border-color: rgba(203, 205, 205, 0.25);
     background: rgba(203, 205, 205, 0.08);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
 }
 
-/* خلفيات زخرفية محسنة */
-.featured-bg-pattern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        radial-gradient(circle at 30% 20%, rgba(203,205,205,0.02) 0%, transparent 30%),
-        radial-gradient(circle at 70% 80%, rgba(203,205,205,0.02) 0%, transparent 30%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.featured-glow-orb {
-    position: absolute;
-    bottom: 10%;
-    right: 5%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(203,205,205,0.03) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(40px);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* 📊 قسم المزايا - تحسينات بصرية */
+/* ==================== */
+/* 📊 قسم المزايا الجديد - تصميم بروفيشونال أنيق */
+/* ==================== */
 .premium-benefits {
     background: #0A0A0A;
     padding: 6rem 0;
@@ -1042,7 +953,7 @@ body {
         radial-gradient(circle at 20% 30%, rgba(203, 205, 205, 0.02) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(203, 205, 205, 0.02) 0%, transparent 50%);
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .benefits-grid {
@@ -1055,22 +966,21 @@ body {
 }
 
 .premium-benefit-card {
-    background: linear-gradient(145deg, 
-        rgba(28, 28, 28, 0.9) 0%, 
-        rgba(18, 18, 18, 0.95) 100%
+    background: linear-gradient(135deg, 
+        rgba(25, 25, 25, 0.8) 0%, 
+        rgba(18, 18, 18, 0.9) 100%
     );
     border: 1px solid rgba(203, 205, 205, 0.08);
-    border-radius: 28px;
+    border-radius: 20px;
     padding: 3rem 2.2rem;
     text-align: center;
     position: relative;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-smooth);
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .premium-benefit-card::before {
@@ -1085,27 +995,26 @@ body {
         transparent 100%
     );
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: var(--transition-smooth);
     z-index: 0;
 }
 
 .premium-benefit-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    border-color: rgba(203, 205, 205, 0.2);
-    box-shadow: 
-        0 25px 45px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(203,205,205,0.08);
+    transform: translateY(-8px);
+    border-color: rgba(203, 205, 205, 0.15);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 .premium-benefit-card:hover::before {
     opacity: 1;
 }
 
+/* تصميم الأيقونات الجديد */
 .premium-benefit-icon {
-    width: 90px;
-    height: 90px;
-    background: rgba(203, 205, 205, 0.04);
-    border-radius: 24px;
+    width: 80px;
+    height: 80px;
+    background: rgba(203, 205, 205, 0.05);
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1113,30 +1022,26 @@ body {
     position: relative;
     z-index: 1;
     transition: var(--transition-smooth);
-    border: 1px solid rgba(203, 205, 205, 0.1);
-    backdrop-filter: blur(5px);
 }
 
 .premium-benefit-card:hover .premium-benefit-icon {
-    background: rgba(203, 205, 205, 0.1);
+    background: rgba(203, 205, 205, 0.08);
     transform: scale(1.05) rotate(5deg);
-    border-color: rgba(203, 205, 205, 0.2);
-    box-shadow: 0 0 25px rgba(203,205,205,0.15);
 }
 
 .premium-benefit-icon i {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     color: var(--color-text-primary);
     transition: var(--transition-smooth);
 }
 
 .premium-benefit-card:hover .premium-benefit-icon i {
     color: var(--color-primary);
-    transform: scale(1.1);
 }
 
+/* تصميم المحتوى */
 .benefit-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--color-text-primary);
     margin-bottom: 1.2rem;
     font-weight: 700;
@@ -1147,86 +1052,53 @@ body {
 
 .benefit-description {
     color: var(--color-text-secondary);
-    line-height: 1.8;
+    line-height: 1.7;
     font-size: 1rem;
     position: relative;
     z-index: 1;
 }
 
-.benefit-card-glow {
+/* تأثير خلفي أنيق */
+.benefit-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
+    top: 0;
+    right: 0;
     width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(203,205,205,0.5), transparent);
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(203, 205, 205, 0.02) 0%, 
+        transparent 50%
+    );
+    z-index: 0;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: var(--transition-smooth);
 }
 
-.premium-benefit-card:hover .benefit-card-glow {
+.premium-benefit-card:hover .benefit-overlay {
     opacity: 1;
 }
 
-.benefits-bg-animation {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-        45deg,
-        rgba(203,205,205,0.01) 0px,
-        rgba(203,205,205,0.01) 2px,
-        transparent 2px,
-        transparent 8px
-    );
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.5;
-}
-
-.benefits-orb {
-    position: absolute;
-    top: 20%;
-    left: 10%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(203,205,205,0.02) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(50px);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* 📱 قسم CTA - تحسينات بصرية */
+/* 📱 قسم CTA البروفيشونال المحسن */
 .premium-cta {
     padding: 6rem 0;
     background: var(--color-black-dark);
     position: relative;
-    overflow: hidden;
 }
 
 .premium-cta-card {
-    background: rgba(25, 25, 25, 0.9);
+    background: rgba(20, 20, 20, 0.8);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(203, 205, 205, 0.08);
-    border-radius: 32px;
-    padding: 2.5rem;
+    border: 1px solid rgba(203, 205, 205, 0.05);
+    border-radius: 22px;
+    padding: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 1rem;
     align-items: center;
     position: relative;
     overflow: hidden;
     max-width: 1200px;
     margin: 0 auto;
-    box-shadow: 0 25px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
-    transition: box-shadow 0.3s ease;
-}
-
-.premium-cta-card:hover {
-    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .premium-cta-card::before {
@@ -1257,7 +1129,7 @@ body {
 
 .cta-description {
     font-size: 1.2rem;
-    line-height: 1.8;
+    line-height: 1.7;
     color: var(--color-text-secondary);
     margin-bottom: 2.5rem;
 }
@@ -1273,7 +1145,7 @@ body {
     color: #1a1a1a;
     border: none;
     padding: 1.2rem 2.5rem;
-    border-radius: 16px;
+    border-radius: 12px;
     font-weight: 600;
     font-size: 1.1rem;
     display: flex;
@@ -1281,30 +1153,32 @@ body {
     gap: 0.5rem;
     text-decoration: none;
     transition: var(--transition-smooth);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.premium-cta-btn::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-    transform: rotate(45deg);
-    transition: left 0.5s ease;
 }
 
 .premium-cta-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
 }
 
-.premium-cta-btn:hover::after {
-    left: 100%;
+.premium-cta-btn-outline {
+    background: transparent;
+    border: 1px solid rgba(203, 205, 205, 0.15);
+    color: var(--color-text-primary);
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.premium-cta-btn-outline:hover {
+    background: rgba(203, 205, 205, 0.05);
+    border-color: rgba(203, 205, 205, 0.25);
+    transform: translateY(-2px);
 }
 
 .cta-image {
@@ -1316,32 +1190,13 @@ body {
     width: 100%;
     height: 320px;
     background: rgba(203, 205, 205, 0.03);
-    border: 1px solid rgba(203, 205, 205, 0.08);
-    border-radius: 24px;
+    border: 1px solid rgba(203, 205, 205, 0.06);
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
-}
-
-.image-shine {
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-    transform: skewX(-20deg);
-    animation: shine 6s infinite;
-}
-
-@keyframes shine {
-    0% { left: -100%; }
-    20% { left: 150%; }
-    100% { left: 150%; }
 }
 
 .main-icon {
@@ -1349,7 +1204,6 @@ body {
     color: var(--color-text-primary);
     position: relative;
     z-index: 2;
-    filter: drop-shadow(0 0 15px rgba(203,205,205,0.2));
 }
 
 .floating-elements {
@@ -1366,15 +1220,14 @@ body {
     width: 55px;
     height: 55px;
     background: rgba(203, 205, 205, 0.05);
-    border: 1px solid rgba(203, 205, 205, 0.1);
-    border-radius: 16px;
+    border: 1px solid rgba(203, 205, 205, 0.08);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
     color: var(--color-text-primary);
     animation: floatElement 10s ease-in-out infinite;
-    backdrop-filter: blur(5px);
 }
 
 .element-1 {
@@ -1413,35 +1266,16 @@ body {
     height: 80%;
     background: var(--color-text-primary);
     border-radius: 16px;
-    opacity: 0.03;
-    filter: blur(40px);
+    opacity: 0.02;
+    filter: blur(30px);
 }
 
-.cta-border-glow {
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 34px;
-    background: linear-gradient(135deg, rgba(203,205,205,0.1), transparent, rgba(203,205,205,0.05));
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.premium-cta-card:hover .cta-border-glow {
-    opacity: 1;
-}
-
-/* الفوتر - تحسينات بصرية */
+/* الفوتر */
 .footer {
     background-color: var(--color-black-dark);
     position: relative;
     overflow: hidden;
     padding: 0;
-    border-top: 1px solid rgba(203, 205, 205, 0.05);
 }
 
 .footer::before {
@@ -1457,84 +1291,86 @@ body {
 }
 
 .footer-main {
-    padding: 4rem 0 2rem;
+    padding: var(--spacing-xl) 0 var(--spacing-lg);
     position: relative;
     z-index: 1;
 }
 
+/* شبكة العمودين */
 .footer-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: var(--spacing-xl);
     align-items: start;
 }
 
 @media (max-width: 768px) {
     .footer-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: var(--spacing-lg);
     }
 }
 
+/* العمود الأول */
 .footer-about {
     max-width: 400px;
 }
 
 .footer-logo {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-md);
 }
 
 .footer-logo img {
-    width: 150px;
+    width: 140px;
     height: auto;
     display: block;
     filter: brightness(0) invert(1);
-    transition: filter 0.3s ease;
 }
 
 .footer-about-text {
     color: var(--color-text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.8;
-    font-size: 0.95rem;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.7;
+    font-size: var(--font-size-sm);
 }
 
+/* أيقونات التواصل */
 .footer-social {
     display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
 }
 
 .social-link {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(203, 205, 205, 0.15);
-    border-radius: 12px;
+    border-radius: var(--border-radius-round);
     color: var(--color-text-primary);
     text-decoration: none;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(5px);
+    transition: all var(--transition-normal);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .social-link:hover {
-    background: linear-gradient(135deg, #cbcdcd 0%, #999 100%);
+    background: var(--gradient-primary);
     border-color: transparent;
     color: #0a0a0a;
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
 }
 
+/* عنوان العمود الثاني */
 .footer-title {
-    font-size: 1.2rem;
+    font-size: var(--font-size-md);
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-md);
     color: var(--color-text-primary);
     position: relative;
-    padding-bottom: 0.75rem;
+    padding-bottom: var(--spacing-xs);
 }
 
 .footer-title::after {
@@ -1542,17 +1378,18 @@ body {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 40px;
+    width: 30px;
     height: 2px;
-    background: linear-gradient(135deg, #cbcdcd 0%, #999 100%);
-    border-radius: 2px;
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-round);
 }
 
+/* قائمة الاتصال */
 .footer-contact-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-sm);
     margin-bottom: 0;
     padding: 0;
 }
@@ -1560,11 +1397,11 @@ body {
 .footer-contact-list li {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-xs);
     color: var(--color-text-secondary);
     line-height: 1.6;
-    transition: color 0.3s ease;
-    font-size: 0.95rem;
+    transition: color var(--transition-normal);
+    font-size: var(--font-size-sm);
 }
 
 .footer-contact-list li:hover {
@@ -1574,19 +1411,20 @@ body {
 .footer-contact-list li svg {
     flex-shrink: 0;
     margin-top: 0.2rem;
-    color: var(--color-text-tertiary);
-    transition: color 0.3s ease;
-    width: 18px;
-    height: 18px;
+    color: var(--color-text-muted);
+    transition: color var(--transition-normal);
+    width: 16px;
+    height: 16px;
 }
 
 .footer-contact-list li:hover svg {
     color: var(--color-text-primary);
 }
 
+/* الفوتر السفلي */
 .footer-bottom {
-    padding: 1.2rem 0;
-    border-top: 1px solid rgba(203, 205, 205, 0.05);
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid var(--color-gray-medium);
     background: rgba(0, 0, 0, 0.3);
     position: relative;
     z-index: 1;
@@ -1600,12 +1438,10 @@ body {
 }
 
 .copyright {
-    color: var(--color-text-tertiary);
-    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
     margin: 0;
-    letter-spacing: 0.5px;
 }
-
 /* ===== تحسينات للجوال ===== */
 @media (max-width: 1200px) {
     .container {
@@ -1615,8 +1451,8 @@ body {
     .premium-cta-card {
         grid-template-columns: 1fr;
         text-align: center;
-        padding: 3rem;
-        gap: 3rem;
+        padding: 4rem;
+        gap: 4rem;
     }
     
     .cta-actions {
@@ -1627,33 +1463,24 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     }
 
-    .stats-ribbon {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .stat-ribbon-item {
-        min-width: 180px;
-    }
-    
-    .stat-ribbon-divider {
-        display: none;
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    /* شريط التنقل للجوال */
+    /* شريط التنقل للجوال - القائمة من الشمال */
     .nav-menu {
         position: fixed;
         top: 90px;
-        left: -100%;
+        left: -100%; /* من الشمال */
         width: 320px;
         height: calc(100vh - 90px);
         background: rgba(10, 10, 10, 0.98);
         backdrop-filter: blur(30px);
         flex-direction: column;
         padding: 2rem;
-        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* تعديل للشمال */
         box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
         gap: 0.5rem;
         border-right: 1px solid rgba(203, 205, 205, 0.05);
@@ -1661,7 +1488,7 @@ body {
     }
     
     .nav-menu.active {
-        left: 0;
+        left: 0; /* تظهر من الشمال */
         right: auto;
     }
     
@@ -1670,7 +1497,7 @@ body {
     }
     
     .premium-link {
-        flex-direction: row;
+        flex-direction: row; /* عكس الاتجاه للقائمة من الشمال */
         justify-content: flex-start;
         padding: 1rem;
         width: 100%;
@@ -1680,7 +1507,7 @@ body {
     
     .nav-icon-wrapper {
         margin-bottom: 0;
-        margin-left: 1rem;
+        margin-left: 1rem; /* تغيير الهامش */
         margin-right: 0;
         width: 40px;
         height: 40px;
@@ -1703,7 +1530,27 @@ body {
         transform: rotate(-45deg) translate(6px, -6px);
     }
     
-    /* تحسينات الهيرو للجوال */
+    /* إخفاء أدوات التنقل الأصلية */
+    .nav-tools {
+        display: none;
+    }
+    
+    /* زر دخول الإدارة في القائمة الجانبية */
+    .nav-tools-mobile {
+        display: none;
+        width: 100%;
+        padding: 1.5rem 2rem;
+        background: transparent;
+        border-top: 1px solid rgba(203, 205, 205, 0.05);
+        margin-top: auto;
+    }
+    
+    .nav-tools-mobile .premium-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* تحسينات الهيرو للجوال - كل شيء في النص */
     .hero-container {
         padding: 3rem 1.5rem;
         text-align: center;
@@ -1745,36 +1592,29 @@ body {
         justify-content: center;
     }
     
-    /* تحسين الإحصائيات الرفيعة للجوال */
-    .stats-ribbon-section {
-        padding: 1.5rem 0;
+    /* تحسين الإحصائيات للجوال */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
     }
     
-    .stats-ribbon {
-        gap: 0.5rem;
+    .premium-stat {
+        padding: 2rem;
     }
     
-    .stat-ribbon-item {
-        padding: 0.5rem 1rem;
-        min-width: auto;
-        flex: 1;
+    .stat-value {
+        font-size: 2.2rem;
     }
     
-    .stat-ribbon-icon {
-        width: 45px;
-        height: 45px;
+    .premium-icon {
+        width: 60px;
+        height: 60px;
     }
     
-    .stat-ribbon-icon i {
+    .premium-icon i {
         font-size: 1.5rem;
-    }
-    
-    .stat-ribbon-value {
-        font-size: 1.6rem;
-    }
-    
-    .stat-ribbon-label {
-        font-size: 0.75rem;
     }
     
     /* تحسين قسم العقارات المميزة */
@@ -1800,18 +1640,18 @@ body {
     }
     
     .premium-benefit-icon {
-        width: 75px;
-        height: 75px;
+        width: 70px;
+        height: 70px;
     }
     
     .premium-benefit-icon i {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
     
     /* تحسين CTA للجوال */
     .premium-cta-card {
-        padding: 2rem 1.5rem;
-        border-radius: 24px;
+        padding: 2.5rem 1.5rem;
+        border-radius: 18px;
         text-align: center;
     }
     
@@ -1831,7 +1671,8 @@ body {
         width: 100%;
     }
     
-    .premium-cta-btn {
+    .premium-cta-btn,
+    .premium-cta-btn-outline {
         width: 100%;
         justify-content: center;
         padding: 1rem 2rem;
@@ -1851,39 +1692,62 @@ body {
     .footer-grid {
         grid-template-columns: 1fr;
         text-align: right;
-        gap: 2rem;
+        gap: 2.5rem;
     }
+
     
     .footer-title {
+        justify-content: right;
+    }
+    
+    .premium-social {
+        justify-content: right;
+    }
+    
+    .premium-links a {
+        justify-content: right;
+    }
+    
+    .premium-contact li {
+        flex-direction: column;
+        align-items: right;
         text-align: right;
+        gap: 0.8rem;
     }
     
-    .footer-title::after {
-        right: 0;
-        left: auto;
+    .contact-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
     }
     
-    .footer-social {
-        justify-content: flex-start;
+    .premium-input-group {
+        flex-direction: column;
     }
     
-    .footer-contact-list li {
-        justify-content: flex-start;
+    .premium-submit {
+        width: 100%;
+        height: 48px;
     }
     
-    /* إخفاء بعض العناصر الزخرفية في الجوال لتحسين الأداء */
+    .premium-bottom {
+        flex-direction: column;
+        text-align: right;
+        gap: 1.5rem;
+        padding: 1.5rem 1.5rem 0;
+    }
+    
+    .premium-legal {
+        justify-content: right;
+        flex-wrap: wrap;
+        gap: 1rem 2rem;
+    }
+    
+    /* إخفاء العناصر الزخرفية في الجوال */
     .hero-gradient-overlay,
     .featured-bg-pattern,
     .benefits-bg-animation,
-    .cta-ornament,
-    .hero-particles,
-    .stats-bg-particles,
-    .featured-glow-orb,
-    .benefits-orb {
-        opacity: 0.3;
-    }
-    
-    .scroll-indicator {
+    .cta-ornament {
         display: none;
     }
     
@@ -1910,21 +1774,20 @@ body {
         padding: 0 1rem;
     }
     
-    .stat-ribbon-value {
+    .premium-logo {
+        width: 42px;
+        height: 42px;
         font-size: 1.3rem;
     }
     
-    .stat-ribbon-label {
-        font-size: 0.7rem;
-    }
-    
-    .stat-ribbon-icon {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .stat-ribbon-icon i {
+    .logo-primary {
         font-size: 1.3rem;
+    }
+    
+
+    
+    .stat-value {
+        font-size: 2.2rem;
     }
     
     .featured-projects-grid {
@@ -1932,11 +1795,51 @@ body {
     }
     
     .premium-cta-card {
-        padding: 1.5rem;
+        padding: 2rem 1.2rem;
     }
     
     .cta-title {
         font-size: 1.6rem;
+    }
+}
+
+/* تحسينات إضافية للجوال */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 1.6rem;
+    }
+    
+    .premium-title {
+        font-size: 1.4rem;
+    }
+    
+    .premium-badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .premium-btn-primary,
+    .premium-btn-outline,
+    .premium-cta-btn,
+    .premium-cta-btn-outline {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .featured-projects-grid {
+        max-width: 280px;
+    }
+    
+    .project-title-grid {
+        font-size: 1.1rem;
+    }
+    
+    .price-value {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        width: 280px;
     }
 }
 
@@ -1952,9 +1855,79 @@ body {
     }
 }
 
-/* تأثيرات خاصة للعدادات */
-.counter {
-    display: inline-block;
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* تأثيرات خاصة */
+.pulse-animation {
+    animation: pulseEffect 3s ease-in-out infinite;
+}
+
+@keyframes pulseEffect {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+/* تحسينات للأداء */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* إخفاء مؤشر التمرير */
+.scroll-indicator {
+    display: none;
+}
+
+/* تحسينات للمحتوى المتركز */
+.text-center-mobile {
+    text-align: center;
+}
+
+/* تحسينات للقائمة الجانبية في الجوال */
+@media (max-width: 768px) {
+    .nav-menu.active {
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+    }
+    
+    .nav-menu.active .nav-tools-mobile {
+        display: flex;
+        margin-top: auto;
+    }
+    
+    /* منع التمرير عند فتح القائمة */
+    body.menu-open {
+        overflow: hidden;
+    }
 }
 
 /* أنماط إضافية لمحتوى التحميل */
@@ -1977,36 +1950,4 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-/* زر الإدارة في القائمة الجانبية للجوال */
-@media (max-width: 768px) {
-    .mobile-admin-btn {
-        margin-top: auto;
-        padding-top: 1.5rem;
-        border-top: 1px solid rgba(203, 205, 205, 0.08);
-        display: block !important;
-    }
-    
-    .mobile-admin-btn .premium-link {
-        background: rgba(203, 205, 205, 0.05) !important;
-        border: 1px solid rgba(203, 205, 205, 0.1) !important;
-        color: var(--color-text-primary) !important;
-        font-weight: 600 !important;
-    }
-    
-    .mobile-admin-btn .premium-link:hover {
-        background: rgba(203, 205, 205, 0.08) !important;
-        border-color: rgba(203, 205, 205, 0.2) !important;
-    }
-    
-    .mobile-admin-btn .nav-icon-wrapper {
-        background: rgba(203, 205, 205, 0.08) !important;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-admin-btn {
-        display: none !important;
-    }
 }

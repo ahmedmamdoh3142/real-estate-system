@@ -1,8 +1,8 @@
-// Frontend/public/pages/project-details/project-details.js - النسخة النهائية مع AOS
+// Frontend/public/pages/project-details/project-details.js - النسخة النهائية مع إضافة حقول التواصل وتحسين التحقق
 (function() {
     'use strict';
     
-    console.log('✅ project-details.js loaded - PROFESSIONAL VERSION WITH AOS');
+    console.log('✅ project-details.js loaded - PROFESSIONAL VERSION 5.2 (with contact preferences and live validation)');
     
     class ProjectDetailsPage {
         constructor() {
@@ -35,35 +35,10 @@
         setupPage() {
             console.log('🔧 Setting up project details page...');
             
-            // تهيئة AOS
-            this.initAOS();
-            
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
             this.setupEventListeners();
             this.loadProjectDetails();
-        }
-        
-        initAOS() {
-            if (typeof AOS !== 'undefined') {
-                AOS.init({
-                    duration: 800,
-                    easing: 'ease-in-out-cubic',
-                    once: false,
-                    mirror: true,
-                    offset: 100,
-                    delay: 100,
-                    anchorPlacement: 'top-bottom'
-                });
-                console.log('✨ AOS initialized with mirror: true, once: false');
-                
-                // إعادة تهيئة AOS بعد تحميل المحتوى الديناميكي
-                window.addEventListener('load', () => {
-                    setTimeout(() => AOS.refresh(), 200);
-                });
-            } else {
-                console.warn('⚠️ AOS library not loaded');
-            }
         }
         
         setupMobileMenu() {
@@ -351,9 +326,6 @@
                     this.renderProjectDetails();
                     this.initializeGallery();
                     this.loadRelatedProjects();
-                    
-                    // تحديث AOS بعد تحميل المحتوى
-                    setTimeout(() => AOS.refresh(), 100);
                 } else {
                     throw new Error('No project data found');
                 }
@@ -386,7 +358,6 @@
                 if (data.success && data.data?.projects?.length > 0) {
                     this.relatedProjects = data.data.projects.filter(project => project.id !== this.projectId);
                     this.renderRelatedProjects();
-                    setTimeout(() => AOS.refresh(), 100);
                 } else {
                     this.relatedProjects = [];
                     this.renderRelatedProjects();
@@ -468,6 +439,7 @@
                 });
                 
                 console.log('📥 Response Status:', response.status);
+                console.log('📥 Response Headers:', response.headers);
                 
                 const responseText = await response.text();
                 console.log('📥 Response Text:', responseText);
@@ -1013,10 +985,9 @@
             
             let projectsHTML = '';
             
-            this.relatedProjects.forEach((project, index) => {
-                const aosDelay = 100 + (index * 50);
+            this.relatedProjects.forEach(project => {
                 projectsHTML += `
-                    <a href="index.html?id=${project.id}" class="project-card-grid" data-aos="fade-up" data-aos-delay="${aosDelay}">
+                    <a href="index.html?id=${project.id}" class="project-card-grid">
                         <div class="project-image-grid">
                             <img src="${project.mainImage || project.images?.[0]?.url || '/global/assets/images/project-placeholder.jpg'}" 
                                  alt="${project.projectName}"
@@ -1079,7 +1050,6 @@
             });
             
             container.innerHTML = projectsHTML;
-            setTimeout(() => AOS.refresh(), 100);
         }
         
         shareProject() {
@@ -1284,7 +1254,6 @@
             
             this.renderProjectDetails();
             this.initializeGallery();
-            setTimeout(() => AOS.refresh(), 100);
         }
         
         formatPrice(price, priceType) {
@@ -1336,7 +1305,7 @@
             
             console.log('🔗 اختبار اتصال API...');
             try {
-                const response = await fetch('http://localhost:3001/api/health');
+                const response = await fetch('/api/health');
                 const data = await response.json();
                 console.log('✅ حالة الخادم:', data);
             } catch (error) {
