@@ -13,8 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <!-- 🚀 Google Fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-
+    </noscript>
     <!-- 🚀 Preload أهم CSS -->
     <link rel="preload" href="../../../global/css/design-system.css" as="style">
     <link rel="preload" href="inquiry.css" as="style">
@@ -48,8 +50,13 @@
                 <a href="../home/index.html" class="logo-link">
                     <!-- REPLACE LOGO HERE -->
                     <div class="upper-logo">
-                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
-                    </div>
+<img 
+                        src="../../../global/assets/images/logo.webp"
+                        alt="شعار مجموعة الشركات المتكاملة"
+                        width="263"
+                        height="146"
+                        fetchpriority="high"
+                        >                     </div>
                 </a>
             </div>
 
@@ -875,8 +882,13 @@
                 <!-- العمود الأول: معلومات المجموعة -->
                 <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
                     <div class="footer-logo">
-                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
-                    </div>
+<img 
+                        src="../../../global/assets/images/logo.webp"
+                        alt="شعار مجموعة الشركات المتكاملة"
+                        width="263"
+                        height="146"
+                        fetchpriority="high"
+                        >                     </div>
                     <p class="footer-about-text">
                         مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
                     </p>
@@ -983,12 +995,12 @@
     </div>
 
     <!-- 📜 ملفات JavaScript -->
-    <script src="../../../global/js/core.js"></script>
-    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/core.js" defer></script>
+    <script src="../../../global/js/api-client.js" defer></script>
     <!-- AOS Animation Library JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js" defer></script>
     <!-- Leaflet Maps -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="inquiry.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="inquiry.js" defer></script>
 </body>
 </html>

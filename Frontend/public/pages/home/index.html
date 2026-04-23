@@ -13,8 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <!-- 🚀 Google Fonts (بـ swap) -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-
+    </noscript>
     <!-- 🚀 Preload أهم CSS -->
     <link rel="preload" href="../../../global/css/design-system.css" as="style">
     <link rel="preload" href="home.css" as="style">
@@ -42,8 +44,13 @@
             <div class="nav-brand">
                 <a href="../../../admin/pages/login/index.html" class="logo-link">
                     <div class="upper-logo">
-                        <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
-                    </div>
+<img 
+                        src="../../../global/assets/images/logo.webp"
+                        alt="شعار مجموعة الشركات المتكاملة"
+                        width="263"
+                        height="146"
+                        fetchpriority="high"
+                        >                     </div>
                 </a>
             </div>
 
@@ -410,8 +417,13 @@
                     <!-- العمود الأول: معلومات المجموعة -->
                     <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
                         <div class="footer-logo">
-                            <img src="../../../global/assets/images/logo.png" alt="شعار مجموعة الشركات المتكاملة">
-                        </div>
+<img 
+                        src="../../../global/assets/images/logo.webp"
+                        alt="شعار مجموعة الشركات المتكاملة"
+                        width="263"
+                        height="146"
+                        fetchpriority="high"
+                        >                         </div>
                         <p class="footer-about-text">
                             مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
                         </p>
@@ -478,16 +490,16 @@
     </footer>
 
     <!-- 📜 ملفات JavaScript -->
-    <script src="../../../global/js/core.js"></script>
-    <script src="../../../global/js/api-client.js"></script>
+    <script src="../../../global/js/core.js" defer></script>
+    <script src="../../../global/js/api-client.js" defer></script>
     
     <!-- AOS Animation Library JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js" defer></script>
     
     <!-- Particles.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
     
     <!-- home.js المعدل مع AOS -->
-    <script src="home.js"></script>
+    <script src="home.js" defer></script>
 </body>
 </html>
