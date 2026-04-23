@@ -31,8 +31,10 @@
             this.initAOS();
             
             // تحميل البيانات مباشرة
-            this.loadStatistics();
-            this.loadFeaturedProjects();
+            setTimeout(() => {
+                this.loadStatistics();
+                this.loadFeaturedProjects();
+            }, 800);
             
             // إعداد القائمة المتنقلة وإضافة زر الإدارة
             this.setupMobileMenu();
@@ -42,13 +44,12 @@
         initAOS() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
-                    duration: 800,       // مدة الأنيميشن
-                    easing: 'ease-in-out-cubic',
-                    once: false,           // الأنيميشن يحدث مرة واحدة فقط
-                    mirror: true,        // عدم عكس الأنيميشن عند التمرير لأعلى
-                    offset: 120,          // المسافة قبل بدء الأنيميشن
-                    delay: 100,           // تأخير افتراضي
-                    anchorPlacement: 'top-bottom'
+                    duration: 500,
+                    easing: 'ease-out',
+                    once: true,
+                    mirror: false,
+                    offset: 60,
+                    disable: 'mobile'
                 });
                 console.log('✨ AOS initialized');
             } else {

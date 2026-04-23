@@ -41,19 +41,21 @@
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
             this.setupEventListeners();
-            this.loadProjectDetails();
+            setTimeout(() => {
+                this.loadProjectDetails();
+            }, 800);
+            
         }
         
         initAOS() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
-                    duration: 800,
-                    easing: 'ease-in-out-cubic',
-                    once: false,
-                    mirror: true,
-                    offset: 100,
-                    delay: 100,
-                    anchorPlacement: 'top-bottom'
+                    duration: 500,
+                    easing: 'ease-out',
+                    once: true,
+                    mirror: false,
+                    offset: 60,
+                    disable: 'mobile'
                 });
                 console.log('✨ AOS initialized with mirror: true, once: false');
                 

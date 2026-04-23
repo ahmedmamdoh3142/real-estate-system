@@ -107,13 +107,12 @@
         initAOS() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
-                    duration: 800,       // مدة الأنيميشن
-                    easing: 'ease-in-out-cubic',
-                    once: false,          // الأنيميشن يتكرر كلما ظهر العنصر
-                    mirror: true,         // يعكس الأنيميشن عند التمرير لأعلى ولأسفل
-                    offset: 100,          // المسافة قبل بدء الأنيميشن
-                    delay: 100,           // تأخير افتراضي
-                    anchorPlacement: 'top-bottom'
+                    duration: 500,
+                    easing: 'ease-out',
+                    once: true,
+                    mirror: false,
+                    offset: 60,
+                    disable: 'mobile'
                 });
                 console.log('✨ AOS initialized with mirror: true, once: false');
             } else {
