@@ -1,8 +1,8 @@
-// ===== الصفحة الرئيسية - الإصدار المُحسَّن لأعلى أداء =====
+// ===== الصفحة الرئيسية - الإصدار المصحح مع تحسينات AOS والأنيميشن =====
 (function() {
     'use strict';
     
-    console.log('✅ home.js loaded - Optimized for performance');
+    console.log('✅ home.js loaded - ULTIMATE SIMPLE FIX with AOS & Animations');
     
     class HomePage {
         constructor() {
@@ -26,59 +26,75 @@
         
         setupPage() {
             console.log('🔧 Setting up page...');
+            // إعداد القائمة المتنقلة وإضافة زر الإدارة
             this.setupMobileMenu();
             this.addAdminButtonToMobileMenu();
             
-            // تهيئة AOS (سيتم تشغيلها بواسطة AOS نفسها)
-            if (typeof AOS !== 'undefined') {
-                AOS.init({
-                    duration: 500,
-                    easing: 'ease-out',
-                    once: true,
-                    mirror: false,
-                    offset: 120,
-                    disable: function () {
-                        return window.innerWidth < 768;
-                    }
-                });
-            }
+            // تهيئة AOS للأنيميشن عند التمرير
+            requestAnimationFrame(() => {
+                this.initAOS();
+            });
             
-            // تحميل البيانات بعد فترة بسيطة لضمان تجاوز مرحلة التحميل الأولية
+            // تحميل البيانات مباشرة
             setTimeout(() => {
                 this.loadStatistics();
                 this.loadFeaturedProjects();
             }, 1200);
+            
+            
         }
+        
+        initAOS() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 500,
+            easing: 'ease-out',
+            once: true,
+            mirror: false,
+            offset: 120,
+            disable: function () {
+                return window.innerWidth < 768; // مهم جدًا
+            }
+        });
+    }
+}
         
         setupMobileMenu() {
             const toggle = document.getElementById('mobile-toggle');
             const navMenu = document.querySelector('.nav-menu');
             
             if (toggle && navMenu) {
+                // دالة لفتح القائمة
                 const openMenu = () => {
                     navMenu.classList.add('active');
                     toggle.classList.add('active');
                     this.isMenuOpen = true;
                     
+                    // إضافة حدث لإغلاق القائمة عند النقر خارجها
                     setTimeout(() => {
                         document.addEventListener('click', closeMenuOnClickOutside);
                     }, 10);
                 };
                 
+                // دالة لإغلاق القائمة
                 const closeMenu = () => {
                     navMenu.classList.remove('active');
                     toggle.classList.remove('active');
                     this.isMenuOpen = false;
                     
+                    // إزالة حدث النقر خارج القائمة
                     document.removeEventListener('click', closeMenuOnClickOutside);
                 };
                 
+                // دالة لإغلاق القائمة عند النقر خارجها
                 const closeMenuOnClickOutside = (e) => {
+                    // التحقق إذا كان النقر خارج القائمة وزر التبديل
                     if (!navMenu.contains(e.target) && !toggle.contains(e.target)) {
                         closeMenu();
                     }
                 };
                 
+                // إضافة حدث النقر على زر التبديل
                 toggle.addEventListener('click', (e) => {
                     e.stopPropagation();
                     
@@ -89,12 +105,14 @@
                     }
                 });
                 
+                // إغلاق القائمة عند النقر على رابط داخلي
                 navMenu.addEventListener('click', (e) => {
                     if (e.target.closest('.nav-link')) {
                         closeMenu();
                     }
                 });
                 
+                // إغلاق القائمة عند تغيير حجم النافذة (إذا فتحت على سطح المكتب)
                 window.addEventListener('resize', () => {
                     if (window.innerWidth > 768 && this.isMenuOpen) {
                         closeMenu();
@@ -107,8 +125,10 @@
             const navMenu = document.querySelector('.nav-menu');
             if (!navMenu) return;
             
+            // التحقق إذا كان الزر موجود بالفعل (لتجنب التكرار)
             if (navMenu.querySelector('.mobile-admin-btn')) return;
             
+            // إنشاء زر الإدارة للجوال
             const adminButton = document.createElement('li');
             adminButton.className = 'nav-item mobile-admin-btn';
             adminButton.innerHTML = `
@@ -121,14 +141,59 @@
                 </a>
             `;
             
+            // إضافة زر الإدارة إلى القائمة
             navMenu.appendChild(adminButton);
-            // الأنماط موجودة في home.css، لا حاجة لحقنها مرة أخرى
+            
+            // إضافة أنماط CSS للزر في الجوال
+            this.addMobileAdminButtonStyles();
+        }
+        
+        addMobileAdminButtonStyles() {
+            // إضافة أنماط CSS للزر في الجوال فقط
+            const style = document.createElement('style');
+            style.textContent = `
+                /* زر الإدارة في القائمة الجانبية للجوال */
+                @media (max-width: 768px) {
+                    .mobile-admin-btn {
+                        margin-top: auto;
+                        padding-top: 1.5rem;
+                        border-top: 1px solid rgba(203, 205, 205, 0.08);
+                        display: block !important;
+                    }
+                    
+                    .mobile-admin-btn .premium-link {
+                        background: rgba(203, 205, 205, 0.05) !important;
+                        border: 1px solid rgba(203, 205, 205, 0.1) !important;
+                        color: var(--color-text-primary) !important;
+                        font-weight: 600 !important;
+                    }
+                    
+                    .mobile-admin-btn .premium-link:hover {
+                        background: rgba(203, 205, 205, 0.08) !important;
+                        border-color: rgba(203, 205, 205, 0.2) !important;
+                    }
+                    
+                    .mobile-admin-btn .nav-icon-wrapper {
+                        background: rgba(203, 205, 205, 0.08) !important;
+                    }
+                }
+                
+                /* إخفاء زر الإدارة في القائمة الجانبية على سطح المكتب */
+                @media (min-width: 769px) {
+                    .mobile-admin-btn {
+                        display: none !important;
+                    }
+                }
+            `;
+            
+            document.head.appendChild(style);
         }
         
         async loadStatistics() {
             try {
                 console.log('📊 Loading statistics...');
                 
+                // استخدام fetch مباشرة
                 const response = await fetch('/api/public/home/stats');
                 if (!response.ok) throw new Error('Failed to load stats');
                 
@@ -148,11 +213,12 @@
         displayStatistics(stats) {
             console.log('📊 Displaying stats:', stats);
             
+            // تحديث الأرقام مع تأثير العد المتحرك
             const elements = {
-                'stat-projects': stats.totalProjects || 0,
-                'stat-units': stats.totalUnits || 0,
-                'stat-clients': stats.totalClients || 0,
-                'stat-cities': stats.totalCities || 0
+                'total-projects': stats.totalProjects || 0,
+                'total-units': stats.totalUnits || 0,
+                'total-clients': stats.totalClients || 0,
+                'total-cities': stats.totalCities || 0
             };
             
             for (const [id, value] of Object.entries(elements)) {
@@ -170,28 +236,27 @@
             if (!element) return;
             
             const duration = 2000;
-            const startTime = performance.now();
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const increment = (end - start) / steps;
+            let current = start;
+            let step = 0;
             
-            const step = (currentTime) => {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const currentValue = Math.floor(start + (end - start) * progress);
-                
-                element.textContent = currentValue.toLocaleString('ar-SA');
-                
-                if (progress < 1) {
-                    requestAnimationFrame(step);
-                } else {
+            const timer = setInterval(() => {
+                step++;
+                current += increment;
+                if (step >= steps) {
                     element.textContent = end.toLocaleString('ar-SA');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString('ar-SA');
                 }
-            };
-            
-            requestAnimationFrame(step);
+            }, stepTime);
         }
         
         showDefaultStats() {
             const defaults = [5, 66, 2, 1];
-            const ids = ['stat-projects', 'stat-units', 'stat-clients', 'stat-cities'];
+            const ids = ['total-projects', 'total-units', 'total-clients', 'total-cities'];
             
             ids.forEach((id, index) => {
                 const element = document.getElementById(id);
@@ -206,11 +271,15 @@
         
         async loadFeaturedProjects() {
             const container = document.getElementById('featured-projects-grid');
-            if (!container) return;
+            if (!container) {
+                console.error('❌ Grid container not found');
+                return;
+            }
             
             try {
                 console.log('🏢 Loading featured projects...');
                 
+                // إظهار حالة التحميل
                 container.innerHTML = `
                     <div class="loading-projects" data-aos="fade-up">
                         <div class="loading-spinner"></div>
@@ -218,6 +287,7 @@
                     </div>
                 `;
                 
+                // جلب البيانات
                 const response = await fetch('/api/public/home/featured-projects');
                 if (!response.ok) throw new Error('Failed to load projects');
                 
@@ -245,6 +315,7 @@
             let html = '';
             
             projects.forEach((project, index) => {
+                // معالجة البيانات
                 const id = project.id || 0;
                 const name = project.projectName || 'عقار مميز';
                 const type = this.getPropertyType(project.projectType);
@@ -259,10 +330,14 @@
                 const isFeatured = Boolean(project.isFeatured);
                 const status = this.getStatus(project.status);
                 
+                // تنسيق السعر
                 const formattedPrice = this.formatPrice(price);
                 const priceText = priceType === 'إيجار' ? 'ريال/شهري' : 'ريال';
+                
+                // الموقع
                 const location = district ? `${city}، ${district}` : city;
                 
+                // إضافة data-aos للبطاقة مع تأخير متزايد
                 const aosDelay = 100 + (index * 100);
                 
                 html += `
@@ -325,16 +400,18 @@
                 `;
             });
             
+            // تعيين HTML
             container.innerHTML = html;
             
-            // إعادة تهيئة AOS للعناصر الجديدة
+            // إعادة تهيئة AOS للعناصر الجديدة (لأنها أضيفت ديناميكياً)
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => {
                     AOS.refresh();
                 }, 100);
             }
             
-            // لا حاجة لاستدعاء animateProjects، الأنيميشن يتم عبر AOS
+            // إضافة تأثيرات إضافية
+            setTimeout(() => this.animateProjects(), 100);
         }
         
         showFallbackProjects() {
@@ -392,6 +469,20 @@
             this.displayProjects(fallbackProjects);
         }
         
+        animateProjects() {
+            const projects = document.querySelectorAll('.project-card-grid');
+            projects.forEach((project, index) => {
+                project.style.opacity = '0';
+                project.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    project.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    project.style.opacity = '1';
+                    project.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+        
         getPropertyType(type) {
             const types = {
                 'سكني': 'سكني',
@@ -444,8 +535,9 @@
     function initialize() {
         try {
             window.homePage = new HomePage();
-            console.log('✅ HomePage initialized successfully');
+            console.log('✅ HomePage initialized successfully with AOS & animations');
             
+            // اختبار الاتصال بالخادم
             setTimeout(() => {
                 fetch('/api/public/home/featured-projects')
                     .then(r => r.json())
@@ -458,6 +550,7 @@
         }
     }
     
+    // تشغيل عند تحميل الصفحة
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
