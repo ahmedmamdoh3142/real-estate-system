@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO -->
     <meta name="description" content="أفضل العقارات السكنية والتجارية للإيجار - نظام إدارة العقارات المؤسسي">
     <title>عقارات للإيجار | أفضل العقارات السكنية والتجارية</title>
-    
-    <!-- AOS Animation Library CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-    
-    <!-- نظام التصميم العالمي -->
-    <link rel="stylesheet" href="../../../global/css/design-system.css">
-    <link rel="stylesheet" href="../../../global/css/utilities.css">
-    <link rel="stylesheet" href="../../../global/css/animations.css">
-    
-    <!-- CSS الخاص بالصفحة -->
-    <link rel="stylesheet" href="home.css">
-    
-    <!-- Font Awesome للايقونات -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
+
+    <!-- 🚀 Preconnect (سرعة تحميل الفونت) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- 🚀 Google Fonts (بـ swap) -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- 🚀 Preload أهم CSS -->
+    <link rel="preload" href="../../../global/css/design-system.css" as="style">
+    <link rel="preload" href="home.css" as="style">
+
+    <!-- 🚀 تحميل CSS بدون blocking -->
+    <link rel="stylesheet" href="../../../global/css/design-system.css">
+    <link rel="stylesheet" href="../../../global/css/utilities.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="../../../global/css/animations.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="home.css">
+
+    <!-- 🚀 AOS (defer loading) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" media="print" onload="this.media='all'">
+
+    <!-- 🚀 Font Awesome (تحميل متأخر) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
 </head>
 <body class="dark-mode rtl">
     <!-- 🔔 منطقة الإشعارات العائمة -->

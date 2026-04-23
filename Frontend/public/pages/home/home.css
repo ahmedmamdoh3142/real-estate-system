@@ -188,7 +188,7 @@ body {
     min-height: 100vh;
     background: 
         linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.95)),
-        url('../../../global/assets/images/hero-companies.jpg') center/cover no-repeat;
+        url('../../../global/assets/images/hero-companies.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     padding-top: 90px;
