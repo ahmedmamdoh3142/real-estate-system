@@ -41,6 +41,14 @@ body {
     padding: 0 2rem;
 }
 
+.hero-description,
+.hero-title,
+.hero-badge {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+}
+
 /* 🎯 شريط التنقل البروفيشونال المحسن */
 .premium-navbar {
     background: rgba(10, 10, 10, 0.98);

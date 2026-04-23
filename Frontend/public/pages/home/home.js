@@ -26,36 +26,38 @@
         
         setupPage() {
             console.log('🔧 Setting up page...');
+            // إعداد القائمة المتنقلة وإضافة زر الإدارة
+            this.setupMobileMenu();
+            this.addAdminButtonToMobileMenu();
             
             // تهيئة AOS للأنيميشن عند التمرير
-            this.initAOS();
+            requestAnimationFrame(() => {
+                this.initAOS();
+            });
             
             // تحميل البيانات مباشرة
             setTimeout(() => {
                 this.loadStatistics();
                 this.loadFeaturedProjects();
-            }, 800);
+            }, 1200);
             
-            // إعداد القائمة المتنقلة وإضافة زر الإدارة
-            this.setupMobileMenu();
-            this.addAdminButtonToMobileMenu();
+            
         }
         
         initAOS() {
-            if (typeof AOS !== 'undefined') {
-                AOS.init({
-                    duration: 500,
-                    easing: 'ease-out',
-                    once: true,
-                    mirror: false,
-                    offset: 60,
-                    disable: 'mobile'
-                });
-                console.log('✨ AOS initialized');
-            } else {
-                console.warn('⚠️ AOS library not loaded');
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 500,
+            easing: 'ease-out',
+            once: true,
+            mirror: false,
+            offset: 120,
+            disable: function () {
+                return window.innerWidth < 768; // مهم جدًا
             }
-        }
+        });
+    }
+}
         
         setupMobileMenu() {
             const toggle = document.getElementById('mobile-toggle');
