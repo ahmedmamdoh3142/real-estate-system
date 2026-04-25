@@ -1,5 +1,5 @@
 // tasks.js - TaskFlow Pro - نظام إدارة المهام المتقدم (نسخة معتمدة على API 100%)
-// @version 17.3.0 (تم إضافة: أزرار الهيدر الجديدة تابعة للصلاحيات، التمرير السريع إلى الأقسام، ترجمات إضافية)
+// @version 17.3.0 (تم إضافة: أزرار الهيدر الجديدة تابعة للصلاحيات، التمرير السريع إلى الأقسام، ترجمات إضافية، زر المواعيد مع التمرير)
 
 (function() {
     'use strict';
@@ -45,7 +45,7 @@
             this.projects = {};
             this.departments = {};
 
-            // الترجمة الكاملة (العربية والإنجليزية) - تم إضافة home, requests, purchases
+            // الترجمة الكاملة (العربية والإنجليزية) - تم إضافة home, requests, purchases, appointments
             this.translations = {
                 ar: {
                     appName: 'TaskFlow Pro',
@@ -4473,10 +4473,46 @@
                 }
                 return;
             }
+            if (sectionId === 'calendar') {
+                // التمرير إلى التقويم وتحويل العرض إلى التقويم ووضع المواعيد
+                this.scrollToCalendarAndSetAppointmentsMode();
+                return;
+            }
             const targetElement = document.getElementById(`${sectionId}-tasks`)?.closest('.board-section') || 
                                  document.querySelector(`[data-section="${sectionId}"]`);
             if (targetElement) {
                 this.scrollToElement(targetElement);
+            }
+        }
+
+        // دالة جديدة للانتقال إلى عرض التقويم مع وضع المواعيد والتمرير إليه
+        async scrollToCalendarAndSetAppointmentsMode() {
+            // التحقق من الصلاحية أولاً
+            if (!this.userPermissions.includes('appointments')) {
+                this.showNotification('ليس لديك صلاحية لعرض المواعيد', 'warning');
+                return;
+            }
+            // تغيير العرض إلى التقويم إذا لم يكن كذلك
+            if (this.currentView !== 'calendar') {
+                this.changeView('calendar');
+                // ننتظر قليلاً حتى يتم عرض التقويم
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            // التأكد من أن وضع التقويم هو "appointments"
+            if (this.calendarMode !== 'appointments') {
+                this.calendarMode = 'appointments';
+                // تحديث واجهة أزرار الوضع
+                const modeBtns = document.querySelectorAll('.calendar-mode-btn');
+                modeBtns.forEach(btn => {
+                    if (btn.dataset.mode === 'appointments') btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                this.renderCalendar();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            // التمرير إلى عنصر التقويم
+            if (this.elements.calendarView) {
+                this.scrollToElement(this.elements.calendarView);
             }
         }
 
@@ -4509,7 +4545,11 @@
             quickNavBtns.forEach(btn => {
                 const section = btn.getAttribute('data-section');
                 if (section) {
-                    btn.addEventListener('click', () => this.scrollToSection(section));
+                    // إزالة المستمع القديم لتجنب التكرار
+                    btn.removeEventListener('click', this.quickNavHandler);
+                    const handler = () => this.scrollToSection(section);
+                    btn.addEventListener('click', handler);
+                    btn.quickNavHandler = handler;
                 }
             });
         }
