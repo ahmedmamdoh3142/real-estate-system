@@ -64,7 +64,7 @@ body::before {
     text-decoration: none;
 }
 
-.logo-image {
+.logo-img {
     width: 70px;
     height: 50px;
     border-radius: 10px;
@@ -1726,7 +1726,7 @@ transform: translateX(-3px);
         display: none;
     }
     
-    .header-logo .logo-image {
+    .header-logo .logo-img {
         width: 36px;
         height: 36px;
     }
@@ -2039,7 +2039,7 @@ transform: translateX(-3px);
         font-size: 0.85rem;
     }
     
-    .header-logo .logo-image {
+    .header-logo .logo-img {
         width: 32px;
         height: 32px;
     }
@@ -2252,7 +2252,7 @@ transform: translateX(-3px);
         gap: 0.6rem;
     }
     
-    .logo-image {
+    .logo-img {
         width: 36px;
         height: 36px;
         border-radius: 8px;
@@ -2928,7 +2928,7 @@ transform: translateX(-3px);
         order: 3;
     }
     
-    .logo-image {
+    .logo-img {
         width: 32px;
         height: 32px;
     }
@@ -3064,7 +3064,7 @@ transform: translateX(-3px);
         order: 3;
     }
     
-    .logo-image {
+    .logo-img {
         width: 30px;
         height: 30px;
     }
