@@ -6150,7 +6150,7 @@ body.sidebar-open .sidebar-reveal-btn {
 }
 
 /* لضمان ظهور الأيقونة على الجوال */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .sidebar-reveal-btn {
         display: flex !important;
         /* تأكد من وجود باقي الخصائص */
@@ -6170,6 +6170,16 @@ body.sidebar-open .sidebar-reveal-btn {
         border-right: none;
         cursor: pointer;
     }
+}
+
+/* إظهار أيقونة السايد بار في كل الأحوال ما لم يكن السايد بار مفتوحاً */
+.sidebar-reveal-btn {
+    display: flex !important;
+}
+
+/* إخفاؤها فقط عندما يكون السايد بار مفتوحاً */
+.dashboard-sidebar.active ~ .sidebar-reveal-btn {
+    display: none !important;
 }
 
 /* ===== حل مشكلة ظهور رسائل التأكيد خلف المودال ===== */

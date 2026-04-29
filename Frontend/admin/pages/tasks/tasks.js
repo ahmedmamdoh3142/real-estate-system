@@ -6281,7 +6281,7 @@ reattachTaskCardEvents() {
             }
 
             // التأكد من ظهور الأيقونة على الجوال
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 1024) {
                 const revealBtn = document.querySelector('.sidebar-reveal-btn');
                 if (revealBtn) {
                     revealBtn.style.display = 'flex';
