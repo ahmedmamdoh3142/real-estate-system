@@ -8,88 +8,89 @@
     <meta name="description" content="تعرف على شركة إيواء العقارية - خبرة وأمان وثقة في إدارة وتأجير العقارات السكنية والتجارية">
     <title>من نحن | إيواء العقارية - أفضل حلول الإيجار العقاري</title>
 
-    <!-- 🚀 Preconnect (تسريع تحميل الفونت) -->
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- 🚀 Google Fonts -->
+    <!-- Google Fonts -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     </noscript>
-    <!-- 🚀 Preload أهم CSS -->
+
+    <!-- Preload Critical CSS -->
     <link rel="preload" href="../../../global/css/design-system.css" as="style">
     <link rel="preload" href="about.css" as="style">
 
-    <!-- 🚀 CSS الأساسي (سريع) -->
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="../../../global/css/design-system.css">
     <link rel="stylesheet" href="about.css">
 
-    <!-- 🚀 CSS ثانوي (غير مهم في أول تحميل) -->
+    <!-- Deferred CSS -->
     <link rel="stylesheet" href="../../../global/css/utilities.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="../../../global/css/animations.css" media="print" onload="this.media='all'">
 
-    <!-- 🚀 AOS (تحميل متأخر) -->
+    <!-- AOS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" media="print" onload="this.media='all'">
 
-    <!-- 🚀 Font Awesome (تحميل متأخر) -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
 </head>
 <body class="dark-mode rtl">
-    <!-- 🔔 منطقة الإشعارات العائمة -->
+    <!-- Notification Area -->
     <div id="notification-area" class="notification-container"></div>
 
-    <!-- 🎯 شريط التنقل الرئيسي البروفيشونال -->
-    <nav class="navbar premium-navbar">
+    <!-- Premium Navbar -->
+    <nav class="navbar premium-navbar" role="navigation" aria-label="التنقل الرئيسي">
         <div class="container nav-container">
-            <!-- الشعار المميز -->
+            <!-- Logo -->
             <div class="nav-brand">
-                <a href="../home/index.html" class="logo-link">
-                    <!-- REPLACE LOGO HERE -->
+                <a href="../home/index.html" class="logo-link" aria-label="الصفحة الرئيسية">
                     <div class="upper-logo">
-<img 
-                        src="../../../global/assets/images/logo.webp"
-                        alt="شعار مجموعة الشركات المتكاملة"
-                        width="263"
-                        height="146"
-                        fetchpriority="high"
-                        >                     </div>
+                        <img 
+                            src="../../../global/assets/images/logo.webp"
+                            alt="شعار مجموعة الشركات المتكاملة"
+                            width="263"
+                            height="146"
+                            fetchpriority="high"
+                        >
+                    </div>
                 </a>
             </div>
 
-            <!-- قائمة التنقل البروفيشونالية -->
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="../home/index.html" class="nav-link premium-link">
+            <!-- Navigation Menu -->
+            <ul class="nav-menu" role="menubar">
+                <li class="nav-item" role="none">
+                    <a href="../home/index.html" class="nav-link premium-link" role="menuitem">
                         <div class="nav-icon-wrapper">
-                            <i class="fas fa-home"></i>
+                            <i class="fas fa-home" aria-hidden="true"></i>
                         </div>
                         <span class="nav-text">الرئيسية</span>
                         <span class="nav-underline"></span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="../projects/index.html" class="nav-link premium-link">
+                <li class="nav-item" role="none">
+                    <a href="../projects/index.html" class="nav-link premium-link" role="menuitem">
                         <div class="nav-icon-wrapper">
-                            <i class="fas fa-building"></i>
+                            <i class="fas fa-building" aria-hidden="true"></i>
                         </div>
                         <span class="nav-text">العقارات</span>
                         <span class="nav-underline"></span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="../inquiry/index.html" class="nav-link premium-link">
+                <li class="nav-item" role="none">
+                    <a href="../inquiry/index.html" class="nav-link premium-link" role="menuitem">
                         <div class="nav-icon-wrapper">
-                            <i class="fas fa-headset"></i>
+                            <i class="fas fa-headset" aria-hidden="true"></i>
                         </div>
                         <span class="nav-text">طلب استفسار</span>
                         <span class="nav-underline"></span>
                     </a>
                 </li>
-                <li class="nav-item active">
-                    <a href="index.html" class="nav-link premium-link">
+                <li class="nav-item active" role="none">
+                    <a href="index.html" class="nav-link premium-link" role="menuitem" aria-current="page">
                         <div class="nav-icon-wrapper">
-                            <i class="fas fa-info-circle"></i>
+                            <i class="fas fa-info-circle" aria-hidden="true"></i>
                         </div>
                         <span class="nav-text">من نحن</span>
                         <span class="nav-underline"></span>
@@ -97,65 +98,65 @@
                 </li>
             </ul>
 
-            <!-- زر القائمة المتنقلة المميز -->
-            <button class="mobile-toggle premium-toggle" id="mobile-toggle" aria-label="فتح القائمة">
+            <!-- Mobile Toggle -->
+            <button class="mobile-toggle premium-toggle" id="mobile-toggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="nav-menu">
                 <span class="toggle-bar"></span>
                 <span class="toggle-bar"></span>
                 <span class="toggle-bar"></span>
             </button>
         </div>
         
-        <!-- خط تألق تحت النافبار -->
-        <div class="navbar-glow-line"></div>
+        <!-- Glow Line -->
+        <div class="navbar-glow-line" aria-hidden="true"></div>
     </nav>
 
-    <!-- 🎪 قسم الهيرو البروفيشونال لصفحة "من نحن" -->
-    <section class="hero-section premium-hero about-hero" data-aos="fade-in" data-aos-duration="1200">
-        <div class="hero-gradient-overlay"></div>
+    <!-- Hero Section -->
+    <section class="hero-section premium-hero about-hero" data-aos="fade-in" data-aos-duration="1000">
+        <div class="hero-gradient-overlay" aria-hidden="true"></div>
         
         <div class="container hero-container">
             <div class="hero-content">
-                <div class="hero-badge premium-badge" data-aos="fade-down" data-aos-delay="200">
+                <div class="hero-badge premium-badge" data-aos="fade-down" data-aos-delay="100">
                     <span class="badge badge-premium glow">
-                        <i class="fas fa-handshake"></i>
+                        <i class="fas fa-handshake" aria-hidden="true"></i>
                         <span class="badge-text">شركاؤك في النجاح العقاري</span>
                     </span>
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line animate-text" data-aos="fade-up" data-aos-delay="400">تعرف على</span>
-                    <span class="title-line highlight premium-highlight" data-aos="fade-up" data-aos-delay="600">
+                    <span class="title-line animate-text" data-aos="fade-up" data-aos-delay="200">تعرف على</span>
+                    <span class="title-line highlight premium-highlight" data-aos="fade-up" data-aos-delay="300">
                         <span class="highlight-text">ABH HOLDING GROUP</span>
-                        <span class="highlight-glow"></span>
+                        <span class="highlight-glow" aria-hidden="true"></span>
                     </span>
                 </h1>
                 
-                <p class="hero-description premium-description" data-aos="fade-up" data-aos-delay="800">
+                <p class="hero-description premium-description" data-aos="fade-up" data-aos-delay="400">
                     منذ تأسيسنا عام 2010، نعمل على تقديم أفضل الحلول العقارية للإيجار في المملكة العربية السعودية. 
                     نحن نؤمن بأن المنزل أو المكتب المناسب هو أساس النجاح الشخصي والمهني.
                 </p>
                 
-                <div class="hero-actions" data-aos="fade-up" data-aos-delay="1000">
+                <div class="hero-actions" data-aos="fade-up" data-aos-delay="500">
                     <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-btn-primary">
                         <div class="btn-icon-wrapper">
-                            <i class="fas fa-comments"></i>
+                            <i class="fas fa-comments" aria-hidden="true"></i>
                         </div>
                         <span>تواصل معنا</span>
-                        <div class="btn-hover-effect"></div>
+                        <div class="btn-hover-effect" aria-hidden="true"></div>
                     </a>
                     <a href="../projects/index.html" class="btn btn-outline btn-lg premium-btn-outline">
                         <div class="btn-icon-wrapper">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-search" aria-hidden="true"></i>
                         </div>
                         <span>تصفح عقاراتنا</span>
-                        <div class="btn-hover-effect"></div>
+                        <div class="btn-hover-effect" aria-hidden="true"></div>
                     </a>
                 </div>
             </div>
         </div>
         
-        <!-- موجة تصميمية -->
-        <div class="hero-waves premium-waves">
+        <!-- Decorative Waves -->
+        <div class="hero-waves premium-waves" aria-hidden="true">
             <div class="wave wave-1"></div>
             <div class="wave wave-2"></div>
             <div class="wave wave-3"></div>
@@ -163,19 +164,19 @@
         </div>
     </section>
 
-    <div class="section-divider"></div>
+    <div class="section-divider" aria-hidden="true"></div>
 
-    <!-- 📊 قسم قيم الشركة - تم تحسينه -->
-    <section class="values-section premium-section">
+    <!-- Values Section -->
+    <section class="values-section premium-section" aria-labelledby="values-title">
         <div class="container">
             <div class="section-header premium-header text-center" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
-                        <i class="fas fa-gem"></i>
+                        <i class="fas fa-gem" aria-hidden="true"></i>
                         <span>قيمنا الأساسية</span>
                     </span>
                 </div>
-                <h2 class="section-title premium-title">
+                <h2 id="values-title" class="section-title premium-title">
                     <span>ما يميز</span>
                     <span class="highlight premium-highlight-text">خدماتنا</span>
                 </h2>
@@ -185,10 +186,11 @@
             </div>
             
             <div class="values-grid premium-grid">
-                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="100">
+                <!-- Security Card -->
+                <article class="value-card premium-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="value-icon premium-icon">
-                        <div class="icon-bg"></div>
-                        <i class="fas fa-shield-alt"></i>
+                        <div class="icon-bg" aria-hidden="true"></div>
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
                     </div>
                     <h3 class="value-title">الأمان والثقة</h3>
                     <p class="value-description">
@@ -197,20 +199,21 @@
                     </p>
                     <div class="value-features">
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>عقود موثقة 100%</span>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>ضمانات قانونية</span>
                         </div>
                     </div>
-                </div>
+                </article>
                 
-                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="200">
+                <!-- Professionalism Card -->
+                <article class="value-card premium-card" data-aos="fade-up" data-aos-delay="150">
                     <div class="value-icon premium-icon">
-                        <div class="icon-bg"></div>
-                        <i class="fas fa-bullseye"></i>
+                        <div class="icon-bg" aria-hidden="true"></div>
+                        <i class="fas fa-bullseye" aria-hidden="true"></i>
                     </div>
                     <h3 class="value-title">الدقة والاحترافية</h3>
                     <p class="value-description">
@@ -219,20 +222,21 @@
                     </p>
                     <div class="value-features">
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>فريق من الخبراء</span>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>استشارات مهنية</span>
                         </div>
                     </div>
-                </div>
+                </article>
                 
-                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="300">
+                <!-- Support Card -->
+                <article class="value-card premium-card" data-aos="fade-up" data-aos-delay="200">
                     <div class="value-icon premium-icon">
-                        <div class="icon-bg"></div>
-                        <i class="fas fa-headset"></i>
+                        <div class="icon-bg" aria-hidden="true"></div>
+                        <i class="fas fa-headset" aria-hidden="true"></i>
                     </div>
                     <h3 class="value-title">دعم متواصل</h3>
                     <p class="value-description">
@@ -241,20 +245,21 @@
                     </p>
                     <div class="value-features">
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>دعم 24/7</span>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>متابعة مستمرة</span>
                         </div>
                     </div>
-                </div>
+                </article>
                 
-                <div class="value-card premium-card" data-aos="fade-up" data-aos-delay="400">
+                <!-- Innovation Card -->
+                <article class="value-card premium-card" data-aos="fade-up" data-aos-delay="250">
                     <div class="value-icon premium-icon">
-                        <div class="icon-bg"></div>
-                        <i class="fas fa-lightbulb"></i>
+                        <div class="icon-bg" aria-hidden="true"></div>
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i>
                     </div>
                     <h3 class="value-title">ابتكار مستمر</h3>
                     <p class="value-description">
@@ -263,32 +268,32 @@
                     </p>
                     <div class="value-features">
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>تقنيات حديثة</span>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check" aria-hidden="true"></i>
                             <span>حلول ذكية</span>
                         </div>
                     </div>
-                </div>
+                </article>
             </div>
         </div>
     </section>
 
-    <div class="section-divider"></div>
+    <div class="section-divider" aria-hidden="true"></div>
 
-    <!-- 📱 قسم الرسالة والرؤية - تم تحسينه مع أنيميشن متسلسل -->
-    <section class="mission-section premium-section">
+    <!-- Mission & Vision Section -->
+    <section class="mission-section premium-section" aria-labelledby="mission-title">
         <div class="container">
             <div class="mission-header premium-header text-center" data-aos="fade-up">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
-                        <i class="fas fa-rocket"></i>
+                        <i class="fas fa-rocket" aria-hidden="true"></i>
                         <span>الرؤية والرسالة</span>
                     </span>
                 </div>
-                <h2 class="section-title premium-title">
+                <h2 id="mission-title" class="section-title premium-title">
                     <span>رؤيتنا ورسالتنا</span>
                 </h2>
                 <p class="section-description premium-description">
@@ -297,16 +302,16 @@
             </div>
             
             <div class="mission-grid">
-                <!-- بطاقة الرؤية -->
-                <div class="mission-card premium-card vision-card" data-aos="fade-up" data-aos-delay="200">
+                <!-- Vision Card -->
+                <article class="mission-card premium-card vision-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="mission-card-inner">
                         <div class="mission-header">
                             <div class="mission-icon">
-                                <div class="icon-bg"></div>
-                                <i class="fas fa-eye"></i>
+                                <div class="icon-bg" aria-hidden="true"></div>
+                                <i class="fas fa-eye" aria-hidden="true"></i>
                             </div>
                             <h3 class="mission-title">رؤيتنا</h3>
-                            <div class="mission-glow"></div>
+                            <div class="mission-glow" aria-hidden="true"></div>
                         </div>
                         <div class="mission-content">
                             <p class="mission-main-text">
@@ -314,27 +319,27 @@
                                 من خلال تقديم تجربة استثنائية للعملاء تعتمد على الابتكار والجودة والثقة.
                             </p>
                             <div class="mission-goals">
-                                <div class="goal" data-aos="fade-right" data-aos-delay="400" data-aos-anchor=".vision-card">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="200" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
-                                        <i class="fas fa-crown"></i>
+                                        <i class="fas fa-crown" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>الريادة في السوق</h4>
                                         <p>أن نكون الخيار الأول في السوق العقاري للإيجار</p>
                                     </div>
                                 </div>
-                                <div class="goal" data-aos="fade-right" data-aos-delay="500" data-aos-anchor=".vision-card">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="300" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
-                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>تجربة عملاء استثنائية</h4>
                                         <p>توفير تجربة لا تُنسى لكل عميل</p>
                                     </div>
                                 </div>
-                                <div class="goal" data-aos="fade-right" data-aos-delay="600" data-aos-anchor=".vision-card">
+                                <div class="goal" data-aos="fade-right" data-aos-delay="400" data-aos-anchor=".vision-card">
                                     <div class="goal-icon">
-                                        <i class="fas fa-expand"></i>
+                                        <i class="fas fa-expand" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>توسع جغرافي</h4>
@@ -344,18 +349,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </article>
                 
-                <!-- بطاقة الرسالة -->
-                <div class="mission-card premium-card mission-card" data-aos="fade-up" data-aos-delay="200">
+                <!-- Mission Card -->
+                <article class="mission-card premium-card" data-aos="fade-up" data-aos-delay="150">
                     <div class="mission-card-inner">
                         <div class="mission-header">
                             <div class="mission-icon">
-                                <div class="icon-bg"></div>
-                                <i class="fas fa-bullseye"></i>
+                                <div class="icon-bg" aria-hidden="true"></div>
+                                <i class="fas fa-bullseye" aria-hidden="true"></i>
                             </div>
                             <h3 class="mission-title">رسالتنا</h3>
-                            <div class="mission-glow"></div>
+                            <div class="mission-glow" aria-hidden="true"></div>
                         </div>
                         <div class="mission-content">
                             <p class="mission-main-text">
@@ -363,27 +368,27 @@
                                 نساعد عملائنا في إيجاد المسكن أو المكتب المناسب الذي يلبي احتياجاتهم ويتوافق مع تطلعاتهم.
                             </p>
                             <div class="mission-goals">
-                                <div class="goal" data-aos="fade-left" data-aos-delay="400" data-aos-anchor=".mission-card:not(.vision-card)">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="200" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
-                                        <i class="fas fa-lightbulb"></i>
+                                        <i class="fas fa-lightbulb" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>حلول مبتكرة</h4>
                                         <p>توفير حلول عقارية مبتكرة وذكية</p>
                                     </div>
                                 </div>
-                                <div class="goal" data-aos="fade-left" data-aos-delay="500" data-aos-anchor=".mission-card:not(.vision-card)">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="300" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
-                                        <i class="fas fa-heart"></i>
+                                        <i class="fas fa-heart" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>رضا العملاء</h4>
                                         <p>ضمان رضا العملاء الدائم والمستمر</p>
                                     </div>
                                 </div>
-                                <div class="goal" data-aos="fade-left" data-aos-delay="600" data-aos-anchor=".mission-card:not(.vision-card)">
+                                <div class="goal" data-aos="fade-left" data-aos-delay="400" data-aos-anchor=".mission-card:not(.vision-card)">
                                     <div class="goal-icon">
-                                        <i class="fas fa-handshake"></i>
+                                        <i class="fas fa-handshake" aria-hidden="true"></i>
                                     </div>
                                     <div class="goal-content">
                                         <h4>شفافية وأمانة</h4>
@@ -393,141 +398,148 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </article>
             </div>
         </div>
     </section>
 
-    <div class="section-divider"></div>
+    <div class="section-divider" aria-hidden="true"></div>
 
-    <!-- 📱 قسم CTA البروفيشونال -->
-    <section class="cta-section premium-cta">
-        <div class="container">
-            <div class="cta-card premium-cta-card" data-aos="fade-up" data-aos-duration="1000">
-                <div class="cta-content">
-                    <h2 class="cta-title" data-aos="fade-right" data-aos-delay="200">ابدأ رحلة نجاحك العقاري معنا</h2>
-                    <p class="cta-description" data-aos="fade-right" data-aos-delay="400">
-                        فريقنا من الخبراء مستعد لمساعدتك في إيجاد العقار المناسب مع ضمان الجودة 
-                        والموثوقية وأفضل شروط الإيجار. تواصل معنا اليوم.
-                    </p>
-                    <div class="cta-actions" data-aos="fade-right" data-aos-delay="600">
-                        <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
-                            <i class="fas fa-phone-alt"></i>
-                            <span>تواصل مع خبير عقاري</span>
-                            <div class="btn-hover-effect"></div>
-                        </a>
-                        <a href="../projects/index.html" class="btn btn-outline btn-lg premium-cta-btn-outline">
-                            <i class="fas fa-search"></i>
-                            <span>تصفح عقاراتنا</span>
-                            <div class="btn-hover-effect"></div>
-                        </a>
-                    </div>
+    <!-- CTA Section -->
+    <section class="cta-section premium-cta" aria-labelledby="cta-title">
+    <div class="container">
+        <div class="cta-card premium-cta-card" data-aos="fade-up" data-aos-duration="800">
+            <div class="cta-content">
+                <h2 id="cta-title" class="cta-title" data-aos="fade-right" data-aos-delay="100">ابدأ رحلة نجاحك العقاري معنا</h2>
+                <p class="cta-description" data-aos="fade-right" data-aos-delay="200">
+                    فريقنا من الخبراء مستعد لمساعدتك في إيجاد العقار المناسب مع ضمان الجودة 
+                    والموثوقية وأفضل شروط الإيجار. تواصل معنا اليوم.
+                </p>
+                <div class="cta-actions" data-aos="fade-right" data-aos-delay="300">
+                    <a href="../inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
+                        <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                        <span>تواصل مع خبير عقاري</span>
+                        <div class="btn-hover-effect" aria-hidden="true"></div>
+                    </a>
+                    <a href="../projects/index.html" class="btn btn-outline btn-lg premium-cta-btn-outline">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <span>تصفح عقاراتنا</span>
+                        <div class="btn-hover-effect" aria-hidden="true"></div>
+                    </a>
                 </div>
-                <div class="cta-image" data-aos="fade-left" data-aos-delay="400">
-                    <div class="image-placeholder premium-image">
-                        <div class="main-icon">
-                            <i class="fas fa-handshake"></i>
+            </div>
+            <div class="cta-image" data-aos="fade-left" data-aos-delay="200">
+                <div class="image-placeholder premium-image">
+                    <div class="floating-elements">
+                        <div class="float-element element-1">
+                            <i class="fas fa-building" aria-hidden="true"></i>
                         </div>
-                        <div class="image-glow"></div>
+                        <div class="float-element element-2">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        </div>
+                        <div class="float-element element-3">
+                            <i class="fas fa-handshake" aria-hidden="true"></i>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==============================================
-     الفوتر المبسط والاحترافي
-     ============================================== -->
-<footer class="footer">
-    <div class="footer-main">
-        <div class="container">
-            <div class="footer-grid">
-                <!-- العمود الأول: معلومات المجموعة -->
-                <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
-                    <div class="footer-logo">
-<img 
-                        src="../../../global/assets/images/logo.webp"
-                        alt="شعار مجموعة الشركات المتكاملة"
-                        width="263"
-                        height="146"
-                        fetchpriority="high"
-                        >                     </div>
-                    <p class="footer-about-text">
-                        مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
-                    </p>
-                    <div class="footer-social">
-                        <a href="#" class="social-link" aria-label="Twitter">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M23 3.00005C22.0424 3.67552 20.9821 4.19216 19.86 4.53005C19.2577 3.83756 18.4573 3.34674 17.567 3.12397C16.6767 2.90121 15.7395 2.95724 14.8821 3.2845C14.0247 3.61176 13.2884 4.19445 12.773 4.95376C12.2575 5.71308 11.9877 6.61238 12 7.53005V8.53005C10.2426 8.57561 8.50127 8.18586 6.93101 7.39549C5.36074 6.60512 4.01032 5.43868 3 4.00005C3 4.00005 -1 13 8 17C5.94053 18.398 3.48716 19.099 1 19C10 24 21 19 21 7.50005C20.9991 7.2215 20.9723 6.94364 20.92 6.67005C21.9406 5.66354 22.6608 4.39276 23 3.00005Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-link" aria-label="LinkedIn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-link" aria-label="Instagram">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 8.22768 13.4229 8.09402 12.5923C7.96035 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45418 8.79374 10.201 8.40624C10.9478 8.01875 11.7978 7.87659 12.63 8C13.4789 8.12588 14.2648 8.52146 14.8716 9.12831C15.4785 9.73515 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M17.5 6.5H17.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
+                    <div class="main-icon">
+                        <i class="fas fa-users" aria-hidden="true"></i>
                     </div>
-                </div>
-
-                <!-- العمود الثاني: معلومات الاتصال -->
-                <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
-                    <h3 class="footer-title">تواصل معنا</h3>
-                    <ul class="footer-contact-list">
-                        <li>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M22 16.92V19.92C22.001 20.198 21.944 20.473 21.832 20.728C21.721 20.983 21.557 21.212 21.352 21.402C21.146 21.592 20.903 21.738 20.639 21.832C20.375 21.925 20.095 21.964 19.815 21.945C16.743 21.746 13.847 20.538 11.57 18.5C9.455 16.603 7.936 14.189 7.18 11.54C6.943 10.699 6.823 9.831 6.82 8.958C6.82 8.679 6.872 8.402 6.975 8.142C7.077 7.882 7.228 7.643 7.42 7.44C7.611 7.237 7.838 7.073 8.09 6.957C8.341 6.841 8.612 6.776 8.887 6.765H12.057C12.572 6.747 13.069 6.962 13.412 7.354C13.754 7.746 13.909 8.276 13.837 8.798C13.726 9.593 13.726 10.4 13.837 11.195C13.914 11.706 14.22 12.156 14.674 12.434C15.129 12.712 15.687 12.79 16.21 12.65C18.079 12.185 19.815 21 21.68 21.5C22.206 21.645 22.775 21.57 23.24 21.292C23.706 21.014 24.027 20.56 24.127 20.045C24.227 19.53 24.098 18.999 23.773 18.58C23.448 18.162 22.956 17.894 22.437 17.84L19.437 17.5C19.158 17.469 18.891 17.376 18.657 17.229C18.423 17.082 18.228 16.885 18.088 16.653C17.948 16.421 17.867 16.16 17.852 15.892C17.836 15.624 17.887 15.356 18 15.11C18.245 14.546 18.452 13.967 18.62 13.378C18.769 12.864 18.677 12.311 18.366 11.871C18.055 11.431 17.557 11.151 17.012 11.105C16.21 11.038 15.407 11.038 14.605 11.105C14.061 11.149 13.566 11.426 13.256 11.863C12.947 12.3 12.854 12.852 13 13.365" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>+966 11 123 4567</span>
-                        </li>
-                        <li>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>info@ewa-realestate.com</span>
-                        </li>
-                        <li>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>المملكة العربية السعودية - الرياض، حي النخيل، شارع الملك فهد</span>
-                        </li>
-                    </ul>
+                    <div class="image-glow" aria-hidden="true"></div>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-    <div class="footer-bottom">
-        <div class="container">
-            <div class="footer-bottom-content">
-                <p class="copyright">&copy; 2024 ABH HOLDING GROUP. جميع الحقوق محفوظة.</p>
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-main">
+            <div class="container">
+                <div class="footer-grid">
+                    <!-- About Column -->
+                    <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
+                        <div class="footer-logo">
+                            <img 
+                                src="../../../global/assets/images/logo.webp"
+                                alt="شعار مجموعة الشركات المتكاملة"
+                                width="263"
+                                height="146"
+                                loading="lazy"
+                            >
+                        </div>
+                        <p class="footer-about-text">
+                            مجموعة أعمال سعودية تعمل برؤية استراتيجية لبناء كيانات متخصصة، مستدامة، ومتعددة القطاعات.
+                        </p>
+                        <div class="footer-social">
+                            <a href="#" class="social-link" aria-label="Twitter">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M23 3.00005C22.0424 3.67552 20.9821 4.19216 19.86 4.53005C19.2577 3.83756 18.4573 3.34674 17.567 3.12397C16.6767 2.90121 15.7395 2.95724 14.8821 3.2845C14.0247 3.61176 13.2884 4.19445 12.773 4.95376C12.2575 5.71308 11.9877 6.61238 12 7.53005V8.53005C10.2426 8.57561 8.50127 8.18586 6.93101 7.39549C5.36074 6.60512 4.01032 5.43868 3 4.00005C3 4.00005 -1 13 8 17C5.94053 18.398 3.48716 19.099 1 19C10 24 21 19 21 7.50005C20.9991 7.2215 20.9723 6.94364 20.92 6.67005C21.9406 5.66354 22.6608 4.39276 23 3.00005Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link" aria-label="LinkedIn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Instagram">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 11.37C16.1234 12.2022 15.9812 13.0522 15.5937 13.799C15.2062 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4077 15.9059C10.5771 15.7723 9.80971 15.3801 9.21479 14.7852C8.61987 14.1903 8.22768 13.4229 8.09402 12.5923C7.96035 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45418 8.79374 10.201 8.40624C10.9478 8.01875 11.7978 7.87659 12.63 8C13.4789 8.12588 14.2648 8.52146 14.8716 9.12831C15.4785 9.73515 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M17.5 6.5H17.51" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Contact Column -->
+                    <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
+                        <h3 class="footer-title">تواصل معنا</h3>
+                        <ul class="footer-contact-list">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7293C21.7209 20.9845 21.5573 21.2136 21.3521 21.4019C21.1468 21.5901 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0974 21.9451 19.82 21.92C16.7428 21.5856 13.787 20.5341 11.19 18.85C8.77382 17.3147 6.72533 15.2662 5.18999 12.85C3.49997 10.2412 2.44824 7.271 2.11999 4.18C2.095 3.90347 2.12787 3.62476 2.21649 3.36162C2.30512 3.09849 2.44756 2.85669 2.63476 2.65162C2.82196 2.44655 3.0498 2.28271 3.30379 2.17052C3.55777 2.05833 3.83233 2.00026 4.10999 2H7.10999C7.5953 1.99522 8.06579 2.16708 8.43376 2.48353C8.80173 2.79999 9.04207 3.23945 9.10999 3.72C9.23662 4.68007 9.47144 5.62273 9.80999 6.53C9.94454 6.88792 9.97366 7.27691 9.8939 7.65088C9.81415 8.02485 9.62886 8.36811 9.35999 8.64L8.08999 9.91C9.51355 12.4135 11.5865 14.4864 14.09 15.91L15.36 14.64C15.6319 14.3711 15.9751 14.1858 16.3491 14.1061C16.7231 14.0263 17.1121 14.0555 17.47 14.19C18.3773 14.5286 19.3199 14.7634 20.28 14.89C20.7658 14.9585 21.2094 15.2032 21.5265 15.5775C21.8437 15.9518 22.0122 16.4296 22 16.92Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>+966 11 123 4567</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>info@ewa-realestate.com</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>المملكة العربية السعودية - الرياض، حي النخيل، شارع الملك فهد</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</footer>
 
-    <!-- 📜 ملفات JavaScript -->
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-content">
+                    <p class="copyright">&copy; 2024 ABH HOLDING GROUP. جميع الحقوق محفوظة.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
     <script defer src="../../../global/js/core.js"></script>
     <script defer src="../../../global/js/api-client.js"></script>
     
-    <!-- AOS Animation Library JS -->
+    <!-- AOS Animation Library -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     
-    <!-- Particles.js library -->
-    <script defer src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    
-    <!-- about.js الجديد -->
+    <!-- About Page JS -->
     <script defer src="about.js"></script>
 </body>
 </html>

@@ -42,12 +42,14 @@ function handleError(res, error, defaultMessage = 'حدث خطأ داخلي في
     }
 }
 
+// ========== المهام (Tasks) ==========
 exports.getInbox = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const page = safeParseInt(req.query.page, 1);
         const limit = safeParseInt(req.query.limit, 25);
-        const result = await tasksService.getUserTasks(userId, 'inbox', page, limit);
+        const result = await tasksService.getUserTasks(userId, 'inbox', page, limit, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -57,9 +59,10 @@ exports.getInbox = async (req, res) => {
 exports.getSent = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const page = safeParseInt(req.query.page, 1);
         const limit = safeParseInt(req.query.limit, 25);
-        const result = await tasksService.getUserTasks(userId, 'sent', page, limit);
+        const result = await tasksService.getUserTasks(userId, 'sent', page, limit, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -69,9 +72,10 @@ exports.getSent = async (req, res) => {
 exports.getSubtasks = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const page = safeParseInt(req.query.page, 1);
         const limit = safeParseInt(req.query.limit, 25);
-        const result = await tasksService.getUserTasks(userId, 'subtasks', page, limit);
+        const result = await tasksService.getUserTasks(userId, 'subtasks', page, limit, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -81,9 +85,10 @@ exports.getSubtasks = async (req, res) => {
 exports.getFollowed = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const page = safeParseInt(req.query.page, 1);
         const limit = safeParseInt(req.query.limit, 25);
-        const result = await tasksService.getUserTasks(userId, 'followed', page, limit);
+        const result = await tasksService.getUserTasks(userId, 'followed', page, limit, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -93,9 +98,10 @@ exports.getFollowed = async (req, res) => {
 exports.getArchived = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const page = safeParseInt(req.query.page, 1);
         const limit = safeParseInt(req.query.limit, 25);
-        const result = await tasksService.getUserTasks(userId, 'archived', page, limit);
+        const result = await tasksService.getUserTasks(userId, 'archived', page, limit, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -106,7 +112,8 @@ exports.getTaskById = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const task = await tasksService.getTaskById(parseInt(id), userId);
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const task = await tasksService.getTaskById(parseInt(id), userId, viewingUserId);
         if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
         res.json({ success: true, data: task });
     } catch (error) {
@@ -232,7 +239,8 @@ exports.addAttachment = async (req, res) => {
 exports.getStats = async (req, res) => {
     try {
         const userId = req.user.id;
-        const stats = await tasksService.getTaskStats(userId);
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const stats = await tasksService.getTaskStats(userId, viewingUserId);
         res.json({ success: true, data: stats });
     } catch (error) {
         handleError(res, error);
@@ -242,7 +250,8 @@ exports.getStats = async (req, res) => {
 exports.getTeamWorkload = async (req, res) => {
     try {
         const userId = req.user.id;
-        const workload = await tasksService.getTeamWorkload(userId);
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const workload = await tasksService.getTeamWorkload(userId, viewingUserId);
         res.json({ success: true, data: workload });
     } catch (error) {
         handleError(res, error);
@@ -252,11 +261,12 @@ exports.getTeamWorkload = async (req, res) => {
 exports.searchTasks = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { q, page = 1, limit = 25 } = req.query;
         if (!q) return res.json({ success: true, data: [], pagination: { totalItems: 0 } });
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.searchTasks(userId, q, pageNum, limitNum);
+        const result = await tasksService.searchTasks(userId, q, pageNum, limitNum, viewingUserId);
         res.json({ success: true, data: result.tasks, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -266,13 +276,15 @@ exports.searchTasks = async (req, res) => {
 exports.getWeeklyPerformance = async (req, res) => {
     try {
         const userId = req.user.id;
-        const data = await tasksService.getWeeklyPerformance(userId);
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const data = await tasksService.getWeeklyPerformance(userId, viewingUserId);
         res.json({ success: true, data });
     } catch (error) {
         handleError(res, error);
     }
 };
 
+// ========== الإشعارات (Notifications) ==========
 exports.getNotifications = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -306,6 +318,7 @@ exports.markAllNotificationsAsRead = async (req, res) => {
     }
 };
 
+// ========== التقييم (Rating) ==========
 exports.rateTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -321,13 +334,15 @@ exports.rateTask = async (req, res) => {
     }
 };
 
+// ========== الطلبات (Requests) ==========
 exports.getRequests = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { folder = 'all', page = 1, limit = 25 } = req.query;
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.getRequests(userId, folder, pageNum, limitNum);
+        const result = await tasksService.getRequests(userId, folder, pageNum, limitNum, viewingUserId);
         res.json({ success: true, data: result.requests, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -360,6 +375,17 @@ exports.updateRequest = async (req, res) => {
     }
 };
 
+exports.archiveRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const result = await tasksService.archiveRequest(parseInt(id), userId);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
 exports.deleteRequest = async (req, res) => {
     try {
         const { id } = req.params;
@@ -371,13 +397,15 @@ exports.deleteRequest = async (req, res) => {
     }
 };
 
+// ========== طلبات الشراء (Purchase Requests) ==========
 exports.getPurchaseRequests = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { folder = 'all', page = 1, limit = 25 } = req.query;
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.getPurchaseRequests(userId, folder, pageNum, limitNum);
+        const result = await tasksService.getPurchaseRequests(userId, folder, pageNum, limitNum, viewingUserId);
         res.json({ success: true, data: result.purchases, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -410,6 +438,17 @@ exports.updatePurchaseRequest = async (req, res) => {
     }
 };
 
+exports.archivePurchaseRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const result = await tasksService.archivePurchaseRequest(parseInt(id), userId);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
 exports.deletePurchaseRequest = async (req, res) => {
     try {
         const { id } = req.params;
@@ -421,13 +460,15 @@ exports.deletePurchaseRequest = async (req, res) => {
     }
 };
 
+// ========== المواعيد (Appointments) ==========
 exports.getAppointments = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { page = 1, limit = 25, startDate, endDate } = req.query;
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.getAppointments(userId, pageNum, limitNum, startDate, endDate);
+        const result = await tasksService.getAppointments(userId, pageNum, limitNum, startDate, endDate, viewingUserId);
         res.json({ success: true, data: result.appointments, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -473,13 +514,15 @@ exports.deleteAppointment = async (req, res) => {
     }
 };
 
+// ========== الجزاءات التلقائية (Automatic Penalties) ==========
 exports.getPenalties = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { page = 1, limit = 25 } = req.query;
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.getPenalties(userId, pageNum, limitNum);
+        const result = await tasksService.getPenalties(userId, pageNum, limitNum, viewingUserId);
         res.json({ success: true, data: result.penalties, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -506,13 +549,15 @@ exports.generatePenalties = async (req, res) => {
     }
 };
 
+// ========== الجزاءات اليدوية (Manual Penalties) ==========
 exports.getManualPenalties = async (req, res) => {
     try {
         const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
         const { page = 1, limit = 25 } = req.query;
         const pageNum = safeParseInt(page, 1);
         const limitNum = safeParseInt(limit, 25);
-        const result = await tasksService.getManualPenalties(userId, pageNum, limitNum);
+        const result = await tasksService.getManualPenalties(userId, pageNum, limitNum, viewingUserId);
         res.json({ success: true, data: result.penalties, pagination: result.pagination });
     } catch (error) {
         handleError(res, error);
@@ -547,6 +592,7 @@ exports.deleteManualPenalty = async (req, res) => {
     }
 };
 
+// ========== المستخدمين (Users) ==========
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await tasksService.getAllUsers();
@@ -556,6 +602,7 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+// ========== التذكيرات (Reminders) ==========
 exports.checkReminders = async (req, res) => {
     try {
         const result = await tasksService.checkAndSendReminders();
@@ -565,6 +612,7 @@ exports.checkReminders = async (req, res) => {
     }
 };
 
+// ========== الصلاحيات (Permissions) ==========
 exports.getUserPermissions = async (req, res) => {
     try {
         const userId = req.user.id;

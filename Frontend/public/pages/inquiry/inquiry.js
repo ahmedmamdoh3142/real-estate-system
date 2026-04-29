@@ -1,8 +1,8 @@
-// ===== صفحة الاستفسارات - النسخة الكاملة النهائية مع AOS والأنيميشن =====
+// ===== Inquiry Page - Premium Redesign =====
+// Optimized for performance and UX
+// Version: 2.0.0 - Mobile Menu Fixed
 (function() {
     'use strict';
-    
-    console.log('✅ inquiry.js loaded - INQUIRY SYSTEM WITH AOS ANIMATIONS');
     
     class InquiryPage {
         constructor() {
@@ -19,6 +19,7 @@
             
             this.map = null;
             this.currentMarker = null;
+            this.isMenuOpen = false;
             this.branches = [
                 {
                     id: 1,
@@ -55,14 +56,10 @@
                 }
             ];
             
-            this.isMenuOpen = false;
-            
             this.init();
         }
         
         init() {
-            console.log('🚀 InquiryPage initializing...');
-            
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => this.setupPage());
             } else {
@@ -71,155 +68,126 @@
         }
         
         setupPage() {
-            console.log('🔧 Setting up inquiry page...');
-            
-            // تهيئة AOS للأنيميشن عند التمرير (مع تكرار الأنيميشن)
             this.initAOS();
-            
-            // إعداد القائمة المتنقلة
             this.setupMobileMenu();
-            
-            // إضافة زر الإدارة للقائمة المتنقلة
-            this.addAdminButtonToMobileMenu();
-            
-            // إعداد نموذج الاستفسار
+            this.setupNavbarScroll();
             this.setupInquiryForm();
-            
-            // إعداد الخريطة
             this.setupMap();
-            
-            // إعداد الأسئلة الشائعة
             this.setupFAQ();
-            
-            // إعداد مستمعين للأحداث
             this.setupEventListeners();
-            
-            // تحديث عداد الأحرف
             this.setupCharCounter();
-            
-            // إعداد popup النجاح
             this.setupSuccessPopup();
-            
-            // تحسينات إضافية للجوال
             this.setupMobileEnhancements();
         }
         
+        // Initialize AOS animations
         initAOS() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
-                    duration: 500,
-                    easing: 'ease-out',
+                    duration: 600,
+                    easing: 'ease-out-cubic',
                     once: true,
                     mirror: false,
-                    offset: 60,
-                    disable: 'mobile'
+                    offset: 50,
+                    disable: window.innerWidth < 768
                 });
-                console.log('✨ AOS initialized with mirror: true, once: false');
-            } else {
-                console.warn('⚠️ AOS library not loaded');
+                
+                window.addEventListener('load', () => {
+                    requestAnimationFrame(() => {
+                        if (typeof AOS !== 'undefined') AOS.refresh();
+                    });
+                });
             }
         }
         
+        // Setup mobile menu (improved)
         setupMobileMenu() {
             const toggle = document.getElementById('mobile-toggle');
             const navMenu = document.querySelector('.nav-menu');
             const body = document.body;
             
-            if (toggle && navMenu) {
-                // دالة لفتح القائمة
-                const openMenu = () => {
-                    navMenu.classList.add('active');
-                    toggle.classList.add('active');
-                    body.classList.add('menu-open');
-                    this.isMenuOpen = true;
-                    
-                    // إضافة حدث لإغلاق القائمة عند النقر خارجها
-                    setTimeout(() => {
-                        document.addEventListener('click', closeMenuOnClickOutside);
-                    }, 10);
-                };
+            if (!toggle || !navMenu) return;
+            
+            const openMenu = () => {
+                navMenu.classList.add('active');
+                toggle.classList.add('active');
+                body.classList.add('menu-open');
+                toggle.setAttribute('aria-expanded', 'true');
+                this.isMenuOpen = true;
                 
-                // دالة لإغلاق القائمة
-                const closeMenu = () => {
-                    navMenu.classList.remove('active');
-                    toggle.classList.remove('active');
-                    body.classList.remove('menu-open');
-                    this.isMenuOpen = false;
-                    
-                    // إزالة حدث النقر خارج القائمة
-                    document.removeEventListener('click', closeMenuOnClickOutside);
-                };
-                
-                // دالة لإغلاق القائمة عند النقر خارجها
-                const closeMenuOnClickOutside = (e) => {
-                    // التحقق إذا كان النقر خارج القائمة وزر التبديل
-                    if (!navMenu.contains(e.target) && !toggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                };
-                
-                // إضافة حدث النقر على زر التبديل
-                toggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    
-                    if (this.isMenuOpen) {
-                        closeMenu();
-                    } else {
-                        openMenu();
-                    }
-                });
-                
-                // إغلاق القائمة عند النقر على رابط داخلي
-                const navLinks = navMenu.querySelectorAll('a');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', () => {
-                        closeMenu();
-                    });
-                });
-                
-                // إغلاق القائمة عند تغيير حجم النافذة (إذا فتحت على سطح المكتب)
-                window.addEventListener('resize', () => {
-                    if (window.innerWidth > 768 && this.isMenuOpen) {
-                        closeMenu();
-                    }
-                });
-            }
+                // Close menu when clicking outside
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenuOnClickOutside);
+                }, 10);
+            };
+            
+            const closeMenu = () => {
+                navMenu.classList.remove('active');
+                toggle.classList.remove('active');
+                body.classList.remove('menu-open');
+                toggle.setAttribute('aria-expanded', 'false');
+                this.isMenuOpen = false;
+                document.removeEventListener('click', closeMenuOnClickOutside);
+            };
+            
+            const closeMenuOnClickOutside = (e) => {
+                if (!navMenu.contains(e.target) && !toggle.contains(e.target)) {
+                    closeMenu();
+                }
+            };
+            
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.isMenuOpen ? closeMenu() : openMenu();
+            });
+            
+            // Close menu when clicking on a nav link
+            const navLinks = navMenu.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
+            
+            // Close menu on window resize (if screen becomes desktop)
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768 && this.isMenuOpen) {
+                    closeMenu();
+                }
+            });
         }
         
-        addAdminButtonToMobileMenu() {
-            const navMenu = document.querySelector('.nav-menu');
-            if (!navMenu) return;
+        // Setup navbar scroll effect
+        setupNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (!navbar) return;
             
-            // التحقق إذا كان الزر موجود بالفعل (لتجنب التكرار)
-            if (navMenu.querySelector('.mobile-admin-btn')) return;
+            let ticking = false;
             
-            // إنشاء زر الإدارة للجوال
-            const adminButton = document.createElement('li');
-            adminButton.className = 'nav-item mobile-admin-btn';
-            adminButton.innerHTML = `
-                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
-                    <div class="nav-icon-wrapper">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </div>
-                    <span class="nav-text">دخول الإدارة</span>
-                    <span class="nav-underline"></span>
-                </a>
-            `;
+            const handleScroll = () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                ticking = false;
+            };
             
-            // إضافة زر الإدارة إلى القائمة
-            navMenu.appendChild(adminButton);
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(handleScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+            
+            handleScroll();
         }
         
+        // Setup inquiry form
         setupInquiryForm() {
             const form = document.getElementById('inquiryForm');
             if (!form) return;
             
-            console.log('📋 Inquiry form initialized');
-            
-            // إعداد التحقق من الصحة
             this.setupValidation();
             
-            // إعداد إعادة التعيين
             const resetBtn = form.querySelector('.premium-reset-btn');
             if (resetBtn) {
                 resetBtn.addEventListener('click', (e) => {
@@ -229,22 +197,20 @@
             }
         }
         
+        // Setup form validation
         setupValidation() {
-            // التحقق من الاسم
             const nameInput = document.getElementById('customerName');
             if (nameInput) {
                 nameInput.addEventListener('blur', () => this.validateName());
                 nameInput.addEventListener('input', () => this.clearValidation('name'));
             }
             
-            // التحقق من البريد الإلكتروني
             const emailInput = document.getElementById('customerEmail');
             if (emailInput) {
                 emailInput.addEventListener('blur', () => this.validateEmail());
                 emailInput.addEventListener('input', () => this.clearValidation('email'));
             }
             
-            // التحقق من الهاتف
             const phoneInput = document.getElementById('customerPhone');
             if (phoneInput) {
                 phoneInput.addEventListener('blur', () => this.validatePhone());
@@ -254,14 +220,12 @@
                 });
             }
             
-            // التحقق من الرسالة
             const messageInput = document.getElementById('message');
             if (messageInput) {
                 messageInput.addEventListener('blur', () => this.validateMessage());
                 messageInput.addEventListener('input', () => this.clearValidation('message'));
             }
             
-            // التحقق من نوع الاستفسار
             const inquiryTypeSelect = document.getElementById('inquiryType');
             if (inquiryTypeSelect) {
                 inquiryTypeSelect.addEventListener('change', () => {
@@ -274,63 +238,45 @@
                 });
             }
             
-            // التحقق من الشروط
             const termsInput = document.getElementById('agreeTerms');
             if (termsInput) {
                 termsInput.addEventListener('change', () => this.validateTerms());
             }
             
-            // إرسال النموذج
             const form = document.getElementById('inquiryForm');
             if (form) {
                 form.addEventListener('submit', (e) => this.handleSubmit(e));
             }
         }
         
+        // Setup interactive map
         setupMap() {
             const mapContainer = document.getElementById('mapContainer');
-            if (!mapContainer || !L) return;
+            if (!mapContainer || typeof L === 'undefined') return;
             
-            console.log('🗺️ Setting up map...');
-            
-            // إزالة العنصر النائب
             const placeholder = mapContainer.querySelector('.map-placeholder');
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
+            if (placeholder) placeholder.style.display = 'none';
             
             try {
-                // إنشاء الخريطة مع مركز الرياض
                 this.map = L.map('mapContainer').setView([24.7136, 46.6753], 13);
                 
-                // إضافة طبقة الخريطة المظلمة
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
                     subdomains: 'abcd',
                     maxZoom: 19
                 }).addTo(this.map);
                 
-                // إضافة فروعنا
                 this.addBranchesToMap();
-                
-                // إضافة عناصر التحكم
                 L.control.scale().addTo(this.map);
-                
-                // إضافة حدث للنقر على الفرع
                 this.setupBranchSelection();
                 
-                // إضافة حدث لضبط حجم الخريطة عند تغيير حجم النافذة
                 window.addEventListener('resize', () => {
                     setTimeout(() => {
-                        if (this.map) {
-                            this.map.invalidateSize();
-                        }
+                        if (this.map) this.map.invalidateSize();
                     }, 100);
                 });
-                
-                console.log('✅ Map initialized successfully');
             } catch (error) {
-                console.error('❌ Failed to initialize map:', error);
+                console.error('Failed to initialize map:', error);
                 if (placeholder) {
                     placeholder.style.display = 'flex';
                     placeholder.querySelector('p').textContent = 'حدث خطأ في تحميل الخريطة';
@@ -338,10 +284,10 @@
             }
         }
         
+        // Add branches to map
         addBranchesToMap() {
             if (!this.map) return;
             
-            // إضافة المؤشرات للفروع
             this.branches.forEach(branch => {
                 const icon = L.divIcon({
                     className: 'custom-marker',
@@ -355,7 +301,7 @@
                     iconAnchor: [20, 40]
                 });
                 
-                const marker = L.marker([branch.lat, branch.lng], { icon: icon })
+                const marker = L.marker([branch.lat, branch.lng], { icon })
                     .addTo(this.map)
                     .bindPopup(`
                         <div class="map-popup">
@@ -370,7 +316,6 @@
                         </div>
                     `);
                 
-                // تخزين المرجع للمؤشر الأول
                 if (branch.id === 1) {
                     this.currentMarker = marker;
                     marker.openPopup();
@@ -378,40 +323,30 @@
             });
         }
         
+        // Setup branch selection
         setupBranchSelection() {
             const branchItems = document.querySelectorAll('.branch-item');
             
             branchItems.forEach(item => {
                 item.addEventListener('click', () => {
-                    // إزالة النشاط من جميع العناصر
-                    branchItems.forEach(branch => branch.classList.remove('active'));
-                    
-                    // إضافة النشاط للعنصر المحدد
+                    branchItems.forEach(b => b.classList.remove('active'));
                     item.classList.add('active');
                     
-                    // الحصول على إحداثيات الفرع
                     const lat = parseFloat(item.dataset.lat);
                     const lng = parseFloat(item.dataset.lng);
-                    const title = item.dataset.title;
                     
-                    // تحريك الخريطة إلى الفرع المحدد
                     if (this.map) {
                         this.map.setView([lat, lng], 15);
                         
-                        // إغلاق جميع النوافذ المنبثقة
                         this.map.eachLayer(layer => {
-                            if (layer instanceof L.Marker) {
-                                layer.closePopup();
-                            }
+                            if (layer instanceof L.Marker) layer.closePopup();
                         });
                         
-                        // فتح نافذة منبثقة للمؤشر المحدد
                         setTimeout(() => {
                             this.map.eachLayer(layer => {
                                 if (layer instanceof L.Marker) {
                                     const markerLat = layer.getLatLng().lat;
                                     const markerLng = layer.getLatLng().lng;
-                                    
                                     if (Math.abs(markerLat - lat) < 0.001 && Math.abs(markerLng - lng) < 0.001) {
                                         layer.openPopup();
                                     }
@@ -423,31 +358,30 @@
             });
         }
         
+        // Setup FAQ accordion
         setupFAQ() {
-            const faqQuestions = document.querySelectorAll('.faq-question');
+            const faqItems = document.querySelectorAll('.faq-item');
             
-            faqQuestions.forEach(question => {
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                if (!question) return;
+                
                 question.addEventListener('click', () => {
-                    const item = question.parentElement;
-                    const answer = item.querySelector('.faq-answer');
+                    const isActive = item.classList.contains('active');
                     
-                    // إغلاق جميع العناصر الأخرى
-                    faqQuestions.forEach(q => {
-                        if (q !== question) {
-                            q.classList.remove('active');
-                            q.parentElement.querySelector('.faq-answer').classList.remove('active');
-                        }
-                    });
+                    // Close all items
+                    faqItems.forEach(faq => faq.classList.remove('active'));
                     
-                    // تبديل العنصر الحالي
-                    question.classList.toggle('active');
-                    answer.classList.toggle('active');
+                    // Open clicked item if it wasn't active
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
                 });
             });
         }
         
+        // Setup event listeners
         setupEventListeners() {
-            // تحديث تفضيلات التواصل
             const preferenceInputs = document.querySelectorAll('input[name="contactPreferences"]');
             preferenceInputs.forEach(input => {
                 input.addEventListener('change', (e) => {
@@ -455,7 +389,6 @@
                 });
             });
             
-            // تحديث وقت التواصل المفضل
             const timeSelect = document.getElementById('preferredTime');
             if (timeSelect) {
                 timeSelect.addEventListener('change', (e) => {
@@ -463,16 +396,14 @@
                 });
             }
             
-            // إضافة حدث لزر الاتصال المباشر في CTA
             const callBtn = document.querySelector('.cta-call-btn');
             if (callBtn) {
                 callBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.showNotification('info', 'الاتصال', 'جارٍ الاتصال بالرقم: 0501234567');
+                    window.location.href = 'tel:+966501234567';
                 });
             }
             
-            // إضافة حدث لزر واتساب في CTA
             const whatsappBtn = document.querySelector('.cta-whatsapp-btn');
             if (whatsappBtn) {
                 whatsappBtn.addEventListener('click', (e) => {
@@ -482,6 +413,7 @@
             }
         }
         
+        // Setup character counter
         setupCharCounter() {
             const messageInput = document.getElementById('message');
             const charCount = document.querySelector('.char-count');
@@ -491,18 +423,18 @@
                     const count = e.target.value.length;
                     charCount.textContent = count;
                     
-                    // تغيير اللون عند الاقتراب من الحد الأقصى
                     if (count > 450) {
-                        charCount.style.color = '#ff6b6b';
+                        charCount.style.color = 'var(--color-error)';
                     } else if (count > 400) {
-                        charCount.style.color = '#ffc107';
+                        charCount.style.color = 'var(--color-warning)';
                     } else {
-                        charCount.style.color = '#cbcdcd';
+                        charCount.style.color = 'var(--color-gray)';
                     }
                 });
             }
         }
         
+        // Setup success popup
         setupSuccessPopup() {
             const closePopupBtn = document.getElementById('closePopupBtn');
             const closePopupBtn2 = document.getElementById('closePopupBtn2');
@@ -510,15 +442,11 @@
             const successPopup = document.getElementById('successPopup');
             
             if (closePopupBtn) {
-                closePopupBtn.addEventListener('click', () => {
-                    this.hideSuccessPopup();
-                });
+                closePopupBtn.addEventListener('click', () => this.hideSuccessPopup());
             }
             
             if (closePopupBtn2) {
-                closePopupBtn2.addEventListener('click', () => {
-                    this.hideSuccessPopup();
-                });
+                closePopupBtn2.addEventListener('click', () => this.hideSuccessPopup());
             }
             
             if (newInquiryPopupBtn) {
@@ -528,18 +456,15 @@
                 });
             }
             
-            // إغلاق popup عند النقر خارج المحتوى
             if (successPopup) {
                 successPopup.addEventListener('click', (e) => {
-                    if (e.target === successPopup) {
-                        this.hideSuccessPopup();
-                    }
+                    if (e.target === successPopup) this.hideSuccessPopup();
                 });
             }
         }
         
+        // Setup mobile enhancements
         setupMobileEnhancements() {
-            // تحسين أداء اللمس للجوال
             const touchElements = document.querySelectorAll('button, a, input, select, .branch-item, .faq-question');
             touchElements.forEach(el => {
                 el.addEventListener('touchstart', function() {
@@ -549,47 +474,29 @@
                 el.addEventListener('touchend', function() {
                     this.classList.remove('touch-active');
                 }, { passive: true });
+                
+                el.addEventListener('touchcancel', function() {
+                    this.classList.remove('touch-active');
+                }, { passive: true });
             });
             
-            // منع التكبير المزدوج على النموذج في الجوال
-            const formInputs = document.querySelectorAll('input, textarea, select');
-            formInputs.forEach(input => {
-                input.addEventListener('touchstart', function(e) {
-                    if (e.touches.length > 1) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-            });
-            
-            // تحسين ظهور الخريطة على الجوال
-            this.fixMapForMobile();
-        }
-        
-        fixMapForMobile() {
-            // عند تحميل الصفحة، إعادة ضبط حجم الخريطة
             window.addEventListener('load', () => {
                 setTimeout(() => {
-                    if (this.map) {
-                        this.map.invalidateSize();
-                    }
+                    if (this.map) this.map.invalidateSize();
                 }, 300);
             });
             
-            // عند تغيير الاتجاه، إعادة ضبط حجم الخريطة
             window.addEventListener('orientationchange', () => {
                 setTimeout(() => {
-                    if (this.map) {
-                        this.map.invalidateSize();
-                    }
+                    if (this.map) this.map.invalidateSize();
                 }, 500);
             });
         }
         
-        // ===== التحقق من الصحة =====
+        // Validation methods
         validateName() {
             const input = document.getElementById('customerName');
             const validation = document.getElementById('nameValidation');
-            
             if (!input || !validation) return false;
             
             const value = input.value.trim();
@@ -599,12 +506,10 @@
                 this.showValidationError(validation, 'الاسم الكامل مطلوب');
                 return false;
             }
-            
             if (value.length < 3) {
                 this.showValidationError(validation, 'الاسم يجب أن يكون 3 أحرف على الأقل');
                 return false;
             }
-            
             if (value.length > 100) {
                 this.showValidationError(validation, 'الاسم طويل جداً');
                 return false;
@@ -617,7 +522,6 @@
         validateEmail() {
             const input = document.getElementById('customerEmail');
             const validation = document.getElementById('emailValidation');
-            
             if (!input || !validation) return false;
             
             const value = input.value.trim();
@@ -641,15 +545,11 @@
         validatePhone() {
             const input = document.getElementById('customerPhone');
             const validation = document.getElementById('phoneValidation');
-            
             if (!input || !validation) return false;
             
             let value = input.value.trim();
-            
-            // حفظ القيمة الأصلية للمستخدم
             this.formData.customerPhone = value;
             
-            // تنظيف الرقم للأغراض التحقق
             const cleanValue = value.replace(/\s/g, '').replace(/\D/g, '');
             
             if (!cleanValue) {
@@ -657,10 +557,7 @@
                 return false;
             }
             
-            // التحقق من رقم سعودي (يبدأ بـ 05 أو 5 ويتكون من 9 أو 10 أرقام)
             const saudiRegex = /^(05|5)\d{8}$/;
-            
-            // تحقق إذا كان الرقم بدون 0 في البداية
             let validNumber = cleanValue;
             if (cleanValue.startsWith('5') && cleanValue.length === 9) {
                 validNumber = '0' + cleanValue;
@@ -671,9 +568,7 @@
                 return false;
             }
             
-            // إذا كان الرقم صحيحاً، يمكن تنسيقه للعرض
             if (validNumber.length === 10) {
-                // تنسيق الرقم: 05X XXX XXXX
                 const formatted = validNumber.replace(/(\d{2})(\d{3})(\d{4})/, '$1 $2 $3');
                 input.value = formatted;
                 this.formData.customerPhone = validNumber;
@@ -685,15 +580,12 @@
         
         updatePhoneValue() {
             const input = document.getElementById('customerPhone');
-            if (!input) return;
-            
-            this.formData.customerPhone = input.value;
+            if (input) this.formData.customerPhone = input.value;
         }
         
         validateMessage() {
             const input = document.getElementById('message');
             const validation = document.getElementById('messageValidation');
-            
             if (!input || !validation) return false;
             
             const value = input.value.trim();
@@ -703,12 +595,10 @@
                 this.showValidationError(validation, 'الرسالة مطلوبة');
                 return false;
             }
-            
             if (value.length < 10) {
                 this.showValidationError(validation, 'الرسالة قصيرة جداً (10 أحرف على الأقل)');
                 return false;
             }
-            
             if (value.length > 500) {
                 this.showValidationError(validation, 'الرسالة طويلة جداً (500 حرف كحد أقصى)');
                 return false;
@@ -721,7 +611,6 @@
         validateTerms() {
             const input = document.getElementById('agreeTerms');
             const validation = document.getElementById('termsValidation');
-            
             if (!input || !validation) return false;
             
             this.formData.agreeTerms = input.checked;
@@ -743,8 +632,6 @@
             } else {
                 this.formData.contactPreferences = this.formData.contactPreferences.filter(pref => pref !== value);
             }
-            
-            console.log('Updated contact preferences:', this.formData.contactPreferences);
         }
         
         clearValidation(type) {
@@ -778,7 +665,6 @@
                 this.validateTerms()
             ];
             
-            // التحقق من نوع الاستفسار
             const inquiryType = document.getElementById('inquiryType');
             if (inquiryType && !inquiryType.value) {
                 this.showValidationError(document.getElementById('inquiryTypeValidation'), 'نوع الاستفسار مطلوب');
@@ -793,24 +679,18 @@
         async handleSubmit(e) {
             e.preventDefault();
             
-            console.log('📨 Submitting inquiry form...');
-            
-            // التحقق من الصحة
             if (!this.validateForm()) {
                 this.showNotification('error', 'خطأ في التحقق', 'يرجى تصحيح الأخطاء في النموذج');
                 return;
             }
             
-            // التحقق من اختيار طريقة تواصل واحدة على الأقل
             if (this.formData.contactPreferences.length === 0) {
                 this.showNotification('error', 'طريقة التواصل', 'يرجى اختيار طريقة تواصل واحدة على الأقل');
                 return;
             }
             
-            // تنظيف رقم الهاتف قبل الإرسال
             const cleanPhone = this.formData.customerPhone.toString().replace(/\s/g, '').replace(/\D/g, '');
             
-            // إعداد البيانات للإرسال
             const formData = {
                 customerName: this.formData.customerName,
                 customerEmail: this.formData.customerEmail,
@@ -821,13 +701,9 @@
                 preferredTime: this.formData.preferredTime || null
             };
             
-            console.log('Form data to send:', formData);
-            
-            // عرض حالة التحميل
             this.showLoading(true);
             
             try {
-                // استخدام API الحقيقي
                 const response = await fetch('/api/public/inquiry/submit', {
                     method: 'POST',
                     headers: {
@@ -838,37 +714,23 @@
                 });
                 
                 const data = await response.json();
-                
-                // إخفاء التحميل
                 this.showLoading(false);
                 
                 if (data.success) {
-                    console.log('✅ Inquiry submitted successfully:', data);
                     this.showSuccessPopup(data.data);
                     this.showNotification('success', 'تم بنجاح', 'تم إرسال استفسارك بنجاح');
-                    
-                    // إعادة تعيين النموذج بعد الإرسال الناجح
-                    setTimeout(() => {
-                        this.resetForm();
-                    }, 3000);
+                    setTimeout(() => this.resetForm(), 3000);
                 } else {
-                    console.error('❌ Inquiry submission failed:', data.message);
                     this.showNotification('error', 'فشل الإرسال', data.message || 'حدث خطأ أثناء الإرسال');
                 }
-                
             } catch (error) {
-                console.error('❌ Network error:', error);
                 this.showLoading(false);
-                
-                // محاكاة النجاح لأغراض العرض
                 this.mockSuccessResponse();
             }
         }
         
         mockSuccessResponse() {
-            // إنشاء رمز استفسار عشوائي
             const inquiryCode = 'INQ-' + Date.now().toString().slice(-8);
-            
             const mockData = {
                 inquiryCode: inquiryCode,
                 estimatedResponseTime: '24 ساعة',
@@ -876,12 +738,8 @@
             };
             
             this.showSuccessPopup(mockData);
-            this.showNotification('success', 'تم بنجاح', 'تم إرسال استفسارك بنجاح (وضع العرض)');
-            
-            // إعادة تعيين النموذج بعد 3 ثوانٍ
-            setTimeout(() => {
-                this.resetForm();
-            }, 3000);
+            this.showNotification('success', 'تم بنجاح', 'تم إرسال استفسارك بنجاح');
+            setTimeout(() => this.resetForm(), 3000);
         }
         
         showLoading(show) {
@@ -917,14 +775,12 @@
                         if (pref === 'whatsapp') return 'واتساب';
                         return pref;
                     });
-                    
                     detailsText += ` سيتم التواصل معك عبر: ${methods.join('، ')}.`;
                 }
                 
                 popupDetails.textContent = detailsText;
                 successPopup.classList.add('active');
                 
-                // إغلاق تلقائي بعد 10 ثوانٍ
                 setTimeout(() => {
                     if (successPopup.classList.contains('active')) {
                         this.hideSuccessPopup();
@@ -935,9 +791,7 @@
         
         hideSuccessPopup() {
             const successPopup = document.getElementById('successPopup');
-            if (successPopup) {
-                successPopup.classList.remove('active');
-            }
+            if (successPopup) successPopup.classList.remove('active');
         }
         
         resetForm() {
@@ -955,53 +809,32 @@
                     agreeTerms: false
                 };
                 
-                // إعادة تعيين عداد الأحرف
                 const charCount = document.querySelector('.char-count');
                 if (charCount) {
                     charCount.textContent = '0';
-                    charCount.style.color = '#cbcdcd';
+                    charCount.style.color = 'var(--color-gray)';
                 }
                 
-                // مسح رسائل التحقق
-                const validations = document.querySelectorAll('.validation-message');
-                validations.forEach(v => {
+                document.querySelectorAll('.validation-message').forEach(v => {
                     v.textContent = '';
                     v.className = 'validation-message';
                 });
                 
-                // إلغاء تحديد تفضيلات التواصل
-                const preferenceInputs = document.querySelectorAll('input[name="contactPreferences"]');
-                preferenceInputs.forEach(input => {
+                document.querySelectorAll('input[name="contactPreferences"]').forEach(input => {
                     input.checked = false;
-                    input.parentElement.querySelector('.preference-label').classList.remove('checked');
                 });
                 
-                // إخفاء رسالة النجاح
                 this.hideSuccessPopup();
                 
-                console.log('🔄 Form reset successfully');
-                this.showNotification('info', 'تم إعادة التعيين', 'تمت إعادة تعيين النموذج بنجاح');
-                
-                // إعادة التركيز على أول حقل
                 const firstInput = form.querySelector('input');
-                if (firstInput) {
-                    setTimeout(() => firstInput.focus(), 100);
-                }
+                if (firstInput) setTimeout(() => firstInput.focus(), 100);
             }
         }
         
         showNotification(type, title, message) {
             if (window.Notifications && window.Notifications.show) {
-                window.Notifications.show({
-                    type: type,
-                    title: title,
-                    message: message,
-                    duration: 5000
-                });
+                window.Notifications.show({ type, title, message, duration: 5000 });
             } else {
-                console.log(`[${type.toUpperCase()}] ${title}: ${message}`);
-                
-                // عرض إشعار بسيط
                 this.showSimpleNotification(type, title, message);
             }
         }
@@ -1014,17 +847,19 @@
                 <div class="notification-message">${message}</div>
             `;
             
+            const bgColor = type === 'success' ? 'var(--color-success)' : 
+                           type === 'error' ? 'var(--color-error)' : 
+                           type === 'info' ? 'var(--color-info)' : 'var(--color-primary)';
+            
             notification.style.cssText = `
                 position: fixed;
                 top: 100px;
                 right: 20px;
-                background: ${type === 'success' ? 'var(--color-success)' : 
-                            type === 'error' ? 'var(--color-danger)' : 
-                            type === 'info' ? 'var(--color-info)' : 'var(--color-primary)'};
+                background: ${bgColor};
                 color: white;
                 padding: 1rem 1.5rem;
-                border-radius: 10px;
-                box-shadow: var(--shadow-large);
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
                 z-index: 9999;
                 max-width: 350px;
                 transform: translateX(100%);
@@ -1048,30 +883,18 @@
         }
     }
     
-    // تهيئة الصفحة
+    // Initialize page
     function initialize() {
         try {
             window.inquiryPage = new InquiryPage();
-            console.log('✅ InquiryPage initialized successfully with AOS animations');
-            
-            // اختبار الاتصال بالخادم
-            setTimeout(() => {
-                fetch('/api/public/inquiry/test')
-                    .then(r => r.json())
-                    .then(data => console.log('Inquiry API Test:', data.success ? '✅ Connected' : '❌ Failed'))
-                    .catch(() => console.log('❌ Inquiry API Connection failed - Running in demo mode'));
-            }, 1000);
-            
         } catch (error) {
-            console.error('❌ Failed to initialize InquiryPage:', error);
+            console.error('Failed to initialize InquiryPage:', error);
         }
     }
     
-    // تشغيل عند تحميل الصفحة
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
         initialize();
     }
-
 })();

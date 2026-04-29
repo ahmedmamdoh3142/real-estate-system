@@ -4,7 +4,7 @@ const sql = require('mssql');
 
 require('dotenv').config();
 
-// الحصول على pool من app.locals (تم تعيينه في server.js)
+// Get pool from global (set in server.js)
 function getPool() {
     if (!global.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة - global.dbPool غير موجود');
@@ -38,11 +38,10 @@ class TasksService {
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
-    // دالة لتنفيذ استعلامات مع باراميترات (علامات استفهام)
+    // Parameterized query with ? placeholders
     async parameterizedQuery(query, params = []) {
         const pool = getPool();
         const request = pool.request();
-        // إضافة الباراميترات بالترتيب (p1, p2, ...)
         params.forEach((param, index) => {
             const paramName = `p${index + 1}`;
             if (param === null || param === undefined) {
@@ -57,7 +56,6 @@ class TasksService {
                 request.input(paramName, sql.NVarChar, String(param));
             }
         });
-        // استبدال علامات الاستفهام بأسماء الباراميترات
         let namedQuery = query;
         for (let i = 0; i < params.length; i++) {
             namedQuery = namedQuery.replace('?', `@p${i+1}`);
@@ -87,7 +85,7 @@ class TasksService {
         try {
             if (params && params.length > 0) {
                 await this.parameterizedQuery(sqlQuery, params);
-                return { rowsAffected: 1 }; // تقليد النتيجة
+                return { rowsAffected: 1 };
             } else {
                 const pool = getPool();
                 const result = await pool.request().query(sqlQuery);
@@ -142,7 +140,6 @@ class TasksService {
         }
     }
 
-    // ======================= الإشعارات =======================
     async _createNotification(userId, eventType, title, message, entityType, entityId, metadata = null) {
         if (!userId) return;
         try {
@@ -173,7 +170,7 @@ class TasksService {
 
     async markNotificationAsRead(notificationId, userId) {
         userId = this._toSafeInt(userId, null, true);
-        const result = await this.executeAsync(`
+        await this.executeAsync(`
             UPDATE UserNotifications SET isRead = 1
             WHERE id = ? AND userId = ?
         `, [notificationId, userId]);
@@ -189,7 +186,6 @@ class TasksService {
         return { success: true };
     }
 
-    // ======================= الصلاحيات =======================
     async getUserPermissions(userId) {
         userId = this._toSafeInt(userId, null, true);
         const query = `
@@ -208,9 +204,10 @@ class TasksService {
         return permissions;
     }
 
-    // ================================ TASKS ================================
-    async getUserTasks(userId, folder = 'inbox', page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== TASKS ==========
+    async getUserTasks(userId, folder = 'inbox', page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -238,7 +235,7 @@ class TasksService {
                     ORDER BY t.createdAt DESC
                     OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
                 `;
-                params = [userId, offset, limit];
+                params = [safeUserId, offset, limit];
                 countQuery = `
                     SELECT COUNT(*) AS total
                     FROM Tasks t
@@ -247,7 +244,7 @@ class TasksService {
                       AND t.isArchived = 0
                       AND t.status != 'archived'
                 `;
-                countParams = [userId];
+                countParams = [safeUserId];
                 break;
             case 'sent':
                 query = `
@@ -269,7 +266,7 @@ class TasksService {
                     ORDER BY t.createdAt DESC
                     OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
                 `;
-                params = [userId, offset, limit];
+                params = [safeUserId, offset, limit];
                 countQuery = `
                     SELECT COUNT(*) AS total
                     FROM Tasks t
@@ -278,7 +275,7 @@ class TasksService {
                       AND t.status != 'archived'
                       AND t.parentTaskId IS NULL
                 `;
-                countParams = [userId];
+                countParams = [safeUserId];
                 break;
             case 'subtasks':
                 query = `
@@ -300,7 +297,7 @@ class TasksService {
                     ORDER BY t.createdAt DESC
                     OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
                 `;
-                params = [userId, offset, limit];
+                params = [safeUserId, offset, limit];
                 countQuery = `
                     SELECT COUNT(*) AS total
                     FROM Tasks t
@@ -309,7 +306,7 @@ class TasksService {
                       AND t.isArchived = 0
                       AND t.status != 'archived'
                 `;
-                countParams = [userId];
+                countParams = [safeUserId];
                 break;
             case 'followed':
                 query = `
@@ -331,7 +328,7 @@ class TasksService {
                     ORDER BY t.createdAt DESC
                     OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
                 `;
-                params = [userId, offset, limit];
+                params = [safeUserId, offset, limit];
                 countQuery = `
                     SELECT COUNT(*) AS total
                     FROM Tasks t
@@ -340,35 +337,10 @@ class TasksService {
                       AND t.isArchived = 0
                       AND t.status != 'archived'
                 `;
-                countParams = [userId];
+                countParams = [safeUserId];
                 break;
             case 'archived':
-                query = `
-                    SELECT 
-                        t.id, t.title, t.description, t.priority, t.status, t.progress, t.dueDate, t.completedAt,
-                        t.projectId, t.senderId, t.parentTaskId, t.createdAt, t.updatedAt,
-                        t.isOverdue, t.daysOverdue, t.escalated, t.escalationLevel,
-                        t.recurringPattern, t.reminderDateTime, t.reminderSent,
-                        u.fullName AS senderName,
-                        (SELECT COUNT(*) FROM TaskComments WHERE taskId = t.id) AS commentsCount,
-                        (SELECT COUNT(*) FROM TaskAttachments WHERE taskId = t.id) AS attachmentsCount,
-                        'archived' AS type
-                    FROM Tasks t
-                    LEFT JOIN Users u ON t.senderId = u.id
-                    WHERE (t.senderId = ? OR EXISTS (SELECT 1 FROM TaskAssignees ta2 WHERE ta2.taskId = t.id AND ta2.userId = ?))
-                      AND t.isArchived = 1
-                    ORDER BY t.createdAt DESC
-                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-                `;
-                params = [userId, userId, offset, limit];
-                countQuery = `
-                    SELECT COUNT(*) AS total
-                    FROM Tasks t
-                    WHERE (t.senderId = ? OR EXISTS (SELECT 1 FROM TaskAssignees ta2 WHERE ta2.taskId = t.id AND ta2.userId = ?))
-                      AND t.isArchived = 1
-                `;
-                countParams = [userId, userId];
-                break;
+                return await this.getArchivedItems(safeUserId, page, limit);
             default:
                 throw new Error(`Invalid folder: ${folder}`);
         }
@@ -396,7 +368,6 @@ class TasksService {
                 averageScore: a.averageScore || 0
             }));
 
-            // جلب المتابعين
             const followersQuery = `SELECT userId FROM TaskFollowers WHERE taskId = ?`;
             const followers = await this.queryAsync(followersQuery, [task.id]);
             task.followers = followers.map(f => f.userId);
@@ -427,12 +398,128 @@ class TasksService {
         };
     }
 
-    async getTaskById(taskId, userId) {
-        taskId = this._toSafeInt(taskId, null, true);
-        userId = this._toSafeInt(userId, null, true);
+    async getArchivedItems(userId, page = 1, limit = 25) {
+        const safeUserId = this._toSafeInt(userId, null, true);
+        page = this._toSafeInt(page, 1);
+        limit = this._toSafeInt(limit, 25);
+        const offset = (page - 1) * limit;
 
-        const isGM = await this._isGeneralManager(userId);
+        // 1. Archived tasks
+        const tasksQuery = `
+            SELECT 
+                t.id, t.title, t.description, t.priority, t.status, t.progress, t.dueDate, t.completedAt,
+                t.projectId, t.senderId, t.parentTaskId, t.createdAt, t.updatedAt,
+                t.isOverdue, t.daysOverdue, t.escalated, t.escalationLevel,
+                t.recurringPattern, t.reminderDateTime, t.reminderSent,
+                u.fullName AS senderName,
+                (SELECT COUNT(*) FROM TaskComments WHERE taskId = t.id) AS commentsCount,
+                (SELECT COUNT(*) FROM TaskAttachments WHERE taskId = t.id) AS attachmentsCount,
+                'task' AS entityType,
+                'archived' AS type
+            FROM Tasks t
+            LEFT JOIN Users u ON t.senderId = u.id
+            WHERE (t.senderId = ? OR EXISTS (SELECT 1 FROM TaskAssignees WHERE taskId = t.id AND userId = ?))
+              AND t.isArchived = 1
+        `;
+        const tasks = await this.queryAsync(tasksQuery, [safeUserId, safeUserId]);
         
+        // 2. Archived requests
+        const requestsQuery = `
+            SELECT 
+                r.id, r.title, r.description, r.assigneeId, r.projectId, r.status, 
+                r.createdAt, r.updatedAt, r.createdBy, r.reminderDateTime, r.reminderSent,
+                c.fullName AS createdByName,
+                u.fullName AS assigneeName,
+                'request' AS entityType,
+                'archived' AS type
+            FROM Requests r
+            LEFT JOIN Users u ON r.assigneeId = u.id
+            LEFT JOIN Users c ON r.createdBy = c.id
+            WHERE (r.assigneeId = ? OR r.createdBy = ?)
+              AND r.isArchived = 1
+        `;
+        const requests = await this.queryAsync(requestsQuery, [safeUserId, safeUserId]);
+
+        // 3. Archived purchase requests
+        const purchasesQuery = `
+            SELECT 
+                p.id, p.item, p.quantity, p.urgency, p.description, p.assigneeId, 
+                p.status, p.createdAt, p.updatedAt, p.createdBy, p.reminderDateTime, p.reminderSent,
+                c.fullName AS createdByName,
+                u.fullName AS assigneeName,
+                'purchase' AS entityType,
+                'archived' AS type
+            FROM PurchaseRequests p
+            LEFT JOIN Users u ON p.assigneeId = u.id
+            LEFT JOIN Users c ON p.createdBy = c.id
+            WHERE (p.assigneeId = ? OR p.createdBy = ?)
+              AND p.isArchived = 1
+        `;
+        const purchases = await this.queryAsync(purchasesQuery, [safeUserId, safeUserId]);
+
+        let allItems = [...tasks, ...requests, ...purchases];
+        allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const totalItems = allItems.length;
+        const totalPages = Math.ceil(totalItems / limit);
+        const paginatedItems = allItems.slice(offset, offset + limit);
+
+        for (let item of paginatedItems) {
+            if (item.entityType === 'task') {
+                const assigneesQuery = `
+                    SELECT u.id, u.fullName, u.email, u.role, u.profileImage, u.averageScore
+                    FROM TaskAssignees ta
+                    INNER JOIN Users u ON ta.userId = u.id
+                    WHERE ta.taskId = ?
+                `;
+                const assignees = await this.queryAsync(assigneesQuery, [item.id]);
+                item.assignees = assignees.map(a => a.id);
+                item.assigneesFull = assignees.map(a => ({
+                    id: a.id,
+                    fullName: a.fullName,
+                    email: a.email,
+                    role: a.role,
+                    avatar: a.profileImage || `https://i.pravatar.cc/150?img=${a.id}`,
+                    averageScore: a.averageScore || 0
+                }));
+
+                const followersQuery = `SELECT userId FROM TaskFollowers WHERE taskId = ?`;
+                const followers = await this.queryAsync(followersQuery, [item.id]);
+                item.followers = followers.map(f => f.userId);
+            } else if (item.entityType === 'request') {
+                item.title = item.title;
+                item.description = item.description;
+                item.assigneeId = item.assigneeId;
+                item.createdBy = item.createdBy;
+                item.senderName = item.createdByName;
+            } else if (item.entityType === 'purchase') {
+                item.title = item.item;
+                item.description = item.description || '';
+                item.assigneeId = item.assigneeId;
+                item.createdBy = item.createdBy;
+                item.senderName = item.createdByName;
+            }
+        }
+
+        return {
+            tasks: paginatedItems,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems,
+                itemsPerPage: limit,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        };
+    }
+
+    async getTaskById(taskId, userId, viewingUserId = null) {
+        taskId = this._toSafeInt(taskId, null, true);
+        const requestingUserId = this._toSafeInt(userId, null, true);
+        const targetUserId = viewingUserId && await this._isGeneralManager(requestingUserId) ? viewingUserId : requestingUserId;
+
+        const isGM = await this._isGeneralManager(requestingUserId);
         let checkQuery, checkParams;
         if (isGM) {
             checkQuery = `SELECT 1 FROM Tasks WHERE id = ?`;
@@ -446,7 +533,7 @@ class TasksService {
                 WHERE t.id = ?
                   AND (t.senderId = ? OR ta.userId = ? OR tf.userId = ?)
             `;
-            checkParams = [taskId, userId, userId, userId];
+            checkParams = [taskId, targetUserId, targetUserId, targetUserId];
         }
         
         const check = await this.queryAsync(checkQuery, checkParams);
@@ -491,7 +578,6 @@ class TasksService {
             averageScore: a.averageScore || 0
         }));
 
-        // جلب المتابعين
         const followersQuery = `SELECT userId FROM TaskFollowers WHERE taskId = ?`;
         const followers = await this.queryAsync(followersQuery, [taskId]);
         task.followers = followers.map(f => f.userId);
@@ -615,7 +701,6 @@ class TasksService {
             }
         }
 
-        // إضافة المتابعين
         for (const followerId of followers) {
             const safeFollowerId = this._toSafeInt(followerId);
             if (safeFollowerId && await this.userExists(safeFollowerId)) {
@@ -657,7 +742,6 @@ class TasksService {
                 { createdBy: senderName, taskTitle: title }
             );
         }
-        // إشعار للمتابعين
         for (const followerId of followers) {
             await this._createNotification(
                 followerId,
@@ -788,7 +872,6 @@ class TasksService {
             }
         }
 
-        // تحديث المتابعين
         if (data.followers !== undefined && Array.isArray(data.followers)) {
             const currentFollowers = await this.queryAsync(`SELECT userId FROM TaskFollowers WHERE taskId = ?`, [taskId]);
             const currentFollowerIds = currentFollowers.map(f => f.userId);
@@ -1090,8 +1173,9 @@ class TasksService {
         return { success: true };
     }
 
-    async getTaskStats(userId) {
-        userId = this._toSafeInt(userId, null, true);
+    async getTaskStats(userId, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         
         const inboxQuery = `
             SELECT 
@@ -1105,7 +1189,7 @@ class TasksService {
             INNER JOIN TaskAssignees ta ON t.id = ta.taskId
             WHERE ta.userId = ? AND t.isArchived = 0 AND t.status != 'archived'
         `;
-        const inbox = await this.queryAsync(inboxQuery, [userId]);
+        const inbox = await this.queryAsync(inboxQuery, [safeUserId]);
 
         const sentQuery = `
             SELECT 
@@ -1118,34 +1202,34 @@ class TasksService {
             FROM Tasks
             WHERE senderId = ? AND isArchived = 0 AND status != 'archived' AND parentTaskId IS NULL
         `;
-        const sent = await this.queryAsync(sentQuery, [userId]);
+        const sent = await this.queryAsync(sentQuery, [safeUserId]);
 
         const teamCountResult = await this.queryAsync(`SELECT COUNT(*) as count FROM Users WHERE isActive = 1`);
         const teamCount = teamCountResult[0]?.count || 1;
 
         const requestsReceived = await this.queryAsync(`
-            SELECT COUNT(*) AS total FROM Requests WHERE assigneeId = ?
-        `, [userId]);
+            SELECT COUNT(*) AS total FROM Requests WHERE assigneeId = ? AND isArchived = 0
+        `, [safeUserId]);
         const requestsSent = await this.queryAsync(`
-            SELECT COUNT(*) AS total FROM Requests WHERE createdBy = ?
-        `, [userId]);
+            SELECT COUNT(*) AS total FROM Requests WHERE createdBy = ? AND isArchived = 0
+        `, [safeUserId]);
         const purchasesReceived = await this.queryAsync(`
-            SELECT COUNT(*) AS total FROM PurchaseRequests WHERE assigneeId = ?
-        `, [userId]);
+            SELECT COUNT(*) AS total FROM PurchaseRequests WHERE assigneeId = ? AND isArchived = 0
+        `, [safeUserId]);
         const purchasesSent = await this.queryAsync(`
-            SELECT COUNT(*) AS total FROM PurchaseRequests WHERE createdBy = ?
-        `, [userId]);
+            SELECT COUNT(*) AS total FROM PurchaseRequests WHERE createdBy = ? AND isArchived = 0
+        `, [safeUserId]);
         const penaltiesCount = await this.queryAsync(`
             SELECT COUNT(*) AS total FROM Penalties WHERE userId = ? AND status = 'active'
-        `, [userId]);
+        `, [safeUserId]);
         const manualPenaltiesCount = await this.queryAsync(`
             SELECT COUNT(*) AS total FROM ManualPenalties WHERE userId = ? AND status = 'active'
-        `, [userId]);
+        `, [safeUserId]);
 
         const totalAppointments = await this.queryAsync(`
             SELECT COUNT(*) AS total FROM Appointments a
             WHERE a.createdBy = ? OR EXISTS (SELECT 1 FROM AppointmentAttendees WHERE appointmentId = a.id AND userId = ?)
-        `, [userId, userId]);
+        `, [safeUserId, safeUserId]);
 
         return {
             total: inbox[0]?.total || 0,
@@ -1166,8 +1250,9 @@ class TasksService {
         };
     }
 
-    async getTeamWorkload(userId) {
-        userId = this._toSafeInt(userId, null, true);
+    async getTeamWorkload(userId, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         const query = `
             SELECT 
                 COALESCE(u.department, N'غير محدد') AS departmentName,
@@ -1191,8 +1276,9 @@ class TasksService {
         return rows;
     }
 
-    async searchTasks(userId, query, page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    async searchTasks(userId, query, page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -1213,7 +1299,7 @@ class TasksService {
             ORDER BY t.createdAt DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         `;
-        const tasks = await this.queryAsync(sqlQuery, [userId, userId, searchTerm, searchTerm, offset, limit]);
+        const tasks = await this.queryAsync(sqlQuery, [safeUserId, safeUserId, searchTerm, searchTerm, offset, limit]);
 
         const countQuery = `
             SELECT COUNT(*) AS total
@@ -1222,7 +1308,7 @@ class TasksService {
               AND (t.title LIKE ? OR t.description LIKE ?)
               AND t.isArchived = 0
         `;
-        const countResult = await this.queryAsync(countQuery, [userId, userId, searchTerm, searchTerm]);
+        const countResult = await this.queryAsync(countQuery, [safeUserId, safeUserId, searchTerm, searchTerm]);
         const totalItems = countResult[0]?.total || 0;
         const totalPages = Math.ceil(totalItems / limit);
 
@@ -1241,8 +1327,6 @@ class TasksService {
 
     async checkAndEscalateTasks() {
         const now = new Date();
-        const threshold = 72 * 60 * 60 * 1000;
-
         const overdueTasks = await this.queryAsync(`
             SELECT id, senderId, dueDate, escalated, escalationLevel, title
             FROM Tasks
@@ -1343,7 +1427,6 @@ class TasksService {
         return { generatedCount: 0 };
     }
 
-    // ========== التذكيرات ==========
     async checkAndSendReminders() {
         const now = new Date();
         const nowFormatted = this.formatDateForSQL(now);
@@ -1364,15 +1447,11 @@ class TasksService {
             if (subtasks.length > 0) {
                 for (const sub of subtasks) {
                     const assignees = await this.queryAsync(`SELECT userId FROM TaskAssignees WHERE taskId = ?`, [sub.id]);
-                    for (const a of assignees) {
-                        recipientIds.push(a.userId);
-                    }
+                    for (const a of assignees) recipientIds.push(a.userId);
                 }
             } else {
                 const assignees = await this.queryAsync(`SELECT userId FROM TaskAssignees WHERE taskId = ?`, [task.id]);
-                for (const a of assignees) {
-                    recipientIds.push(a.userId);
-                }
+                for (const a of assignees) recipientIds.push(a.userId);
             }
             const uniqueRecipients = [...new Set(recipientIds.filter(id => id != null))];
             await this.sendReminderForEntity('task', task.id, task.title, task.reminderDateTime, ...uniqueRecipients);
@@ -1385,6 +1464,7 @@ class TasksService {
             WHERE reminderDateTime IS NOT NULL
               AND reminderSent = 0
               AND reminderDateTime <= ?
+              AND isArchived = 0
         `, [nowFormatted]);
         for (const req of requests) {
             const recipientIds = [req.createdBy];
@@ -1400,6 +1480,7 @@ class TasksService {
             WHERE reminderDateTime IS NOT NULL
               AND reminderSent = 0
               AND reminderDateTime <= ?
+              AND isArchived = 0
         `, [nowFormatted]);
         for (const pur of purchases) {
             const recipientIds = [pur.createdBy];
@@ -1458,7 +1539,6 @@ class TasksService {
         }
     }
 
-    // ======================= التقييمات =======================
     async rateTask(taskId, ratingData, userId) {
         taskId = this._toSafeInt(taskId, null, true);
         userId = this._toSafeInt(userId, null, true);
@@ -1541,9 +1621,10 @@ class TasksService {
         return result[0]?.avgScore !== null ? parseFloat(result[0].avgScore) : null;
     }
 
-    // ================================ REQUESTS ================================
-    async getRequests(userId, folder = 'all', page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== REQUESTS (with isArchived) ==========
+    async getRequests(userId, folder = 'all', page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -1553,17 +1634,17 @@ class TasksService {
         let countParams = [];
 
         if (folder === 'assigned') {
-            whereClause = `WHERE r.assigneeId = ?`;
-            params = [userId, offset, limit];
-            countParams = [userId];
+            whereClause = `WHERE r.assigneeId = ? AND r.isArchived = 0`;
+            params = [safeUserId, offset, limit];
+            countParams = [safeUserId];
         } else if (folder === 'created') {
-            whereClause = `WHERE r.createdBy = ?`;
-            params = [userId, offset, limit];
-            countParams = [userId];
+            whereClause = `WHERE r.createdBy = ? AND r.isArchived = 0`;
+            params = [safeUserId, offset, limit];
+            countParams = [safeUserId];
         } else {
-            whereClause = `WHERE (r.assigneeId = ? OR r.createdBy = ?)`;
-            params = [userId, userId, offset, limit];
-            countParams = [userId, userId];
+            whereClause = `WHERE (r.assigneeId = ? OR r.createdBy = ?) AND r.isArchived = 0`;
+            params = [safeUserId, safeUserId, offset, limit];
+            countParams = [safeUserId, safeUserId];
         }
 
         const query = `
@@ -1628,9 +1709,9 @@ class TasksService {
         }
 
         const insertQuery = `
-            INSERT INTO Requests (title, description, assigneeId, status, createdBy, createdAt, updatedAt, reminderDateTime, reminderSent)
+            INSERT INTO Requests (title, description, assigneeId, status, createdBy, createdAt, updatedAt, reminderDateTime, reminderSent, isArchived)
             OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, 0)
+            VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, 0, 0)
         `;
         try {
             const result = await this.queryAsync(insertQuery, [title, description, safeAssigneeId, status, safeUserId, formattedReminder]);
@@ -1707,6 +1788,20 @@ class TasksService {
         return { success: true };
     }
 
+    async archiveRequest(requestId, userId) {
+        requestId = this._toSafeInt(requestId, null, true);
+        userId = this._toSafeInt(userId, null, true);
+        const check = await this.queryAsync(`
+            SELECT 1 FROM Requests WHERE id = ? AND (assigneeId = ? OR createdBy = ?)
+        `, [requestId, userId, userId]);
+        if (check.length === 0) throw new Error('Permission denied');
+        await this.executeAsync(`
+            UPDATE Requests SET isArchived = 1, updatedAt = GETDATE()
+            WHERE id = ?
+        `, [requestId]);
+        return { success: true };
+    }
+
     async deleteRequest(requestId, userId) {
         requestId = this._toSafeInt(requestId, null, true);
         userId = this._toSafeInt(userId, null, true);
@@ -1720,9 +1815,10 @@ class TasksService {
         return { success: true };
     }
 
-    // ================================ PURCHASE REQUESTS ================================
-    async getPurchaseRequests(userId, folder = 'all', page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== PURCHASE REQUESTS (with isArchived) ==========
+    async getPurchaseRequests(userId, folder = 'all', page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -1732,17 +1828,17 @@ class TasksService {
         let countParams = [];
 
         if (folder === 'assigned') {
-            whereClause = `WHERE p.assigneeId = ?`;
-            params = [userId, offset, limit];
-            countParams = [userId];
+            whereClause = `WHERE p.assigneeId = ? AND p.isArchived = 0`;
+            params = [safeUserId, offset, limit];
+            countParams = [safeUserId];
         } else if (folder === 'created') {
-            whereClause = `WHERE p.createdBy = ?`;
-            params = [userId, offset, limit];
-            countParams = [userId];
+            whereClause = `WHERE p.createdBy = ? AND p.isArchived = 0`;
+            params = [safeUserId, offset, limit];
+            countParams = [safeUserId];
         } else {
-            whereClause = `WHERE (p.assigneeId = ? OR p.createdBy = ?)`;
-            params = [userId, userId, offset, limit];
-            countParams = [userId, userId];
+            whereClause = `WHERE (p.assigneeId = ? OR p.createdBy = ?) AND p.isArchived = 0`;
+            params = [safeUserId, safeUserId, offset, limit];
+            countParams = [safeUserId, safeUserId];
         }
 
         const query = `
@@ -1807,9 +1903,9 @@ class TasksService {
         }
 
         const insertQuery = `
-            INSERT INTO PurchaseRequests (item, quantity, urgency, description, assigneeId, status, createdBy, createdAt, updatedAt, reminderDateTime, reminderSent)
+            INSERT INTO PurchaseRequests (item, quantity, urgency, description, assigneeId, status, createdBy, createdAt, updatedAt, reminderDateTime, reminderSent, isArchived)
             OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, 0)
+            VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, 0, 0)
         `;
         try {
             const result = await this.queryAsync(insertQuery, [
@@ -1903,6 +1999,20 @@ class TasksService {
         return { success: true };
     }
 
+    async archivePurchaseRequest(purchaseId, userId) {
+        purchaseId = this._toSafeInt(purchaseId, null, true);
+        userId = this._toSafeInt(userId, null, true);
+        const check = await this.queryAsync(`
+            SELECT 1 FROM PurchaseRequests WHERE id = ? AND (assigneeId = ? OR createdBy = ?)
+        `, [purchaseId, userId, userId]);
+        if (check.length === 0) throw new Error('Permission denied');
+        await this.executeAsync(`
+            UPDATE PurchaseRequests SET isArchived = 1, updatedAt = GETDATE()
+            WHERE id = ?
+        `, [purchaseId]);
+        return { success: true };
+    }
+
     async deletePurchaseRequest(purchaseId, userId) {
         purchaseId = this._toSafeInt(purchaseId, null, true);
         userId = this._toSafeInt(userId, null, true);
@@ -1916,15 +2026,16 @@ class TasksService {
         return { success: true };
     }
 
-    // ================================ APPOINTMENTS ================================
-    async getAppointments(userId, page = 1, limit = 25, startDate = null, endDate = null) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== APPOINTMENTS ==========
+    async getAppointments(userId, page = 1, limit = 25, startDate = null, endDate = null, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
 
         let whereClause = `WHERE (a.createdBy = ? OR EXISTS (SELECT 1 FROM AppointmentAttendees WHERE appointmentId = a.id AND userId = ?))`;
-        const params = [userId, userId];
+        const params = [safeUserId, safeUserId];
         if (startDate) {
             whereClause += ` AND a.appointmentDate >= ?`;
             params.push(startDate);
@@ -2147,9 +2258,10 @@ class TasksService {
         return { success: true };
     }
 
-    // ================================ PENALTIES (AUTOMATIC) ================================
-    async getPenalties(userId, page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== PENALTIES (AUTOMATIC) ==========
+    async getPenalties(userId, page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -2166,11 +2278,7 @@ class TasksService {
                 ORDER BY p.issuedAt DESC
                 OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
             `;
-            countQuery = `
-                SELECT COUNT(*) AS total
-                FROM Penalties p
-                INNER JOIN Tasks t ON p.taskId = t.id
-            `;
+            countQuery = `SELECT COUNT(*) AS total FROM Penalties p INNER JOIN Tasks t ON p.taskId = t.id`;
             const [penalties, countResult] = await Promise.all([
                 this.queryAsync(query, [offset, limit]),
                 this.queryAsync(countQuery)
@@ -2195,8 +2303,8 @@ class TasksService {
                 WHERE p.userId = ? OR t.senderId = ? OR EXISTS (SELECT 1 FROM TaskAssignees WHERE taskId = t.id AND userId = ?)
             `;
             const [penalties, countResult] = await Promise.all([
-                this.queryAsync(query, [userId, userId, userId, offset, limit]),
-                this.queryAsync(countQuery, [userId, userId, userId])
+                this.queryAsync(query, [safeUserId, safeUserId, safeUserId, offset, limit]),
+                this.queryAsync(countQuery, [safeUserId, safeUserId, safeUserId])
             ]);
             const totalItems = countResult[0]?.total || 0;
             const totalPages = Math.ceil(totalItems / limit);
@@ -2259,9 +2367,10 @@ class TasksService {
         return { penaltiesGenerated: overdueTasks.length };
     }
 
-    // ================================ MANUAL PENALTIES ================================
-    async getManualPenalties(userId, page = 1, limit = 25) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== MANUAL PENALTIES ==========
+    async getManualPenalties(userId, page = 1, limit = 25, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         page = this._toSafeInt(page, 1);
         limit = this._toSafeInt(limit, 25);
         const offset = (page - 1) * limit;
@@ -2302,8 +2411,8 @@ class TasksService {
                 WHERE mp.userId = ? OR mp.createdBy = ?
             `;
             const [penalties, countResult] = await Promise.all([
-                this.queryAsync(query, [userId, userId, offset, limit]),
-                this.queryAsync(countQuery, [userId, userId])
+                this.queryAsync(query, [safeUserId, safeUserId, offset, limit]),
+                this.queryAsync(countQuery, [safeUserId, safeUserId])
             ]);
             const totalItems = countResult[0]?.total || 0;
             const totalPages = Math.ceil(totalItems / limit);
@@ -2374,7 +2483,7 @@ class TasksService {
         return { success: true };
     }
 
-    // ================================ USERS ================================
+    // ========== USERS ==========
     async getAllUsers() {
         const query = `
             SELECT id, username, fullName, email, phone, role, isActive, department, averageScore, profileImage
@@ -2389,9 +2498,10 @@ class TasksService {
         }));
     }
 
-    // ================================ WEEKLY PERFORMANCE ================================
-    async getWeeklyPerformance(userId) {
-        userId = this._toSafeInt(userId, null, true);
+    // ========== WEEKLY PERFORMANCE ==========
+    async getWeeklyPerformance(userId, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
         const startOfWeek = new Date();
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
         startOfWeek.setHours(0,0,0,0);
@@ -2431,7 +2541,7 @@ class TasksService {
             ) n ON dr.date = n.createdDate
             ORDER BY dr.date
         `;
-        const params = [startOfWeek, userId, userId, startOfWeek, endOfWeek, userId, userId, startOfWeek, endOfWeek];
+        const params = [startOfWeek, safeUserId, safeUserId, startOfWeek, endOfWeek, safeUserId, safeUserId, startOfWeek, endOfWeek];
         return await this.queryAsync(query, params);
     }
 }

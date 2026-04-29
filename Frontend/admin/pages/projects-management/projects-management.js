@@ -1,5 +1,6 @@
 // ===== صفحة إدارة المشاريع - نظام إدارة العقارات =====
 // 📁 المسار: Frontend/admin/pages/projects-management/projects-management.js
+// 🔗 الاتصال: يتصل بـ Backend/app.js على localhost:3001
 // 🧠 الغرض: إدارة المشاريع مع اتصال حقيقي بقاعدة البيانات
 // 📱 إصدار محسن للجوال - تم إزالة كل ما يتعلق بالعقود
 
@@ -39,6 +40,16 @@
             
             this.init();
         }
+
+        // تحويل مسار الصورة إلى رابط كامل مع رابط الخادم
+getFullImageUrl(imageUrl) {
+    if (!imageUrl) return '/global/assets/images/project-placeholder.jpg';
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl; // بالفعل رابط كامل
+    }
+    // ربط المسار النسبي مع baseURL الخادم
+    return `${this.baseURL}${imageUrl}`;
+}
         
         createApiClient() {
             return {
@@ -1280,6 +1291,88 @@
                 });
             }
         }
+
+
+        /**
+         * رفع صورة واحدة إلى السيرفر عبر API وإرجاع المسار المُعاد
+         */
+        async uploadImageFile(file) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                // استخدام fetch مباشرة مع FormData (Content-Type تلقائي multipart)
+                fetch('/api/admin/projects/upload-image', {
+                    method: 'POST',
+                    headers: {
+                        // لا تضع Content-Type هنا، سيتم تعيينه تلقائياً مع boundary
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        resolve(result.data.url);
+                    } else {
+                        reject(new Error(result.message || 'فشل رفع الصورة'));
+                    }
+                })
+                .catch(error => reject(error));
+            });
+        }
+        
+        /**
+         * رفع جميع صور المشروع إلى السيرفر وتجهيز بياناتها للحفظ في قاعدة البيانات
+         * تحل محل prepareImagesData القديمة
+         */
+        async uploadProjectImages() {
+            const imagesData = [];
+            
+            for (const img of this.projectImages) {
+                // إذا كانت الصورة ملف جديد (من اختيار المستخدم) -> ارفعها
+                if (img.file) {
+                    try {
+                        // رفع الملف إلى السيرفر والحصول على الرابط الحقيقي
+                        const uploadedUrl = await this.uploadImageFile(img.file);
+                        
+                        imagesData.push({
+                            imageUrl: uploadedUrl,
+                            imageType: img.isMain ? 'صورة_رئيسية' : this.getImageType(img),
+                            displayOrder: imagesData.length + 1,
+                            isActive: true,
+                            isMain: img.isMain || false
+                        });
+                    } catch (error) {
+                        console.error('❌ فشل رفع الصورة:', img.name, error);
+                        this.showNotification('error', 'خطأ', `فشل رفع الصورة ${img.name}: ${error.message}`);
+                        throw error; // إيقاف العملية
+                    }
+                } 
+                // إذا كانت الصورة موجودة مسبقاً (في حالة التعديل) -> استخدم بياناتها
+                else if (img.previewUrl && img.previewUrl.startsWith('/uploads/')) {
+                    imagesData.push({
+                        imageUrl: img.previewUrl,
+                        imageType: img.isMain ? 'صورة_رئيسية' : this.getImageType(img),
+                        displayOrder: imagesData.length + 1,
+                        isActive: true,
+                        isMain: img.isMain || false
+                    });
+                }
+                // إذا كانت الصورة من نوع blob URL (محلية) لم ترفع بعد -> تخطي
+                else {
+                    console.warn('⚠️ صورة بدون ملف أو مسار صحيح، تم تجاهلها:', img);
+                }
+            }
+            
+            // التأكد من أن الصورة الأولى هي الرئيسية إذا لم يتم تحديد ذلك
+            if (imagesData.length > 0 && !imagesData.some(img => img.isMain)) {
+                imagesData[0].isMain = true;
+                imagesData[0].imageType = 'صورة_رئيسية';
+            }
+            
+            return imagesData;
+        }
         
         getStatusText(status) {
             const statusMap = {
@@ -1577,64 +1670,65 @@
         }
         
         renderImagesList() {
-            const imagesList = document.getElementById('images-list');
-            const imagesCount = document.getElementById('images-count');
-            
-            if (imagesCount) {
-                imagesCount.textContent = this.projectImages.length;
-            }
-            
-            if (this.projectImages.length === 0) {
-                imagesList.innerHTML = `
-                    <div class="empty-images">
-                        <i class="fas fa-image"></i>
-                        <p>لم يتم تحميل أي صور بعد</p>
+    const imagesList = document.getElementById('images-list');
+    const imagesCount = document.getElementById('images-count');
+    
+    if (imagesCount) {
+        imagesCount.textContent = this.projectImages.length;
+    }
+    
+    if (this.projectImages.length === 0) {
+        imagesList.innerHTML = `
+            <div class="empty-images">
+                <i class="fas fa-image"></i>
+                <p>لم يتم تحميل أي صور بعد</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    const sortedImages = [...this.projectImages].sort((a, b) => a.displayOrder - b.displayOrder);
+    
+    sortedImages.forEach((image, index) => {
+        const isMain = image.isMain ? 'main-image' : '';
+        const imageName = image.name || `صورة-${index + 1}`;
+        const truncatedName = this.truncateText(imageName, 15);
+        const fullUrl = this.getFullImageUrl(image.previewUrl || ''); // ✅ إضافة الربط الكامل
+        
+        html += `
+            <div class="image-item ${isMain}" data-image-id="${image.id}" draggable="true">
+                <div class="image-preview">
+                    <img src="${fullUrl}" alt="${imageName}" loading="lazy">
+                    <div class="image-overlay"></div>
+                    <div class="image-actions">
+                        <button class="image-action-btn view" title="معاينة">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="image-action-btn set-main" title="تعيين كصورة رئيسية">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        <button class="image-action-btn delete" title="حذف">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            
-            const sortedImages = [...this.projectImages].sort((a, b) => a.displayOrder - b.displayOrder);
-            
-            sortedImages.forEach((image, index) => {
-                const isMain = image.isMain ? 'main-image' : '';
-                const imageName = image.name || `صورة-${index + 1}`;
-                const truncatedName = this.truncateText(imageName, 15);
-                
-                html += `
-                    <div class="image-item ${isMain}" data-image-id="${image.id}" draggable="true">
-                        <div class="image-preview">
-                            <img src="${image.previewUrl}" alt="${imageName}" loading="lazy">
-                            <div class="image-overlay"></div>
-                            <div class="image-actions">
-                                <button class="image-action-btn view" title="معاينة">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="image-action-btn set-main" title="تعيين كصورة رئيسية">
-                                    <i class="fas fa-star"></i>
-                                </button>
-                                <button class="image-action-btn delete" title="حذف">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="image-info">
-                            <div class="image-name" title="${imageName}">${truncatedName}</div>
-                            <div class="image-meta">
-                                <span class="image-size">${image.size}</span>
-                                <span class="image-order">#${image.displayOrder}</span>
-                            </div>
-                        </div>
+                </div>
+                <div class="image-info">
+                    <div class="image-name" title="${imageName}">${truncatedName}</div>
+                    <div class="image-meta">
+                        <span class="image-size">${image.size}</span>
+                        <span class="image-order">#${image.displayOrder}</span>
                     </div>
-                `;
-            });
-            
-            imagesList.innerHTML = html;
-            
-            this.attachImageEvents();
-            this.setupImageDragAndDrop();
+                </div>
+            </div>
+        `;
+    });
+    
+    imagesList.innerHTML = html;
+    
+    this.attachImageEvents();
+    this.setupImageDragAndDrop();
         }
         
         truncateText(text, maxLength) {
@@ -1735,41 +1829,41 @@
         }
         
         previewImage(imageId) {
-            const image = this.projectImages.find(img => img.id === imageId);
-            if (!image) return;
-            
-            const modal = document.getElementById('image-view-modal');
-            const modalImage = document.getElementById('modal-view-image');
-            const imageInfo = document.getElementById('image-view-info');
-            
-            modalImage.src = image.previewUrl;
-            modalImage.alt = image.name || 'صورة المشروع';
-            
-            const imageType = image.isMain ? 'صورة رئيسية' : 'صورة عادية';
-            
-            imageInfo.innerHTML = `
-                <h4>معلومات الصورة</h4>
-                <div class="image-view-details">
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">اسم الملف:</span>
-                        <span class="image-detail-value">${image.name || 'غير معروف'}</span>
-                    </div>
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">الحجم:</span>
-                        <span class="image-detail-value">${image.size}</span>
-                    </div>
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">النوع:</span>
-                        <span class="image-detail-value">${imageType}</span>
-                    </div>
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">الترتيب:</span>
-                        <span class="image-detail-value">${image.displayOrder}</span>
-                    </div>
-                </div>
-            `;
-            
-            modal.classList.add('active');
+    const image = this.projectImages.find(img => img.id === imageId);
+    if (!image) return;
+    
+    const modal = document.getElementById('image-view-modal');
+    const modalImage = document.getElementById('modal-view-image');
+    const imageInfo = document.getElementById('image-view-info');
+    
+    modalImage.src = this.getFullImageUrl(image.previewUrl); // ✅ استخدم المسار الكامل
+    modalImage.alt = image.name || 'صورة المشروع';
+    
+    const imageType = image.isMain ? 'صورة رئيسية' : 'صورة عادية';
+    
+    imageInfo.innerHTML = `
+        <h4>معلومات الصورة</h4>
+        <div class="image-view-details">
+            <div class="image-detail-item">
+                <span class="image-detail-label">اسم الملف:</span>
+                <span class="image-detail-value">${image.name || 'غير معروف'}</span>
+            </div>
+            <div class="image-detail-item">
+                <span class="image-detail-label">الحجم:</span>
+                <span class="image-detail-value">${image.size}</span>
+            </div>
+            <div class="image-detail-item">
+                <span class="image-detail-label">النوع:</span>
+                <span class="image-detail-value">${imageType}</span>
+            </div>
+            <div class="image-detail-item">
+                <span class="image-detail-label">الترتيب:</span>
+                <span class="image-detail-value">${image.displayOrder}</span>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
         }
         
         setAsMainImage(imageId) {
@@ -2297,7 +2391,7 @@
                                     ${sortedImages.map((image, index) => `
                                         <div class="gallery-image-item ${index === 0 ? 'main' : ''}" data-image-index="${index}">
                                             <div class="gallery-image-preview">
-                                                <img src="${image.imageUrl || '/global/assets/images/project-placeholder.jpg'}" alt="صورة المشروع" loading="lazy">
+                                                <img src="${this.getFullImageUrl(image.imageUrl)}" alt="صورة المشروع" loading="lazy">
                                             </div>
                                             <div class="gallery-image-type">${image.imageType || 'صورة'}</div>
                                         </div>
@@ -2467,34 +2561,34 @@
         }
         
         previewGalleryImage(image) {
-            const modal = document.getElementById('image-view-modal');
-            const modalImage = document.getElementById('modal-view-image');
-            const imageInfo = document.getElementById('image-view-info');
-            
-            modalImage.src = image.imageUrl || '/global/assets/images/project-placeholder.jpg';
-            modalImage.alt = 'صورة المشروع';
-            
-            const imageType = image.imageType || 'صورة';
-            
-            imageInfo.innerHTML = `
-                <h4>معلومات الصورة</h4>
-                <div class="image-view-details">
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">نوع الصورة:</span>
-                        <span class="image-detail-value">${imageType}</span>
-                    </div>
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">الترتيب:</span>
-                        <span class="image-detail-value">${image.displayOrder || 1}</span>
-                    </div>
-                    <div class="image-detail-item">
-                        <span class="image-detail-label">الحالة:</span>
-                        <span class="image-detail-value">${image.isActive ? 'نشطة' : 'غير نشطة'}</span>
-                    </div>
-                </div>
-            `;
-            
-            modal.classList.add('active');
+    const modal = document.getElementById('image-view-modal');
+    const modalImage = document.getElementById('modal-view-image');
+    const imageInfo = document.getElementById('image-view-info');
+    
+    modalImage.src = this.getFullImageUrl(image.imageUrl); // ✅ المسار الكامل
+    modalImage.alt = 'صورة المشروع';
+    
+    const imageType = image.imageType || 'صورة';
+    
+    imageInfo.innerHTML = `
+        <h4>معلومات الصورة</h4>
+        <div class="image-view-details">
+            <div class="image-detail-item">
+                <span class="image-detail-label">نوع الصورة:</span>
+                <span class="image-detail-value">${imageType}</span>
+            </div>
+            <div class="image-detail-item">
+                <span class="image-detail-label">الترتيب:</span>
+                <span class="image-detail-value">${image.displayOrder || 1}</span>
+            </div>
+            <div class="image-detail-item">
+                <span class="image-detail-label">الحالة:</span>
+                <span class="image-detail-value">${image.isActive ? 'نشطة' : 'غير نشطة'}</span>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
         }
         
         showAddProjectModal() {
@@ -2541,7 +2635,7 @@
                     if (project.images && Array.isArray(project.images)) {
                         this.projectImages = project.images.map((img, index) => ({
                             id: `img-${img.id || Date.now() + index}`,
-                            previewUrl: img.imageUrl || '/global/assets/images/project-placeholder.jpg',
+                            previewUrl: this.getFullImageUrl(img.imageUrl), // ✅ استخدم المسار الكامل
                             name: `صورة ${index + 1}`,
                             size: '2.5 MB',
                             displayOrder: img.displayOrder || index + 1,
@@ -2656,6 +2750,7 @@
                 const submitBtn = document.getElementById('project-form-submit-btn');
                 const action = submitBtn.dataset.action;
                 const projectId = submitBtn.dataset.projectId;
+                const images = await this.uploadProjectImages();
                 
                 if (!this.validateProjectForm()) {
                     return;
@@ -2684,7 +2779,7 @@
                     isFeatured: document.getElementById('is-featured').checked,
                     createdBy: 1, // إضافة createdBy افتراضياً
                     features: this.projectFeatures, // ✅ إضافة الميزات
-                    images: this.prepareImagesData() // ✅ إضافة الصور
+                    images: images // ✅ إضافة الصور
                 };
                 
                 console.log('📦 بيانات المشروع المرسلة:', projectData);

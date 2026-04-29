@@ -1,162 +1,186 @@
-// ===== صفحة "من نحن" - منطق JS كامل مع AOS =====
+/**
+ * =====================================================
+ * ABH HOLDING GROUP - About Page JavaScript
+ * Version: 2.0.0
+ * Optimized for performance with AOS animations
+ * =====================================================
+ */
+
 (function() {
     'use strict';
-    
-    console.log('✅ about.js loaded - ABOUT PAGE WITH AOS ANIMATIONS');
-    
+
+    /**
+     * AboutPage Class
+     * Handles all About page functionality
+     */
     class AboutPage {
         constructor() {
             this.isMenuOpen = false;
+            this.scrollThreshold = 50;
             this.init();
         }
-        
+
+        /**
+         * Initialize the page
+         */
         init() {
-            console.log('🚀 AboutPage initializing...');
-            
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => this.setupPage());
             } else {
                 this.setupPage();
             }
         }
-        
+
+        /**
+         * Setup all page components
+         */
         setupPage() {
-            console.log('🔧 Setting up about page...');
-            
-            // تهيئة AOS للأنيميشن عند التمرير (مع تكرار الأنيميشن)
+            this.cacheElements();
             this.initAOS();
-            
-            // إعداد القائمة المتنقلة
             this.setupMobileMenu();
-            
-            // إضافة زر الإدارة للقائمة المتنقلة
-            this.addAdminButtonToMobileMenu();
-            
-            // إعداد تأثيرات إضافية
-            this.setupAdditionalEffects();
+            this.setupNavbarScroll();
+            this.setupTouchOptimization();
         }
-        
+
+        /**
+         * Cache DOM elements for performance
+         */
+        cacheElements() {
+            this.navbar = document.querySelector('.navbar');
+            this.toggle = document.getElementById('mobile-toggle');
+            this.navMenu = document.querySelector('.nav-menu');
+            this.body = document.body;
+        }
+
+        /**
+         * Initialize AOS (Animate On Scroll)
+         */
         initAOS() {
-            if (typeof AOS !== 'undefined') {
-                AOS.init({
-                    duration: 500,
-                    easing: 'ease-out',
-                    once: true,
-                    mirror: false,
-                    offset: 60,
-                    disable: 'mobile'
-                });
-                console.log('✨ AOS initialized with mirror: true, once: false');
-                
-                // إعادة تهيئة AOS بعد تحميل الصفحة بالكامل للتأكد من ظهور الأنيميشن المتسلسل
-                window.addEventListener('load', () => {
-                    setTimeout(() => {
-                        AOS.refresh();
-                    }, 200);
-                });
-            } else {
-                console.warn('⚠️ AOS library not loaded');
+            if (typeof AOS === 'undefined') {
+                console.warn('AOS library not loaded');
+                return;
             }
+
+            AOS.init({
+                duration: 500,
+                easing: 'ease-out',
+                once: true,
+                mirror: false,
+                offset: 60,
+                disable: window.innerWidth < 768
+            });
+
+            // Refresh AOS after page fully loads
+            window.addEventListener('load', () => {
+                requestAnimationFrame(() => {
+                    AOS.refresh();
+                });
+            });
         }
-        
+
+        /**
+         * Setup mobile menu functionality
+         */
         setupMobileMenu() {
-            const toggle = document.getElementById('mobile-toggle');
-            const navMenu = document.querySelector('.nav-menu');
-            const body = document.body;
-            
-            if (toggle && navMenu) {
-                // دالة لفتح القائمة
-                const openMenu = () => {
-                    navMenu.classList.add('active');
-                    toggle.classList.add('active');
-                    body.classList.add('menu-open');
-                    this.isMenuOpen = true;
-                    
-                    // إضافة حدث لإغلاق القائمة عند النقر خارجها
-                    setTimeout(() => {
-                        document.addEventListener('click', closeMenuOnClickOutside);
-                    }, 10);
-                };
-                
-                // دالة لإغلاق القائمة
-                const closeMenu = () => {
-                    navMenu.classList.remove('active');
-                    toggle.classList.remove('active');
-                    body.classList.remove('menu-open');
-                    this.isMenuOpen = false;
-                    
-                    // إزالة حدث النقر خارج القائمة
-                    document.removeEventListener('click', closeMenuOnClickOutside);
-                };
-                
-                // دالة لإغلاق القائمة عند النقر خارجها
-                const closeMenuOnClickOutside = (e) => {
-                    // التحقق إذا كان النقر خارج القائمة وزر التبديل
-                    if (!navMenu.contains(e.target) && !toggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                };
-                
-                // إضافة حدث النقر على زر التبديل
-                toggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    
-                    if (this.isMenuOpen) {
-                        closeMenu();
-                    } else {
-                        openMenu();
-                    }
-                });
-                
-                // إغلاق القائمة عند النقر على رابط داخلي
-                const navLinks = navMenu.querySelectorAll('a');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', () => {
-                        closeMenu();
-                    });
-                });
-                
-                // إغلاق القائمة عند تغيير حجم النافذة (إذا فتحت على سطح المكتب)
-                window.addEventListener('resize', () => {
-                    if (window.innerWidth > 768 && this.isMenuOpen) {
-                        closeMenu();
-                    }
-                });
+            if (!this.toggle || !this.navMenu) return;
+
+            // Toggle menu on button click
+            this.toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleMenu();
+            });
+
+            // Close menu on nav link click
+            const navLinks = this.navMenu.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => this.closeMenu());
+            });
+
+            // Close menu on window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768 && this.isMenuOpen) {
+                    this.closeMenu();
+                }
+            });
+
+            // Close menu on outside click
+            document.addEventListener('click', (e) => {
+                if (this.isMenuOpen && 
+                    !this.navMenu.contains(e.target) && 
+                    !this.toggle.contains(e.target)) {
+                    this.closeMenu();
+                }
+            });
+        }
+
+        /**
+         * Toggle mobile menu
+         */
+        toggleMenu() {
+            if (this.isMenuOpen) {
+                this.closeMenu();
+            } else {
+                this.openMenu();
             }
         }
-        
-        addAdminButtonToMobileMenu() {
-            const navMenu = document.querySelector('.nav-menu');
-            if (!navMenu) return;
-            
-            // التحقق إذا كان الزر موجود بالفعل (لتجنب التكرار)
-            if (navMenu.querySelector('.mobile-admin-btn')) return;
-            
-            // إنشاء زر الإدارة للجوال
-            const adminButton = document.createElement('li');
-            adminButton.className = 'nav-item mobile-admin-btn';
-            adminButton.innerHTML = `
-                <a href="../../../admin/pages/login/index.html" class="nav-link premium-link">
-                    <div class="nav-icon-wrapper">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </div>
-                    <span class="nav-text">دخول الإدارة</span>
-                    <span class="nav-underline"></span>
-                </a>
-            `;
-            
-            // إضافة زر الإدارة إلى القائمة
-            navMenu.appendChild(adminButton);
-            
-            // إضافة أنماط CSS للزر في الجوال
-            this.addMobileAdminButtonStyles();
+
+        /**
+         * Open mobile menu
+         */
+        openMenu() {
+            this.navMenu.classList.add('active');
+            this.toggle.classList.add('active');
+            this.body.classList.add('menu-open');
+            this.toggle.setAttribute('aria-expanded', 'true');
+            this.isMenuOpen = true;
         }
-        
-        addMobileAdminButtonStyles() {
-            // إضافة أنماط CSS للزر في الجوال فقط
+
+        /**
+         * Close mobile menu
+         */
+        closeMenu() {
+            this.navMenu.classList.remove('active');
+            this.toggle.classList.remove('active');
+            this.body.classList.remove('menu-open');
+            this.toggle.setAttribute('aria-expanded', 'false');
+            this.isMenuOpen = false;
+        }
+
+        /**
+         * Setup navbar scroll effect
+         */
+        setupNavbarScroll() {
+            if (!this.navbar) return;
+
+            let ticking = false;
+
+            const updateNavbar = () => {
+                const scrolled = window.scrollY > this.scrollThreshold;
+                this.navbar.classList.toggle('scrolled', scrolled);
+                ticking = false;
+            };
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(updateNavbar);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            // Initial check
+            updateNavbar();
+        }
+
+
+        /**
+         * Inject mobile admin button styles
+         */
+        injectMobileAdminStyles() {
+            if (document.getElementById('mobile-admin-styles')) return;
+
             const style = document.createElement('style');
+            style.id = 'mobile-admin-styles';
             style.textContent = `
-                /* زر الإدارة في القائمة الجانبية للجوال */
                 @media (max-width: 768px) {
                     .mobile-admin-btn {
                         margin-top: auto;
@@ -182,59 +206,52 @@
                     }
                 }
                 
-                /* إخفاء زر الإدارة في القائمة الجانبية على سطح المكتب */
                 @media (min-width: 769px) {
                     .mobile-admin-btn {
                         display: none !important;
                     }
                 }
             `;
-            
+
             document.head.appendChild(style);
         }
-        
-        setupAdditionalEffects() {
-            // تأثيرات إضافية عند تحميل الصفحة
-            window.addEventListener('load', () => {
-                // يمكن إضافة أي تأثيرات إضافية هنا
-                console.log('📄 About page fully loaded');
-            });
-            
-            // تحسين أداء اللمس للجوال
-            const touchElements = document.querySelectorAll('button, a, .value-card, .mission-card, .goal');
+
+        /**
+         * Setup touch optimization for mobile
+         */
+        setupTouchOptimization() {
+            const touchElements = document.querySelectorAll(
+                'button, a, .value-card, .mission-card, .goal'
+            );
+
             touchElements.forEach(el => {
                 el.addEventListener('touchstart', function() {
                     this.classList.add('touch-active');
                 }, { passive: true });
-                
+
                 el.addEventListener('touchend', function() {
                     this.classList.remove('touch-active');
                 }, { passive: true });
-            });
-            
-            // منع التكبير المزدوج على الروابط في الجوال
-            const clickableElements = document.querySelectorAll('a, button');
-            clickableElements.forEach(el => {
-                el.addEventListener('touchstart', function(e) {
-                    if (e.touches.length > 1) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
+
+                el.addEventListener('touchcancel', function() {
+                    this.classList.remove('touch-active');
+                }, { passive: true });
             });
         }
     }
-    
-    // تهيئة الصفحة
+
+    /**
+     * Initialize the page
+     */
     function initialize() {
         try {
             window.aboutPage = new AboutPage();
-            console.log('✅ AboutPage initialized successfully');
         } catch (error) {
-            console.error('❌ Failed to initialize AboutPage:', error);
+            console.error('Failed to initialize AboutPage:', error);
         }
     }
-    
-    // تشغيل عند تحميل الصفحة
+
+    // Start initialization
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {

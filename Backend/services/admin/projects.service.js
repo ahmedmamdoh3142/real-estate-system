@@ -1,6 +1,5 @@
-// 📁 Backend/services/admin/projects.service.js - النسخة المصححة كاملة مع إضافة locationLink و contractPdfUrl وإصلاح مشكلة الحذف (معدلة لاستخدام mssql)
+// 📁 Backend/services/admin/projects.service.js - النسخة المصححة كاملة مع إضافة locationLink و contractPdfUrl وإصلاح مشكلة null.toString() (معدلة لاستخدام mssql)
 const sql = require('mssql');
-
 require('dotenv').config();
 
 // الحصول على pool من app.locals (تم تعيينه في server.js)
@@ -58,7 +57,6 @@ class ProjectsService {
      */
     escapeSql(str) {
         if (!str) return '';
-        // استبدال الاقتباسات المفردة لتفادي SQL Injection
         return str.replace(/'/g, "''");
     }
 
@@ -602,7 +600,7 @@ class ProjectsService {
     }
 
     /**
-     * تحديث مشروع مع الصور والميزات - مصححة بالكامل
+     * تحديث مشروع مع الصور والميزات - ✅ مصححة بالكامل لمعالجة القيم null
      */
     async updateProject(id, updateData) {
         const transaction = async () => {
@@ -617,6 +615,9 @@ class ProjectsService {
                 
                 // بناء جملة UPDATE ديناميكياً
                 const updateFields = [];
+                
+                // الحقول التي يمكن أن تحمل قيم NULL بشكل صريح
+                const nullableFields = ['district', 'locationLink', 'bedrooms', 'bathrooms', 'completionDate', 'description'];
                 
                 // إضافة الحقول للتحديث
                 const fieldMappings = {
@@ -643,6 +644,13 @@ class ProjectsService {
                 
                 for (const [field, dbField] of Object.entries(fieldMappings)) {
                     if (updateData[field] !== undefined) {
+                        
+                        // ✅ إذا كانت القيمة null والحقل يسمح بذلك، نضع NULL مباشرة ونتابع
+                        if (updateData[field] === null && nullableFields.includes(field)) {
+                            updateFields.push(`${dbField} = NULL`);
+                            continue;
+                        }
+                        
                         if (field === 'isFeatured') {
                             const value = updateData[field] === true || 
                                         updateData[field] === 'true' || 
@@ -655,15 +663,21 @@ class ProjectsService {
                             const value = parseFloat(updateData[field]);
                             updateFields.push(`${dbField} = ${value}`);
                         } else if (field === 'bedrooms' || field === 'bathrooms') {
-                            const value = updateData[field] ? parseInt(updateData[field]) : 'NULL';
+                            // ✅ معالجة القيم الصفرية والـ null بشكل صحيح
+                            const value = (updateData[field] !== null && updateData[field] !== '') ? parseInt(updateData[field]) : 'NULL';
                             updateFields.push(`${dbField} = ${value}`);
                         } else if (field === 'completionDate') {
                             const value = updateData[field] ? 
                                 `'${new Date(updateData[field]).toISOString().split('T')[0]}'` : 'NULL';
                             updateFields.push(`${dbField} = ${value}`);
                         } else {
-                            const value = this.escapeSql(updateData[field].toString());
-                            updateFields.push(`${dbField} = N'${value}'`);
+                            // ✅ معالجة الحقول النصية: تأكد من أن القيمة ليست null
+                            if (updateData[field] !== null && updateData[field] !== undefined) {
+                                const value = this.escapeSql(updateData[field].toString());
+                                updateFields.push(`${dbField} = N'${value}'`);
+                            } else {
+                                updateFields.push(`${dbField} = NULL`);
+                            }
                         }
                     }
                 }

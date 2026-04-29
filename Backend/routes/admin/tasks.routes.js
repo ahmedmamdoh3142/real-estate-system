@@ -72,7 +72,7 @@ router.get('/followed', tasksController.getFollowed);
 router.get('/archived', tasksController.getArchived);
 router.get('/:id', tasksController.getTaskById);
 
-// ========== مسارات POST / PUT / DELETE ==========
+// ========== مسارات POST / PUT / DELETE للمهام ==========
 router.post('/', tasksController.createTask);
 router.put('/:id', tasksController.updateTask);
 router.delete('/:id', tasksController.deleteTask);
@@ -85,22 +85,28 @@ router.post('/:id/attachments', tasksController.upload, tasksController.addAttac
 // ========== مسارات التقييم ==========
 router.post('/:id/rate', tasksController.rateTask);
 
-// ========== مسارات الطلبات والمشتريات والمواعيد والجزاءات ==========
+// ========== مسارات الطلبات (Requests) ==========
 router.post('/requests', tasksController.createRequest);
 router.put('/requests/:id', tasksController.updateRequest);
+router.patch('/requests/:id/archive', tasksController.archiveRequest);   // أرشفة الطلب
 router.delete('/requests/:id', tasksController.deleteRequest);
 
+// ========== مسارات طلبات الشراء (Purchases) ==========
 router.post('/purchases', tasksController.createPurchaseRequest);
 router.put('/purchases/:id', tasksController.updatePurchaseRequest);
+router.patch('/purchases/:id/archive', tasksController.archivePurchaseRequest); // أرشفة طلب الشراء
 router.delete('/purchases/:id', tasksController.deletePurchaseRequest);
 
+// ========== مسارات المواعيد ==========
 router.post('/appointments', tasksController.createAppointment);
 router.put('/appointments/:id', tasksController.updateAppointment);
 router.delete('/appointments/:id', tasksController.deleteAppointment);
 
+// ========== مسارات الجزاءات التلقائية ==========
 router.delete('/penalties/:id', tasksController.removePenalty);
 router.post('/penalties/generate', tasksController.generatePenalties);
 
+// ========== مسارات الجزاءات اليدوية ==========
 router.post('/manual-penalties', tasksController.createManualPenalty);
 router.delete('/manual-penalties/:id', tasksController.deleteManualPenalty);
 

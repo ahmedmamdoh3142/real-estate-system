@@ -1,4 +1,5 @@
-// 📁 Backend/controllers/admin/projects.controller.js - النسخة المصححة مع إضافة locationLink و contractPdfUrl
+// 📁 Backend/controllers/admin/projects.controller.js - النسخة النهائية المجمعة
+// ✅ تم دعم رفع الصور الحقيقي (multer) + الحقول الجديدة locationLink و contractPdfUrl
 const projectsService = require('../../services/admin/projects.service');
 
 /**
@@ -10,7 +11,6 @@ exports.getAllProjects = async (req, res) => {
     try {
         console.log('📊 جلب جميع المشاريع من قاعدة البيانات الحقيقية (msnodesqlv8)...');
         
-        // استخراج معاملات البحث والفلترة
         const { 
             page = 1, 
             limit = 25, 
@@ -24,7 +24,6 @@ exports.getAllProjects = async (req, res) => {
         
         console.log('🔍 معاملات البحث:', { page, limit, sort, search, status, type, featured, available });
         
-        // تحويل الفلترات إلى مصفوفات
         const filters = {
             search: search || '',
             status: status ? status.split(',') : [],
@@ -240,7 +239,11 @@ exports.createProject = async (req, res) => {
             bedrooms: req.body.bedrooms ? parseInt(req.body.bedrooms) : null,
             bathrooms: req.body.bathrooms ? parseInt(req.body.bathrooms) : null,
             isFeatured: req.body.isFeatured === true || req.body.isFeatured === 'true',
-            createdBy: 1 // في الإنتاج الفعلي: req.user.id
+            createdBy: 1, // في الإنتاج الفعلي: req.user.id
+            
+            // ✅ الحقول الجديدة: locationLink و contractPdfUrl
+            locationLink: req.body.locationLink || null,
+            contractPdfUrl: req.body.contractPdfUrl || null,
         };
         
         // ✅ معالجة الميزات والصور بشكل صحيح
@@ -248,8 +251,8 @@ exports.createProject = async (req, res) => {
             projectData.features = req.body.features.map(feature => ({
                 name: feature.name,
                 value: feature.value,
-                featureName: feature.featureName || feature.name, // ✅ إضافة لتجنب undefined
-                featureValue: feature.featureValue || feature.value, // ✅ إضافة لتجنب undefined
+                featureName: feature.featureName || feature.name,
+                featureValue: feature.featureValue || feature.value,
                 icon: feature.icon,
                 displayOrder: feature.displayOrder
             }));
@@ -268,7 +271,6 @@ exports.createProject = async (req, res) => {
         } else {
             projectData.images = [];
         }
-        
         
         const newProject = await projectsService.createProject(projectData);
         
@@ -319,18 +321,26 @@ exports.updateProject = async (req, res) => {
         const updateData = { ...req.body };
         
         // تحويل القيم الرقمية إذا كانت موجودة
-        if (updateData.totalUnits) updateData.totalUnits = parseInt(updateData.totalUnits);
-        if (updateData.availableUnits) updateData.availableUnits = parseInt(updateData.availableUnits);
-        if (updateData.price) updateData.price = parseFloat(updateData.price);
-        if (updateData.area) updateData.area = parseFloat(updateData.area);
-        if (updateData.bedrooms) updateData.bedrooms = parseInt(updateData.bedrooms);
-        if (updateData.bathrooms) updateData.bathrooms = parseInt(updateData.bathrooms);
+        if (updateData.totalUnits !== undefined) updateData.totalUnits = parseInt(updateData.totalUnits);
+        if (updateData.availableUnits !== undefined) updateData.availableUnits = parseInt(updateData.availableUnits);
+        if (updateData.price !== undefined) updateData.price = parseFloat(updateData.price);
+        if (updateData.area !== undefined) updateData.area = parseFloat(updateData.area);
+        if (updateData.bedrooms !== undefined) updateData.bedrooms = updateData.bedrooms ? parseInt(updateData.bedrooms) : null;
+        if (updateData.bathrooms !== undefined) updateData.bathrooms = updateData.bathrooms ? parseInt(updateData.bathrooms) : null;
         if (updateData.isFeatured !== undefined) {
             updateData.isFeatured = updateData.isFeatured === true || updateData.isFeatured === 'true';
         }
         
+        // ✅ دعم الحقول الجديدة في التحديث
+        if (updateData.locationLink !== undefined) {
+            updateData.locationLink = updateData.locationLink || null;
+        }
+        if (updateData.contractPdfUrl !== undefined) {
+            updateData.contractPdfUrl = updateData.contractPdfUrl || null;
+        }
+        
         // التحقق من أن الوحدات المتاحة أقل من أو تساوي الإجمالية
-        if (updateData.availableUnits && updateData.totalUnits && 
+        if (updateData.availableUnits !== undefined && updateData.totalUnits !== undefined && 
             updateData.availableUnits > updateData.totalUnits) {
             return res.status(400).json({
                 success: false,
@@ -343,8 +353,8 @@ exports.updateProject = async (req, res) => {
             updateData.features = updateData.features.map(feature => ({
                 name: feature.name,
                 value: feature.value,
-                featureName: feature.featureName || feature.name, // ✅ إضافة لتجنب undefined
-                featureValue: feature.featureValue || feature.value, // ✅ إضافة لتجنب undefined
+                featureName: feature.featureName || feature.name,
+                featureValue: feature.featureValue || feature.value,
                 icon: feature.icon,
                 displayOrder: feature.displayOrder
             }));
@@ -402,7 +412,6 @@ exports.deleteProject = async (req, res) => {
             });
         }
         
-        // التحقق من وجود المشروع أولاً
         const existingProject = await projectsService.getProjectById(parseInt(id));
         if (!existingProject) {
             return res.status(404).json({
@@ -564,43 +573,42 @@ exports.addProjectImage = async (req, res) => {
 };
 
 /**
- * @desc    رفع صورة (منفصل)
+ * @desc    رفع صورة فعلياً إلى السيرفر (باستخدام multer)
  * @route   POST /api/admin/projects/upload-image
  * @access  Private (Admin)
  */
 exports.uploadImage = async (req, res) => {
     try {
-        console.log('📤 رفع صورة جديدة (محاكاة) (msnodesqlv8)...');
+        console.log('📤 رفع صورة جديدة...');
         
-        const { filename, mimetype, size, projectId } = req.body;
-        
-        if (!filename) {
+        // ✅ رفع حقيقي: نتوقع وجود req.file بعد معالجة multer
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
-                message: 'اسم الملف مطلوب'
+                message: 'الرجاء اختيار ملف صورة للرفع'
             });
         }
         
-        // إنشاء مسار وهمي للصورة
-        const imageUrl = `/uploads/projects/${Date.now()}-${filename.replace(/[^a-zA-Z0-9.]/g, '-')}`;
+        // تم حفظ الملف فعلياً بواسطة multer في مجلد uploads/projects
+        const imageUrl = `/uploads/projects/${req.file.filename}`;
         
-        console.log(`📁 تم "رفع" الملف: ${filename} إلى: ${imageUrl}`);
+        console.log(`✅ تم رفع الصورة: ${req.file.originalname} -> ${imageUrl}`);
         
         res.status(201).json({
             success: true,
-            message: 'تم رفع الصورة بنجاح (محاكاة)',
+            message: 'تم رفع الصورة بنجاح',
             data: {
                 url: imageUrl,
-                filename: filename,
-                mimetype: mimetype || 'image/jpeg',
-                size: size || 0,
-                uploadedAt: new Date().toISOString(),
-                projectId: projectId || null
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+                uploadedAt: new Date().toISOString()
             }
         });
         
     } catch (error) {
-        console.error('❌ خطأ في uploadImage (msnodesqlv8):', error);
+        console.error('❌ خطأ في uploadImage:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'فشل في رفع الصورة',
