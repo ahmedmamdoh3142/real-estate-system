@@ -6148,4 +6148,45 @@ body.sidebar-open .sidebar-reveal-btn {
 .purchase-card .purchase-archive-btn:hover {
     background: rgba(243,156,18,0.2);
 }
+
+/* لضمان ظهور الأيقونة على الجوال */
+@media (max-width: 768px) {
+    .sidebar-reveal-btn {
+        display: flex !important;
+        /* تأكد من وجود باقي الخصائص */
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        z-index: 1050;
+        background: rgba(30, 30, 30, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-md) 0 0 var(--radius-md);
+        width: 40px;
+        height: 80px;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid var(--color-border);
+        border-right: none;
+        cursor: pointer;
+    }
+}
+
+/* ===== حل مشكلة ظهور رسائل التأكيد خلف المودال ===== */
+/* رفع SweetAlert2 فوق جميع المودالات */
+.swal2-container {
+    z-index: 9999 !important;
+}
+
+/* التأكد من ظهور أي نافذة تأكيد (مثل حذف/أرشفة) فوق مودال التفاصيل */
+.modal.active ~ .swal2-container,
+.swal2-container.swal2-backdrop-show {
+    z-index: 10000 !important;
+}
+
+/* أيضًا لضمان ظهور صناديق التأكيد العادية (window.confirm) */
+.modal.active + div[role="dialog"],
+.modal.active ~ div[role="dialog"] {
+    z-index: 10000 !important;
+}
 /* ===== نهاية التحسينات المطلوبة ===== */

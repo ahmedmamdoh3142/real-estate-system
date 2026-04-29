@@ -6280,6 +6280,14 @@ reattachTaskCardEvents() {
                 });
             }
 
+            // التأكد من ظهور الأيقونة على الجوال
+            if (window.innerWidth <= 768) {
+                const revealBtn = document.querySelector('.sidebar-reveal-btn');
+                if (revealBtn) {
+                    revealBtn.style.display = 'flex';
+                }
+            }
+
             const notificationsBtn = document.getElementById('notifications-btn');
             const notificationsContent = document.getElementById('notifications-content');
             if (notificationsBtn && notificationsContent) {
