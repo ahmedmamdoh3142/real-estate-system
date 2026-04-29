@@ -1497,6 +1497,7 @@
                     this.fetchPenalties(),
                     this.fetchManualPenalties(),
                     this.fetchUsers(),
+                    this.updateTasksUI(), 
                     this.fetchProjects()
                 ]);
 
@@ -1633,81 +1634,160 @@
             assigneeSelect.value = currentValue;
         }
 
-        populateAllAssigneeSelects() {
-            const selects = [
-                'task-assignees', 'request-assignee', 'purchase-assignee', 'task-assignee-edit', 'task-follower-edit'
-            ];
-            selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (!select) return;
-                select.innerHTML = (id === 'request-assignee' || id === 'purchase-assignee' || id === 'task-assignee-edit' || id === 'task-follower-edit') ?
-                    '<option value="">' + this.getTranslation('selectAssignee') + '</option>' : '';
-                for (const userId in this.users) {
-                    const user = this.users[userId];
-                    const option = document.createElement('option');
-                    option.value = userId;
-                    option.textContent = user.name;
-                    select.appendChild(option);
-                }
-            });
+        async populateAllAssigneeSelects() {
+    const selects = [
+        'task-assignees', 'request-assignee', 'purchase-assignee', 'task-assignee-edit', 'task-follower-edit'
+    ];
+    selects.forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        select.innerHTML = (id === 'request-assignee' || id === 'purchase-assignee' || id === 'task-assignee-edit' || id === 'task-follower-edit') ?
+            '<option value="">' + this.getTranslation('selectAssignee') + '</option>' : '';
+        for (const userId in this.users) {
+            const user = this.users[userId];
+            const option = document.createElement('option');
+            option.value = userId;
+            option.textContent = user.name;
+            select.appendChild(option);
+        }
+    });
 
-            const followerEdit = document.getElementById('task-follower-edit');
-            if (followerEdit && !followerEdit.hasAttribute('multiple')) {
-                followerEdit.setAttribute('multiple', 'multiple');
-                followerEdit.style.height = 'auto';
-                followerEdit.style.minHeight = '80px';
-                this.enableMultiSelectWithoutCtrl(followerEdit);
-            }
+    // معالجة خاصة لـ task-follower-edit (للمهام الرئيسية)
+    const followerEdit = document.getElementById('task-follower-edit');
+    if (followerEdit) {
+        followerEdit.setAttribute('multiple', 'multiple');
+        followerEdit.setAttribute('size', '5');
+        followerEdit.style.height = 'auto';
+        followerEdit.style.minHeight = '120px';
+        this.enableMultiSelectWithoutCtrl(followerEdit);
+    }
 
-            const subtaskTemplate = document.getElementById('subtask-row-template');
-            if (subtaskTemplate) {
-                const subtaskAssigneeSelect = subtaskTemplate.querySelector('.subtask-assignee');
-                if (subtaskAssigneeSelect) {
-                    subtaskAssigneeSelect.innerHTML = '<option value="">' + this.getTranslation('selectAssignee') + '</option>';
-                    for (const userId in this.users) {
-                        const user = this.users[userId];
-                        const option = document.createElement('option');
-                        option.value = userId;
-                        option.textContent = user.name;
-                        subtaskAssigneeSelect.appendChild(option);
-                    }
+    // تحويل القالب (subtask-row-template) من select إلى checkboxes
+    const template = document.getElementById('subtask-row-template');
+    if (template) {
+        const oldSelect = template.querySelector('.subtask-follower-multiple');
+        if (oldSelect) {
+            const customContainer = this.createCustomFollowerContainer([]);
+            oldSelect.parentNode.replaceChild(customContainer, oldSelect);
+        }
+    }
+
+    // تحويل أي صفوف موجودة بالفعل
+    this.rebuildAllCustomFollowerSelectors();
+}
+
+rebuildAllCustomFollowerSelectors() {
+    const existingRows = document.querySelectorAll('#subtasks-builder .subtask-row:not(#subtask-row-template)');
+    existingRows.forEach(row => {
+        // إذا كان الصف لا يحتوي على حاوية مخصصة، نحوله
+        if (!row.querySelector('.custom-multi-select-container')) {
+            const oldSelect = row.querySelector('.subtask-follower-multiple');
+            if (oldSelect) {
+                let selectedIds = [];
+                if (oldSelect.options) {
+                    selectedIds = Array.from(oldSelect.selectedOptions).map(opt => parseInt(opt.value));
                 }
-                const subtaskFollowerSelect = subtaskTemplate.querySelector('.subtask-follower-multiple');
-                if (subtaskFollowerSelect) {
-                    subtaskFollowerSelect.innerHTML = '';
-                    for (const userId in this.users) {
-                        const user = this.users[userId];
-                        const option = document.createElement('option');
-                        option.value = userId;
-                        option.textContent = user.name;
-                        subtaskFollowerSelect.appendChild(option);
-                    }
-                    if (!subtaskFollowerSelect.hasAttribute('multiple')) {
-                        subtaskFollowerSelect.setAttribute('multiple', 'multiple');
-                        subtaskFollowerSelect.style.height = 'auto';
-                        subtaskFollowerSelect.style.minHeight = '70px';
-                        this.enableMultiSelectWithoutCtrl(subtaskFollowerSelect);
-                    }
-                }
+                const customContainer = this.createCustomFollowerContainer(selectedIds);
+                oldSelect.parentNode.replaceChild(customContainer, oldSelect);
             }
         }
+    });
+}
+
+createCustomFollowerContainer(selectedIds = []) {
+    const customContainer = document.createElement('div');
+    customContainer.className = 'custom-multi-select-container';
+    customContainer.setAttribute('data-field-type', 'follower');
+
+    // حقل مخفي لتخزين الـ ids المختارة
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.className = 'follower-values';
+    hiddenInput.value = selectedIds.join(',');
+    customContainer.appendChild(hiddenInput);
+
+    const checkboxesDiv = document.createElement('div');
+    checkboxesDiv.className = 'custom-checkboxes-list';
+    checkboxesDiv.style.maxHeight = '120px';
+    checkboxesDiv.style.overflowY = 'auto';
+    checkboxesDiv.style.border = '1px solid var(--color-border)';
+    checkboxesDiv.style.borderRadius = 'var(--radius-md)';
+    checkboxesDiv.style.padding = '8px';
+    checkboxesDiv.style.backgroundColor = 'rgba(203,205,205,0.05)';
+
+    // إضافة جميع المستخدمين كـ checkbox
+    for (const userId in this.users) {
+        const user = this.users[userId];
+        const label = document.createElement('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '8px';
+        label.style.marginBottom = '6px';
+        label.style.cursor = 'pointer';
+        label.style.fontSize = '0.85rem';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = userId;
+        cb.className = 'follower-checkbox';
+        if (selectedIds.includes(parseInt(userId))) {
+            cb.checked = true;
+        }
+
+        const span = document.createElement('span');
+        span.textContent = user.name;
+
+        label.appendChild(cb);
+        label.appendChild(span);
+        checkboxesDiv.appendChild(label);
+    }
+
+    customContainer.appendChild(checkboxesDiv);
+
+    // تحديث الحقل المخفي عند تغيير أي checkbox
+    const updateHidden = () => {
+        const checked = Array.from(customContainer.querySelectorAll('.follower-checkbox:checked')).map(cb => cb.value);
+        hiddenInput.value = checked.join(',');
+        // نطلق حدث change يدويًا للتأكد من أن أي استماعات خارجية تعمل
+        hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    customContainer.querySelectorAll('.follower-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateHidden);
+    });
+
+    return customContainer;
+}
 
         enableMultiSelectWithoutCtrl(selectElement) {
-            if (!selectElement) return;
-            selectElement.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                const option = e.target;
-                if (option.tagName === 'OPTION') {
-                    if (option.selected) {
-                        option.selected = false;
-                    } else {
-                        option.selected = true;
-                    }
-                    const event = new Event('change', { bubbles: true });
-                    selectElement.dispatchEvent(event);
-                }
-            });
+    if (!selectElement) return;
+    
+    // إزالة أي مستمع قديم (تجنب تكرار الإضافة)
+    selectElement.removeEventListener('click', this._multiSelectHandler);
+    
+    // استخدام حدث click بدلاً من mousedown ليكون أكثر استقراراً مع الـ size
+    const handler = (e) => {
+        const option = e.target;
+        if (option.tagName === 'OPTION') {
+            // نمنع السلوك الافتراضي فقط إذا كنا نريد تعديل التحديد يدوياً
+            e.preventDefault();
+            
+            // التبديل بين التحديد وإلغائه
+            if (option.selected) {
+                option.selected = false;
+            } else {
+                option.selected = true;
+            }
+            
+            // إطلاق حدث change لتحديث أي واجهة تعتمد على القيمة
+            const changeEvent = new Event('change', { bubbles: true });
+            selectElement.dispatchEvent(changeEvent);
         }
+    };
+    
+    selectElement.addEventListener('click', handler);
+    // نحتفظ بالمرجع لإزالته لاحقاً إذا احتجنا (اختياري)
+    selectElement._multiSelectHandler = handler;
+}
 
         populateManualPenaltyUserSelect() {
             const select = document.getElementById('manual-penalty-user');
@@ -3476,96 +3556,108 @@ createArchivedPurchaseCard(purchase) {
         }
 
         async createNewTask() {
-            const title = document.getElementById('task-title')?.value;
-            if (!title || title.trim() === '') {
-                this.showNotification(this.getTranslation('enterTaskTitle'), 'error');
-                return;
+    const title = document.getElementById('task-title')?.value;
+    if (!title || title.trim() === '') {
+        this.showNotification(this.getTranslation('enterTaskTitle'), 'error');
+        return;
+    }
+
+    const status = document.getElementById('task-status')?.value || 'todo';
+    const priority = document.getElementById('task-priority')?.value || 'medium';
+    const dueDate = document.getElementById('task-due-date')?.value;
+    const parent = document.getElementById('task-parent-id')?.value;
+    const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
+
+    const subtaskRows = document.querySelectorAll('#subtasks-builder .subtask-row:not(#subtask-row-template)');
+    const subtasks = [];
+    subtaskRows.forEach(row => {
+        const subtaskTitle = row.querySelector('.subtask-title')?.value;
+        const subtaskAssignee = row.querySelector('.subtask-assignee')?.value;
+
+        // قراءة المتابعين من الحاوية المخصصة
+        let followers = [];
+        const customContainer = row.querySelector('.custom-multi-select-container');
+        if (customContainer) {
+            const hiddenInput = customContainer.querySelector('.follower-values');
+            if (hiddenInput && hiddenInput.value) {
+                followers = hiddenInput.value.split(',').filter(v => v).map(v => parseInt(v));
             }
-
-            const status = document.getElementById('task-status')?.value || 'todo';
-            const priority = document.getElementById('task-priority')?.value || 'medium';
-            const dueDate = document.getElementById('task-due-date')?.value;
-            const parent = document.getElementById('task-parent-id')?.value;
-            const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
-            
-            const subtaskRows = document.querySelectorAll('#subtasks-builder .subtask-row:not(#subtask-row-template)');
-            const subtasks = [];
-            subtaskRows.forEach(row => {
-                const subtaskTitle = row.querySelector('.subtask-title')?.value;
-                const subtaskAssignee = row.querySelector('.subtask-assignee')?.value;
-                const subtaskFollowerSelect = row.querySelector('.subtask-follower-multiple');
-                let followers = [];
-                if (subtaskFollowerSelect) {
-                    followers = Array.from(subtaskFollowerSelect.selectedOptions).map(opt => parseInt(opt.value));
-                }
-                if (subtaskTitle && subtaskTitle.trim() !== '' && subtaskAssignee) {
-                    subtasks.push({
-                        title: subtaskTitle,
-                        assignees: [parseInt(subtaskAssignee)],
-                        followers: followers,
-                        description: `${this.getTranslation('subtaskOf')} ${title}`,
-                        priority: priority,
-                        dueDate: dueDate
-                    });
-                }
-            });
-
-            let assignees = [];
-            if (subtasks.length === 0) {
-                const assigneeSelect = document.getElementById('task-assignees');
-                if (assigneeSelect) {
-                    assignees = Array.from(assigneeSelect.selectedOptions).map(opt => parseInt(opt.value));
-                }
-            }
-
-            const taskData = {
-                title: title.trim(),
-                description: '',
-                priority,
-                status,
-                progress: 0,
-                dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-                projectId: null,
-                parentTaskId: parent ? parseInt(parent) : null,
-                assignees: assignees,
-                checklist: [],
-                recurringPattern: null,
-                dependencies: [],
-                reminderDateTime: reminderDateTime ? new Date(reminderDateTime).toISOString() : null
-            };
-
-            try {
-                const result = await this.apiRequest('/api/admin/tasks', {
-                    method: 'POST',
-                    body: taskData
-                });
-                const newTaskId = result.data.taskId;
-                for (const sub of subtasks) {
-                    await this.apiRequest('/api/admin/tasks', {
-                        method: 'POST',
-                        body: {
-                            ...sub,
-                            parentTaskId: newTaskId,
-                            projectId: null,
-                            description: sub.description,
-                            priority: sub.priority,
-                            dueDate: sub.dueDate,
-                            assignees: sub.assignees,
-                            followers: sub.followers,
-                            checklist: [],
-                            recurringPattern: null,
-                            dependencies: []
-                        }
-                    });
-                }
-                await this.refreshAllData();
-                this.closeModal(this.elements.newTaskModal);
-                this.showNotification(this.getTranslation('taskCreated'), 'success');
-            } catch (error) {
-                console.error('Failed to create task:', error);
-                this.showNotification(error.message || 'حدث خطأ أثناء حفظ المهمة', 'error');
+        } else {
+            // Fallback للـ select القديم (في حالة وجوده)
+            const subtaskFollowerSelect = row.querySelector('.subtask-follower-multiple');
+            if (subtaskFollowerSelect) {
+                followers = Array.from(subtaskFollowerSelect.selectedOptions).map(opt => parseInt(opt.value));
             }
         }
+
+        if (subtaskTitle && subtaskTitle.trim() !== '' && subtaskAssignee) {
+            subtasks.push({
+                title: subtaskTitle,
+                assignees: [parseInt(subtaskAssignee)],
+                followers: followers,
+                description: `${this.getTranslation('subtaskOf')} ${title}`,
+                priority: priority,
+                dueDate: dueDate
+            });
+        }
+    });
+
+    let assignees = [];
+    if (subtasks.length === 0) {
+        const assigneeSelect = document.getElementById('task-assignees');
+        if (assigneeSelect) {
+            assignees = Array.from(assigneeSelect.selectedOptions).map(opt => parseInt(opt.value));
+        }
+    }
+
+    const taskData = {
+        title: title.trim(),
+        description: '',
+        priority,
+        status,
+        progress: 0,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        projectId: null,
+        parentTaskId: parent ? parseInt(parent) : null,
+        assignees: assignees,
+        checklist: [],
+        recurringPattern: null,
+        dependencies: [],
+        reminderDateTime: reminderDateTime ? new Date(reminderDateTime).toISOString() : null
+    };
+
+    try {
+        const result = await this.apiRequest('/api/admin/tasks', {
+            method: 'POST',
+            body: taskData
+        });
+        const newTaskId = result.data.taskId;
+        for (const sub of subtasks) {
+            await this.apiRequest('/api/admin/tasks', {
+                method: 'POST',
+                body: {
+                    ...sub,
+                    parentTaskId: newTaskId,
+                    projectId: null,
+                    description: sub.description,
+                    priority: sub.priority,
+                    dueDate: sub.dueDate,
+                    assignees: sub.assignees,
+                    followers: sub.followers,
+                    checklist: [],
+                    recurringPattern: null,
+                    dependencies: []
+                }
+            });
+        }
+        await this.refreshAllData();
+        this.closeModal(this.elements.newTaskModal);
+        this.showNotification(this.getTranslation('taskCreated'), 'success');
+    } catch (error) {
+        console.error('Failed to create task:', error);
+        this.showNotification(error.message || 'حدث خطأ أثناء حفظ المهمة', 'error');
+    }
+}
 
         async updateTaskStatus(taskId, newStatus) {
             try {
@@ -3888,7 +3980,6 @@ reattachTaskCardEvents() {
         if (!id) return;
         const entityType = card.dataset.entityType;
         
-        // إذا كانت البطاقة من نوع طلب (في الأرشيف) نربط أحداث الطلبات
         if (entityType === 'request') {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.request-archive-btn')) return;
@@ -3896,7 +3987,6 @@ reattachTaskCardEvents() {
             });
             return;
         }
-        // إذا كانت البطاقة من نوع شراء (في الأرشيف)
         if (entityType === 'purchase') {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.purchase-archive-btn')) return;
@@ -3905,22 +3995,35 @@ reattachTaskCardEvents() {
             return;
         }
         
-        // باقي الكود للمهام العادية (لم يتغير)
+        // ------------------- تحسين زر القائمة -------------------
         const menuBtn = card.querySelector('.task-menu-btn');
         if (menuBtn) {
-            menuBtn.removeEventListener('click', this.handleCardMenuClick);
-            menuBtn.addEventListener('click', (e) => {
+            // إزالة أي مستمع سابق
+            const oldHandler = menuBtn._clickHandler;
+            if (oldHandler) menuBtn.removeEventListener('click', oldHandler);
+            
+            const clickHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
+                if (!dropdown) return;
+                // إغلاق القوائم الأخرى أولاً
+                document.querySelectorAll('.card-dropdown.show').forEach(d => {
+                    if (d !== dropdown) d.classList.remove('show');
+                });
+                // تبديل حالة القائمة الحالية
                 dropdown.classList.toggle('show');
-            });
+            };
+            menuBtn.addEventListener('click', clickHandler);
+            menuBtn._clickHandler = clickHandler;
         }
-
+        
+        // ------------------- زر الحذف مع إزالة فورية للبطاقة -------------------
         const deleteBtn = card.querySelector('.delete-task');
         if (deleteBtn) {
             deleteBtn.removeEventListener('click', this.handleDeleteTask);
             deleteBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const task = this.tasks.find(t => t.id == id);
                 Swal.fire({
                     title: this.getTranslation('deleteConfirm'),
@@ -3935,6 +4038,9 @@ reattachTaskCardEvents() {
                     if (result.isConfirmed) {
                         try {
                             await this.apiRequest(`/api/admin/tasks/${id}`, { method: 'DELETE' });
+                            // إزالة البطاقة مباشرة من DOM
+                            card.remove();
+                            // تحديث البيانات من الخادم لضمان المزامنة
                             await this.refreshAllData();
                             this.showNotification(this.getTranslation('taskDeleted'), 'success');
                         } catch (error) {
@@ -3945,53 +4051,56 @@ reattachTaskCardEvents() {
                 });
             });
         }
-
+        
+        // ------------------- زر الأرشفة مع إزالة فورية -------------------
         const archiveBtn = card.querySelector('.archive-task');
         if (archiveBtn) {
             archiveBtn.removeEventListener('click', this.handleArchiveTask);
             archiveBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const task = this.tasks.find(t => t.id == id);
                 await this.archiveTask(id, task?.status, task?.title);
+                // بعد الأرشفة، قم بإزالة البطاقة فوراً
+                card.remove();
             });
         }
-
+        
+        // باقي الأحداث كما هي (تعديل، تحديث التقدم، التعليقات...)
         const editBtn = card.querySelector('.edit-task');
         if (editBtn) {
             editBtn.removeEventListener('click', this.handleEditSubtask);
             editBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 const taskId = editBtn.dataset.taskId || id;
-                if (taskId) {
-                    await this.editSubtask(taskId);
-                }
+                if (taskId) await this.editSubtask(taskId);
             });
         }
-
+        
         const progressBtn = card.querySelector('.btn-update-progress');
         if (progressBtn) {
             progressBtn.removeEventListener('click', this.handleUpdateProgress);
             progressBtn.addEventListener('click', () => this.openUpdateProgressModal(id));
         }
-
+        
         const commentsBtn = card.querySelector('.task-comments');
         if (commentsBtn) {
             commentsBtn.removeEventListener('click', this.handleComments);
             commentsBtn.addEventListener('click', () => this.openCommentsModal(id));
         }
-
+        
         const attachmentsBtn = card.querySelector('.task-attachments');
         if (attachmentsBtn) {
             attachmentsBtn.removeEventListener('click', this.handleAttachments);
             attachmentsBtn.addEventListener('click', () => this.openAttachmentsModal(id));
         }
-
+        
         const subtasksBtn = card.querySelector('.task-subtasks');
         if (subtasksBtn) {
             subtasksBtn.removeEventListener('click', this.handleSubtasks);
             subtasksBtn.addEventListener('click', () => this.showSubtasks(id));
         }
-
+        
         const parentLink = card.querySelector('.parent-task-link');
         if (parentLink) {
             parentLink.removeEventListener('click', this.handleParentClick);
@@ -4001,19 +4110,17 @@ reattachTaskCardEvents() {
                 if (parentId) this.openTaskDetails(parentId);
             });
         }
-
+        
         const startBtn = card.querySelector('.task-start-btn');
         if (startBtn) {
             startBtn.removeEventListener('click', this.handleStartTask);
             startBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const taskId = startBtn.dataset.taskId;
-                if (taskId) {
-                    await this.startTask(taskId);
-                }
+                if (taskId) await this.startTask(taskId);
             });
         }
-
+        
         const followIndicator = card.querySelector('.task-follow-indicator');
         if (followIndicator) {
             followIndicator.removeEventListener('click', this.handleFollowClick);
@@ -4023,19 +4130,23 @@ reattachTaskCardEvents() {
                 if (taskId) this.openTaskDetails(taskId);
             });
         }
-
+        
+        // فتح التفاصيل عند النقر على البطاقة (مع تجاهل النقر على الأزرار)
         card.removeEventListener('click', this.handleCardClick);
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item, .btn-update-progress, .task-comments, .task-attachments, .task-subtasks, .task-start-btn, .parent-task-link, .edit-task, .task-follow-indicator')) return;
+            if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item, .btn-update-progress, .task-comments, .task-attachments, .task-subtasks, .task-start-btn, .parent-task-link, .edit-task, .task-follow-indicator, .delete-task, .archive-task')) return;
             this.openTaskDetails(id);
         });
     });
-
-    document.addEventListener('click', (e) => {
+    
+    // إغلاق القوائم عند النقر في أي مكان خارجها
+    document.removeEventListener('click', this.closeAllDropdowns);
+    this.closeAllDropdowns = (e) => {
         if (!e.target.closest('.task-menu-btn')) {
             document.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
         }
-    });
+    };
+    document.addEventListener('click', this.closeAllDropdowns);
 }
 
         async startTask(taskId) {
@@ -4475,76 +4586,90 @@ reattachTaskCardEvents() {
                 rows.forEach(r => r.remove());
             }
 
-            const addSubtaskRowBtn = document.getElementById('add-subtask-row');
-            if (addSubtaskRowBtn) {
-                const newAddBtn = addSubtaskRowBtn.cloneNode(true);
-                addSubtaskRowBtn.parentNode.replaceChild(newAddBtn, addSubtaskRowBtn);
-                newAddBtn.addEventListener('click', () => {
-                    const builderContainer = document.getElementById('subtasks-builder');
-                    const template = document.getElementById('subtask-row-template');
-                    if (builderContainer && template) {
-                        const newRow = template.cloneNode(true);
-                        newRow.id = '';
-                        newRow.style.display = 'flex';
-                        const titleInput = newRow.querySelector('.subtask-title');
-                        const assigneeSelect = newRow.querySelector('.subtask-assignee');
-                        const followerSelect = newRow.querySelector('.subtask-follower-multiple');
-                        if (titleInput) titleInput.value = '';
-                        if (assigneeSelect) assigneeSelect.selectedIndex = 0;
-                        if (followerSelect) {
-                            Array.from(followerSelect.options).forEach(opt => opt.selected = false);
-                        }
-                        const removeBtn = newRow.querySelector('.remove-subtask');
-                        if (removeBtn) {
-                            removeBtn.addEventListener('click', (e) => {
-                                e.target.closest('.subtask-row').remove();
-                            });
-                        }
-                        if (assigneeSelect) {
-                            assigneeSelect.innerHTML = '<option value="">' + this.getTranslation('selectAssignee') + '</option>';
-                            for (const userId in this.users) {
-                                const user = this.users[userId];
-                                const option = document.createElement('option');
-                                option.value = userId;
-                                option.textContent = user.name;
-                                assigneeSelect.appendChild(option);
-                            }
-                        }
-                        if (followerSelect) {
-                            followerSelect.innerHTML = '';
-                            for (const userId in this.users) {
-                                const user = this.users[userId];
-                                const option = document.createElement('option');
-                                option.value = userId;
-                                option.textContent = user.name;
-                                followerSelect.appendChild(option);
-                            }
-                            if (!followerSelect.hasAttribute('multiple')) {
-                                followerSelect.setAttribute('multiple', 'multiple');
-                                followerSelect.style.height = 'auto';
-                                followerSelect.style.minHeight = '70px';
-                                this.enableMultiSelectWithoutCtrl(followerSelect);
-                            }
-                        }
-                        
-                        const voiceWrapper = newRow.querySelector('.input-with-voice');
-                        if (voiceWrapper) {
-                            const micBtn = voiceWrapper.querySelector('.voice-input-btn');
-                            if (micBtn) {
-                                micBtn.addEventListener('click', (e) => {
-                                    e.preventDefault();
-                                    const subtaskTitleInput = voiceWrapper.querySelector('.subtask-title');
-                                    if (subtaskTitleInput) {
-                                        this.startVoiceInput(subtaskTitleInput, micBtn);
-                                    }
-                                });
-                            }
-                        }
-                        
-                        builderContainer.insertBefore(newRow, newAddBtn);
-                    }
-                });
+            // داخل openNewTaskModal، بعد إعداد باقي العناصر
+// داخل openNewTaskModal، بعد إعداد باقي العناصر
+const addSubtaskRowBtn = document.getElementById('add-subtask-row');
+if (addSubtaskRowBtn) {
+    const newAddBtn = addSubtaskRowBtn.cloneNode(true);
+    addSubtaskRowBtn.parentNode.replaceChild(newAddBtn, addSubtaskRowBtn);
+    newAddBtn.addEventListener('click', () => {
+        const builderContainer = document.getElementById('subtasks-builder');
+        const template = document.getElementById('subtask-row-template');
+        if (builderContainer && template) {
+            const newRow = template.cloneNode(true);
+            newRow.id = '';
+            newRow.style.display = 'flex';
+
+            // إعادة تعبئة حقول الصف
+            const titleInput = newRow.querySelector('.subtask-title');
+            const assigneeSelect = newRow.querySelector('.subtask-assignee');
+            if (titleInput) titleInput.value = '';
+            if (assigneeSelect) assigneeSelect.selectedIndex = 0;
+
+            // **التغيير الجوهري**: إزالة أي حاوية متابعين قديمة (سواء كانت select أو custom) واستبدالها بحاوية فارغة جديدة
+            const existingContainer = newRow.querySelector('.custom-multi-select-container');
+            const existingSelect = newRow.querySelector('.subtask-follower-multiple');
+            if (existingContainer) {
+                existingContainer.remove();
             }
+            if (existingSelect) {
+                existingSelect.remove();
+            }
+            // إنشاء حاوية جديدة فارغة
+            const freshContainer = this.createCustomFollowerContainer([]);
+            // إضافة الحاوية في نفس مكان الـ select السابق (عادة داخل .subtask-follower-wrapper أو مباشرة)
+            const wrapper = newRow.querySelector('.subtask-follower-wrapper');
+            if (wrapper) {
+                wrapper.appendChild(freshContainer);
+            } else {
+                newRow.appendChild(freshContainer);
+            }
+
+            // إعادة تعبئة قائمة المسؤول (assignee)
+            if (assigneeSelect) {
+                assigneeSelect.innerHTML = '<option value="">' + this.getTranslation('selectAssignee') + '</option>';
+                for (const userId in this.users) {
+                    const user = this.users[userId];
+                    const option = document.createElement('option');
+                    option.value = userId;
+                    option.textContent = user.name;
+                    assigneeSelect.appendChild(option);
+                }
+            }
+
+            // زر الحذف
+            const removeBtn = newRow.querySelector('.remove-subtask');
+            if (removeBtn) {
+                removeBtn.removeEventListener('click', this._removeSubtaskHandler);
+                const removeHandler = (e) => {
+                    e.target.closest('.subtask-row').remove();
+                };
+                removeBtn.addEventListener('click', removeHandler);
+                removeBtn._removeSubtaskHandler = removeHandler;
+            }
+
+            // زر الميكروفون (اختياري)
+            const voiceWrapper = newRow.querySelector('.input-with-voice');
+            if (voiceWrapper) {
+                const micBtn = voiceWrapper.querySelector('.voice-input-btn');
+                if (micBtn) {
+                    micBtn.removeEventListener('click', this._voiceSubtaskHandler);
+                    const voiceHandler = (e) => {
+                        e.preventDefault();
+                        const subtaskTitleInput = voiceWrapper.querySelector('.subtask-title');
+                        if (subtaskTitleInput) {
+                            this.startVoiceInput(subtaskTitleInput, micBtn);
+                        }
+                    };
+                    micBtn.addEventListener('click', voiceHandler);
+                    micBtn._voiceSubtaskHandler = voiceHandler;
+                }
+            }
+
+            builderContainer.insertBefore(newRow, newAddBtn);
+        }
+    });
+}
 
             const mainTaskVoiceBtn = document.querySelector('#task-title ~ .voice-input-btn');
             if (mainTaskVoiceBtn) {
@@ -6281,7 +6406,7 @@ reattachTaskCardEvents() {
             }
 
             // التأكد من ظهور الأيقونة على الجوال
-            if (window.innerWidth <= 1024) {
+            if (window.innerWidth <= 768) {
                 const revealBtn = document.querySelector('.sidebar-reveal-btn');
                 if (revealBtn) {
                     revealBtn.style.display = 'flex';
