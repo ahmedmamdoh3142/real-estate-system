@@ -6199,4 +6199,15 @@ body.sidebar-open .sidebar-reveal-btn {
 .modal.active ~ div[role="dialog"] {
     z-index: 10000 !important;
 }
+
+/* ===== حل مشكلة ظهور المودالات الثانوية (تعليقات، مرفقات، تحديث النسبة) فوق مودال التفاصيل ===== */
+#comments-modal,
+#attachments-modal,
+#update-progress-modal,
+#calendar-quick-view,
+#appointment-day-modal,
+#rate-task-modal,
+#remove-penalty-modal {
+    z-index: 2200 !important; /* أعلى من z-index لمودال تفاصيل المهمة (2100) */
+}
 /* ===== نهاية التحسينات المطلوبة ===== */
