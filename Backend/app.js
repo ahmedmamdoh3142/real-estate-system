@@ -1,64 +1,22 @@
 // Backend/app.js - النسخة المحسنة مع APIs حقيقية (معدلة لـ mssql ومتوافقة مع Safari)
 const express = require('express');
 const path = require('path');
+const corsMiddleware = require('./middleware/cors.middleware'); //  تم تحميل الميدلوير الجديد
 const app = express();
 
 console.log('🚀 بدء تشغيل نظام إدارة العقارات - الإصدار الإنتاجي الكامل (mssql/tedious)');
 
-// ==================== إعدادات CORS المحسنة (متوافقة مع Safari وجميع المتصفحات) ====================
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
+// ==================== إعدادات CORS من خلال الميدلوير المنفصل ====================
+app.use(corsMiddleware);
 
-    // نحدد الأصول المسموحة بشكل صريح (للاستخدام المحلي)
-    const allowedOrigins = [
-        'http://localhost',
-        'http://127.0.0.1',
-        'http://localhost:3001',
-        'http://127.0.0.1:3001',
-        'file://'   // لملفات HTML المفتوحة محلياً
-    ];
-
-    // إذا كان الطلب من أصل معروف نعيده، وإلا نفتح لجميع الأصول (مع أمان credentials)
-    if (origin && allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-    } else {
-        // في حال لم يرسل أصل (مثل الطلبات من نفس النطاق أو من file:// بدون origin) نسمح للكل
-        res.header('Access-Control-Allow-Origin', origin || '*');
-    }
-
-    // 🔧 إصلاح مشكلة Safari: لا نرسل `Allow-Credentials` إلا إذا كان الطلب يتطلبها.
-    // إذا كان تطبيقك لا يستخدم cookies أو HTTP authentication عبر النطاقات،
-    // الأفضل عدم إرسال الهيدر نهائياً لتجنب رفض Safari.
-    // (تمت إزالته بالكامل هنا)
-    // res.header('Access-Control-Allow-Credentials', 'true');  // <-- محذوف
-
-    // الطرق المسموحة
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
-    // الهيدرات المسموحة
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, x-access-token, X-API-Key');
-
-    // مدة تخزين نتائج الـ preflight (24 ساعة)
-    res.header('Access-Control-Max-Age', '86400');
-
-    // التعامل مع طلبات OPTIONS (preflight)
-    if (req.method === 'OPTIONS') {
-        console.log('🔄 معالجة طلب Preflight:', req.originalUrl);
-        // نرد فقط بالهيدرات دون محتوى (متوافق مع الجميع)
-        return res.status(204).end();
-    }
-
-    console.log(`📡 ${req.method} ${req.originalUrl}`);
-    next();
-});
-
-// ✅ خدمة الملفات الثابتة للصور المرفوعة
+// ✅ خدمة الملفات الثابتة للصور المرفوعة (فعّلها إن احتجت)
 // app.use('/uploads', express.static('/var/www/real-estate/uploads'));
 
 // Middleware لمعالجة JSON
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Middleware للتدوين
+// Middleware للتدوين (logging)
 app.use((req, res, next) => {
     console.log(`📝 ${new Date().toLocaleTimeString('ar-SA')} - ${req.method} ${req.originalUrl}`);
     if (req.body && Object.keys(req.body).length > 0) {
@@ -75,7 +33,7 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toLocaleString('ar-SA'),
         version: '5.0.0 - Complete Production System (mssql)',
         database: 'Connected to SQL Server using mssql/tedious',
-        cors: 'Safari-compatible',
+        cors: 'Safari-compatible (dedicated middleware)',
         endpoints: {
             public: {
                 home: '/api/public/home/*',

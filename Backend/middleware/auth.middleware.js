@@ -1,20 +1,10 @@
 // Backend/middleware/auth.middleware.js
 const jwt = require('jsonwebtoken');
 const sql = require('mssql');
-
 require('dotenv').config();
 
-// الحصول على pool من app.locals (تم تعيينه في server.js)
-function getPool() {
-    const app = require('../app');
-    if (!app.locals.dbPool) {
-        throw new Error('قاعدة البيانات غير متصلة');
-    }
-    return app.locals.dbPool;
-}
-
-async function getUserById(userId) {
-    const pool = getPool();
+// سوف نستخدم req.app.locals.dbPool بدلاً من require('../app')
+async function getUserById(pool, userId) {
     const result = await pool.request()
         .input('userId', sql.Int, parseInt(userId))
         .query(`SELECT id, username, fullName, email, phone, role FROM Users WHERE id = @userId`);
@@ -43,7 +33,14 @@ module.exports = async function authMiddleware(req, res, next) {
             return res.status(401).json({ success: false, message: 'توكن غير صالح' });
         }
 
-        const user = await getUserById(userId);
+        // الحصول على pool من تطبيق Express نفسه (بدون require دائري)
+        const pool = req.app.locals.dbPool;
+        if (!pool) {
+            console.error('❌ Database pool not available');
+            return res.status(500).json({ success: false, message: 'قاعدة البيانات غير متصلة' });
+        }
+
+        const user = await getUserById(pool, userId);
         if (!user) {
             return res.status(401).json({ success: false, message: 'المستخدم غير موجود' });
         }

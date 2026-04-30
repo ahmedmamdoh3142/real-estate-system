@@ -40,10 +40,10 @@ let pool = null;
 async function connectToDatabase() {
     try {
         pool = await sql.connect(dbConfig);
-        global.dbPool = pool;   // <-- أضف هذا السطر
-        console.log('✅ قاعدة البيانات متصلة بنجاح!');
+        global.dbPool = pool;                // <-- يبقى للتوافق مع الأجزاء القديمة
+        app.locals.dbPool = pool;            // <-- هذا المطلوب لـ Middleware الجديد
         app.locals.dbConnected = true;
-        app.locals.dbPool = pool;
+        console.log('✅ قاعدة البيانات متصلة بنجاح!');
 
         // جلب إحصائيات سريعة
         try {

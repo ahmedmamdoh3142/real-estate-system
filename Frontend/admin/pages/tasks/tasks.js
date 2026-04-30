@@ -3789,7 +3789,13 @@ createArchivedPurchaseCard(purchase) {
 
         async archiveTask(taskId, taskStatus, taskTitle) {
     const task = this.tasks.find(t => t.id == taskId);
-    if (task && task.status === 'done' && !task.rating && task.type !== 'sent') {
+    if (!task) return;
+
+    // شرط التقييم للمهام المستلمة فقط: إذا كانت المهمة مستلمة ومكتملة (done) وبدون تقييم
+    const isReceivedAndDoneWithoutRating = (task.type === 'received' && task.status === 'done' && !task.rating);
+    
+    // إذا لم يكن المستخدم مشرفاً عاماً وكانت المهمة مستلمة ومكتملة بدون تقييم → منع الأرشفة
+    if (isReceivedAndDoneWithoutRating && this.currentUser.role !== 'مشرف_عام') {
         Swal.fire({
             title: this.getTranslation('rateTask'),
             html: `<div style="text-align:right">هذه المهمة مكتملة ولكن لم يتم تقييمها.<br>يرجى تقييم المهمة أولاً قبل أرشفتها.</div>`,
@@ -3809,6 +3815,7 @@ createArchivedPurchaseCard(purchase) {
         return;
     }
 
+    // إذا كان المستخدم مشرفاً عاماً أو المهمة لا تحتاج تقييماً → متابعة الأرشفة بشكل طبيعي
     Swal.fire({
         title: this.getTranslation('archiveConfirm'),
         html: `<div style="text-align:right">هل تريد أرشفة المهمة "<strong>${this.escapeHtml(taskTitle || '')}</strong>"؟</div>`,
