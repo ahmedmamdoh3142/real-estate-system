@@ -6150,7 +6150,7 @@ body.sidebar-open .sidebar-reveal-btn {
 }
 
 /* لضمان ظهور الأيقونة على الجوال */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .sidebar-reveal-btn {
         display: flex !important;
         /* تأكد من وجود باقي الخصائص */
@@ -6170,16 +6170,6 @@ body.sidebar-open .sidebar-reveal-btn {
         border-right: none;
         cursor: pointer;
     }
-}
-
-/* إظهار أيقونة السايد بار في كل الأحوال ما لم يكن السايد بار مفتوحاً */
-.sidebar-reveal-btn {
-    display: flex !important;
-}
-
-/* إخفاؤها فقط عندما يكون السايد بار مفتوحاً */
-.dashboard-sidebar.active ~ .sidebar-reveal-btn {
-    display: none !important;
 }
 
 /* ===== حل مشكلة ظهور رسائل التأكيد خلف المودال ===== */
@@ -6209,5 +6199,50 @@ body.sidebar-open .sidebar-reveal-btn {
 #rate-task-modal,
 #remove-penalty-modal {
     z-index: 2200 !important; /* أعلى من z-index لمودال تفاصيل المهمة (2100) */
+}
+
+/* تحسين SweetAlert2 للدارك مود */
+.swal2-popup {
+    background: rgba(26, 26, 26, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text-primary) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-large) !important;
+}
+.swal2-title, .swal2-html-container {
+    color: var(--color-text-primary) !important;
+}
+.swal2-confirm, .swal2-cancel {
+    border-radius: var(--radius-md) !important;
+    font-weight: 600 !important;
+}
+.swal2-confirm {
+    background: var(--gradient-primary) !important;
+    color: var(--color-bg-primary) !important;
+}
+.swal2-cancel {
+    background: rgba(203, 205, 205, 0.15) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text-secondary) !important;
+}
+.swal2-icon {
+    transform: scale(0.9);
+}
+.swal2-timer-progress-bar {
+    background: var(--color-primary) !important;
+}
+
+/* مودال شرح المهمة */
+#description-modal .description-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1rem;
+    background: rgba(203, 205, 205, 0.05);
+    border-radius: var(--radius-md);
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
 }
 /* ===== نهاية التحسينات المطلوبة ===== */

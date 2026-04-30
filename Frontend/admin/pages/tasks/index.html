@@ -925,107 +925,120 @@
     </div>
 
     <div class="modal" id="new-task-modal">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" data-i18n="createNewTask">إنشاء مهمة جديدة</h3>
-                    <button class="modal-close" id="new-task-modal-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="new-task-form">
-                        <input type="hidden" id="task-parent-id" value="">
-                        <input type="hidden" id="edit-task-id" value="">
-                        
-                        <div class="form-group">
-                            <label><span data-i18n="taskTitle">عنوان المهمة</span> <span class="required">*</span></label>
-                            <div class="input-with-voice">
-                                <input type="text" class="form-control" id="task-title" placeholder="أدخل عنوان المهمة" required data-i18n-placeholder="taskTitlePlaceholder">
-                                <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="task-title"><i class="fas fa-microphone"></i></button>
-                            </div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="createNewTask">إنشاء مهمة جديدة</h3>
+                <button class="modal-close" id="new-task-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="new-task-form">
+                    <input type="hidden" id="task-parent-id" value="">
+                    <input type="hidden" id="edit-task-id" value="">
+                    
+                    <div class="form-group">
+                        <label><span data-i18n="taskTitle">عنوان المهمة</span> <span class="required">*</span></label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-control" id="task-title" placeholder="أدخل عنوان المهمة" required data-i18n-placeholder="taskTitlePlaceholder">
+                            <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="task-title"><i class="fas fa-microphone"></i></button>
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label data-i18n="status">الحالة</label>
-                                <select class="form-control" id="task-status">
-                                    <option value="todo" data-i18n="todo">بانتظار</option>
-                                    <option value="in-progress" data-i18n="inProgress">قيد التنفيذ</option>
-                                    <option value="review" data-i18n="review">مراجعة</option>
-                                    <option value="done" data-i18n="done">مكتمل</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label data-i18n="priority">الأولوية</label>
-                                <select class="form-control" id="task-priority">
-                                    <option value="low" data-i18n="low">منخفضة</option>
-                                    <option value="medium" selected data-i18n="medium">متوسطة</option>
-                                    <option value="high" data-i18n="high">مرتفعة</option>
-                                    <option value="urgent" data-i18n="urgent">عاجلة</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label data-i18n="dueDate">تاريخ الاستحقاق</label>
-                                <input type="date" class="form-control" id="task-due-date">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
-                                <input type="datetime-local" class="form-control" id="task-reminder-datetime">
-                            </div>
-                        </div>
+                    </div>
 
-                        <div class="form-group" id="edit-assignee-group" style="display: none;">
-                            <label data-i18n="assignee">المسؤول (الشخص المرسل إليه)</label>
-                            <select class="form-control" id="task-assignee-edit">
-                                <option value="">اختر مسؤولاً</option>
+                    <!-- حقل شرح المهمة الرئيسية (جديد) -->
+                    <div class="form-group">
+                        <label data-i18n="description">شرح المهمة</label>
+                        <div class="input-with-voice">
+                            <textarea class="form-control" id="task-description" rows="3" placeholder="أضف شرحاً تفصيلياً للمهمة..." data-i18n-placeholder="descriptionPlaceholder"></textarea>
+                            <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target="task-description"><i class="fas fa-microphone"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label data-i18n="status">الحالة</label>
+                            <select class="form-control" id="task-status">
+                                <option value="todo" data-i18n="todo">بانتظار</option>
+                                <option value="in-progress" data-i18n="inProgress">قيد التنفيذ</option>
+                                <option value="review" data-i18n="review">مراجعة</option>
+                                <option value="done" data-i18n="done">مكتمل</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group" id="edit-follower-group" style="display: none;">
-                            <label data-i18n="follower">المتابع</label>
-                            <select class="form-control" id="task-follower-edit">
-                                <option value="">اختر متابعاً</option>
+                        <div class="form-group col-md-6">
+                            <label data-i18n="priority">الأولوية</label>
+                            <select class="form-control" id="task-priority">
+                                <option value="low" data-i18n="low">منخفضة</option>
+                                <option value="medium" selected data-i18n="medium">متوسطة</option>
+                                <option value="high" data-i18n="high">مرتفعة</option>
+                                <option value="urgent" data-i18n="urgent">عاجلة</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group">
-                            <label data-i18n="subtasks">المهام الفرعية (اختياري)</label>
-                            <div class="subtasks-builder" id="subtasks-builder">
-                                <div class="subtask-row" id="subtask-row-template" style="display: none;">
-                                    <div class="input-with-voice subtask-voice">
-                                        <input type="text" class="form-control form-control-sm subtask-title" placeholder="عنوان المهمة الفرعية">
-                                        <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target-subtask><i class="fas fa-microphone"></i></button>
-                                    </div>
-                                    <select class="form-control form-control-sm subtask-assignee">
-                                        <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
-                                        <option value="1">أحمد محمد</option>
-                                        <option value="2">سارا العلي</option>
-                                        <option value="3">خالد الحربي</option>
-                                        <option value="4">فاطمة السعد</option>
-                                        <option value="5">عمر الحمادي</option>
-                                    </select>
-                                    <select class="form-control form-control-sm subtask-follower-multiple" multiple size="3">
-                                        <option value="" data-i18n="selectFollower">اختر متابعاً</option>
-                                    </select>
-                                    <button type="button" class="btn-icon remove-subtask"><i class="fas fa-times"></i></button>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label data-i18n="dueDate">تاريخ الاستحقاق</label>
+                            <input type="date" class="form-control" id="task-due-date">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
+                            <input type="datetime-local" class="form-control" id="task-reminder-datetime">
+                        </div>
+                    </div>
+
+                    <!-- حقل المسؤول (يظهر فقط في وضع التعديل) -->
+                    <div class="form-group" id="edit-assignee-group" style="display: none;">
+                        <label data-i18n="assignee">المسؤول (الشخص المرسل إليه)</label>
+                        <select class="form-control" id="task-assignee-edit">
+                            <option value="">اختر مسؤولاً</option>
+                        </select>
+                    </div>
+                    
+                    <!-- حقل المتابع (select تقليدي سيتم إخفاؤه واستبداله بـ checkboxes) -->
+                    <div class="form-group" id="edit-follower-group" style="display: none;">
+                        <label data-i18n="follower">المتابع</label>
+                        <select class="form-control" id="task-follower-edit" multiple size="3">
+                            <!-- سيتم تعبئته من JS، لكن سنخفيه ونستخدم الحاوية المخصصة بدلاً منه -->
+                        </select>
+                        <!-- حاوية مخصصة لعرض المتابعين على شكل checkboxes (ستظهر عند التعديل) -->
+                        <div id="task-follower-edit-container"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label data-i18n="subtasks">المهام الفرعية (اختياري)</label>
+                        <div class="subtasks-builder" id="subtasks-builder">
+                            <div class="subtask-row" id="subtask-row-template" style="display: none;">
+                                <div class="input-with-voice subtask-voice">
+                                    <input type="text" class="form-control form-control-sm subtask-title" placeholder="عنوان المهمة الفرعية">
+                                    <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target-subtask><i class="fas fa-microphone"></i></button>
                                 </div>
-                                <button type="button" class="btn btn-outline btn-sm" id="add-subtask-row"><i class="fas fa-plus"></i> <span data-i18n="addSubtask">إضافة مهمة فرعية</span></button>
+                                <!-- حقل شرح المهمة الفرعية -->
+                                <div class="input-with-voice subtask-desc-voice">
+                                    <input type="text" class="form-control form-control-sm subtask-description" placeholder="شرح إضافي (اختياري)">
+                                    <button type="button" class="voice-input-btn" title="إدخال صوتي للشرح" data-target-subtask-desc><i class="fas fa-microphone"></i></button>
+                                </div>
+                                <select class="form-control form-control-sm subtask-assignee">
+                                    <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
+                                </select>
+                                <!-- حاوية المتابعين (سيتم استبدالها بـ checkboxes عبر createCustomFollowerContainer) -->
+                                <div class="subtask-follower-wrapper"></div>
+                                <button type="button" class="btn-icon remove-subtask"><i class="fas fa-times"></i></button>
                             </div>
-                                <small data-i18n="subtaskHint">يمكنك اختيار أكثر من متابع بالضغط مباشرة على الاسم (بدون Ctrl).</small>                        </div>
-                        
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="new-task-cancel" data-i18n="cancel">إلغاء</button>
-                    <button class="btn btn-primary" id="new-task-submit" data-i18n="createTask">إنشاء مهمة</button>
-                </div>
+                            <button type="button" class="btn btn-outline btn-sm" id="add-subtask-row"><i class="fas fa-plus"></i> <span data-i18n="addSubtask">إضافة مهمة فرعية</span></button>
+                        </div>
+                        <small data-i18n="subtaskHint">يمكنك اختيار أكثر من متابع بالضغط مباشرة على الاسم (بدون Ctrl).</small>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="new-task-cancel" data-i18n="cancel">إلغاء</button>
+                <button class="btn btn-primary" id="new-task-submit" data-i18n="createTask">إنشاء مهمة</button>
             </div>
         </div>
     </div>
+</div>
 
     <div class="modal" id="new-request-modal">
         <div class="modal-dialog">
@@ -1527,6 +1540,32 @@
             </div>
         </div>
     </div>
+
+    <!-- مودال عرض شرح المهمة (احترافي) -->
+<div class="modal" id="description-modal">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-align-left"></i>
+                    <span data-i18n="taskDescription">شرح المهمة</span>
+                </h3>
+                <button class="modal-close" id="description-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="description-modal-body">
+                <div class="description-content">
+                    <!-- سيتم ملؤه ديناميكيًا -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="description-modal-close-btn" data-i18n="close">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+    
 
     <!-- 📜 جميع ملفات JavaScript في نهاية الصفحة وبتأجيل لتحسين الأداء -->
     <!-- 1. المكتبات الخارجية (مرتبة حسب التبعية) -->

@@ -3,8 +3,20 @@
     'use strict';
     
     console.log('✅ login.js loaded - Authentication System (API only)');
-    
+    const PAGE_MAP = {
+    'dashboard': '../dashboard/index.html',
+    'projects': '../projects-management/index.html',
+    'contracts': '../contracts/index.html',
+    'payments': '../payments/index.html',
+    'invoices': '../bills/index.html',
+    'inquiries': '../inquiries/index.html',
+    'clients': '../leeds/index.html',
+    'users': '../users/index.html',
+    'recruitment': '../job-management/index.html',
+    'tasks': '../tasks/index.html'
+};
     class LoginPage {
+        
         constructor() {
             this.apiClient = window.API || null;
             this.authManager = window.AuthManager || null;
@@ -293,32 +305,58 @@
         }
         
         async handleLoginSuccess(result) {
-            console.log('✅ تسجيل الدخول ناجح:', result);
-            
-            // حفظ بيانات الجلسة
-            if (result.data && result.data.token) {
-                localStorage.setItem('auth_token', result.data.token);
-                if (result.data.user) {
-                    localStorage.setItem('user_data', JSON.stringify(result.data.user));
-                }
-                // حفظ الصلاحيات القادمة من الخادم
-                if (result.data.permissions && Array.isArray(result.data.permissions)) {
-                    localStorage.setItem('user_permissions', JSON.stringify(result.data.permissions));
-                    console.log('🔑 تم حفظ الصلاحيات:', result.data.permissions);
-                } else {
-                    // في حالة عدم وجود صلاحيات، نخزن مصفوفة فارغة
-                    localStorage.setItem('user_permissions', JSON.stringify([]));
-                }
-            }
-            
-            // عرض إشعار النجاح
-            this.showNotification('success', 'تم تسجيل الدخول', 'جاري تحويلك حسب صلاحياتك...');
-            
-            // إعادة توجيه إلى لوحة التحكم (سيتم التعامل مع الصلاحيات هناك)
-            setTimeout(() => {
-                window.location.href = '../dashboard/index.html';
-            }, 1500);
+    console.log('✅ تسجيل الدخول ناجح:', result);
+    
+    // حفظ بيانات الجلسة والصلاحيات كما هو موجود مسبقاً ...
+    if (result.data && result.data.token) {
+        localStorage.setItem('auth_token', result.data.token);
+        if (result.data.user) {
+            localStorage.setItem('user_data', JSON.stringify(result.data.user));
         }
+        if (result.data.permissions && Array.isArray(result.data.permissions)) {
+            localStorage.setItem('user_permissions', JSON.stringify(result.data.permissions));
+            console.log('🔑 تم حفظ الصلاحيات:', result.data.permissions);
+        } else {
+            localStorage.setItem('user_permissions', JSON.stringify([]));
+        }
+    }
+
+    // ✅ ------- تعديل التوجيه بناءً على الصلاحيات -------
+    const permissions = result.data.permissions || [];
+    const PAGE_MAP = {
+        'dashboard': '../dashboard/index.html',
+        'projects': '../projects-management/index.html',
+        'contracts': '../contracts/index.html',
+        'payments': '../payments/index.html',
+        'invoices': '../bills/index.html',
+        'inquiries': '../inquiries/index.html',
+        'clients': '../leeds/index.html',
+        'users': '../users/index.html',
+        'recruitment': '../job-management/index.html',
+        'tasks': '../tasks/index.html'
+    };
+
+    // تصفية الصلاحيات الفعلية التي لها صفحة مقابلة
+    const validPermissions = permissions.filter(p => PAGE_MAP[p]);
+
+    let redirectUrl = '../dashboard/index.html'; // الافتراضي لوحة التحكم
+
+    // إذا كانت هناك صلاحية واحدة فقط وليست "dashboard" نذهب إلى صفحتها
+    if (validPermissions.length === 1 && validPermissions[0] !== 'dashboard') {
+        redirectUrl = PAGE_MAP[validPermissions[0]];
+        console.log(`🎯 صلاحية وحيدة: ${validPermissions[0]} - توجيه مباشر إلى ${redirectUrl}`);
+    } else {
+        console.log(`📋 الصلاحيات المتعددة أو dashboard فقط - توجيه إلى لوحة التحكم`);
+    }
+
+    // عرض إشعار النجاح
+    this.showNotification('success', 'تم تسجيل الدخول', 'جاري تحويلك...');
+
+    // التوجيه بعد ثانية ونصف
+    setTimeout(() => {
+        window.location.href = redirectUrl;
+    }, 1500);
+}
         
         handleLoginError(errorMessage) {
             console.error('❌ فشل تسجيل الدخول:', errorMessage);

@@ -1361,26 +1361,81 @@
         }
 
         async requestAudioPermission() {
-            if (this.audioPermissionGranted) return true;
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    const audioCtx = new AudioContext();
-                    await audioCtx.resume();
-                    audioCtx.close();
-                } else {
-                    const silent = new Audio('data:audio/wav;base64,U3RlYWx0aCBhbmQgU291bmQ=');
-                    await silent.play();
-                    silent.pause();
-                }
-                this.audioPermissionGranted = true;
-                console.log('✅ Audio permission granted');
-                return true;
-            } catch (e) {
-                console.warn('Audio permission not granted yet:', e);
-                return false;
-            }
+    // نتحقق أولاً من وجود إذن مخزّن مسبقاً
+    if (localStorage.getItem('audio_permission_granted') === 'true') {
+        this.audioPermissionGranted = true;
+        return true;
+    }
+    
+    if (this.audioPermissionGranted) return true;
+    
+    try {
+        // نطلب سياق صوتي ونحتفظ به
+        if (!window.audioContext) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            window.audioContext = new AudioContext();
+            await window.audioContext.resume();
+            window.audioContext.close(); // نغلقه بعد طلب الإذن
+        } else {
+            await window.audioContext.resume();
+            window.audioContext.close();
         }
+        
+        this.audioPermissionGranted = true;
+        localStorage.setItem('audio_permission_granted', 'true');
+        console.log('✅ Audio permission granted and saved');
+        return true;
+    } catch (e) {
+        console.warn('Audio permission not granted yet:', e);
+        return false;
+    }
+}
+
+startVoiceInput(inputElement, buttonElement) {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        this.showNotification(this.getTranslation('voiceInputError') + ': المتصفح لا يدعم الإدخال الصوتي', 'error');
+        return;
+    }
+
+    // نطلب الإذن أولاً إذا لم يُعط بعد
+    if (!this.audioPermissionGranted) {
+        this.requestAudioPermission().then(() => {
+            this.startVoiceInput(inputElement, buttonElement);
+        });
+        return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = this.currentLang === 'ar' ? 'ar-SA' : 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    buttonElement.classList.add('listening');
+    buttonElement.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+    this.showNotification(this.getTranslation('voiceInputListening'), 'info');
+
+    recognition.start();
+
+    recognition.onresult = (event) => {
+        const speechResult = event.results[0][0].transcript;
+        inputElement.value = speechResult;
+        buttonElement.classList.remove('listening');
+        buttonElement.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        buttonElement.classList.remove('listening');
+        buttonElement.innerHTML = '<i class="fas fa-microphone"></i>';
+        this.showNotification(this.getTranslation('voiceInputError') + ': ' + event.error, 'error');
+    };
+
+    recognition.onend = () => {
+        buttonElement.classList.remove('listening');
+        buttonElement.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+}
 
         playNotificationSound() {
             if (!this.audioPermissionGranted) {
@@ -1636,12 +1691,12 @@
 
         async populateAllAssigneeSelects() {
     const selects = [
-        'task-assignees', 'request-assignee', 'purchase-assignee', 'task-assignee-edit', 'task-follower-edit'
+        'task-assignees', 'request-assignee', 'purchase-assignee', 'task-assignee-edit'
     ];
     selects.forEach(id => {
         const select = document.getElementById(id);
         if (!select) return;
-        select.innerHTML = (id === 'request-assignee' || id === 'purchase-assignee' || id === 'task-assignee-edit' || id === 'task-follower-edit') ?
+        select.innerHTML = (id === 'request-assignee' || id === 'purchase-assignee' || id === 'task-assignee-edit') ?
             '<option value="">' + this.getTranslation('selectAssignee') + '</option>' : '';
         for (const userId in this.users) {
             const user = this.users[userId];
@@ -1652,27 +1707,24 @@
         }
     });
 
-    // معالجة خاصة لـ task-follower-edit (للمهام الرئيسية)
-    const followerEdit = document.getElementById('task-follower-edit');
-    if (followerEdit) {
-        followerEdit.setAttribute('multiple', 'multiple');
-        followerEdit.setAttribute('size', '5');
-        followerEdit.style.height = 'auto';
-        followerEdit.style.minHeight = '120px';
-        this.enableMultiSelectWithoutCtrl(followerEdit);
-    }
-
-    // تحويل القالب (subtask-row-template) من select إلى checkboxes
-    const template = document.getElementById('subtask-row-template');
-    if (template) {
-        const oldSelect = template.querySelector('.subtask-follower-multiple');
-        if (oldSelect) {
-            const customContainer = this.createCustomFollowerContainer([]);
-            oldSelect.parentNode.replaceChild(customContainer, oldSelect);
+    // معالجة خاصة لـ task-follower-edit: استبدال select بحاوية checkboxes
+    const followerEditContainer = document.getElementById('task-follower-edit-container');
+    const existingSelect = document.getElementById('task-follower-edit');
+    if (followerEditContainer && existingSelect) {
+        // إزالة الـ select القديم إن وجد
+        existingSelect.remove();
+        // إنشاء حاوية checkboxes جديدة (فارغة)
+        const checkboxContainer = this.createCustomFollowerContainer([]);
+        followerEditContainer.appendChild(checkboxContainer);
+    } else if (followerEditContainer && !existingSelect) {
+        // قد تكون الحاوية موجودة ولكن بدون select
+        if (!followerEditContainer.querySelector('.custom-multi-select-container')) {
+            const checkboxContainer = this.createCustomFollowerContainer([]);
+            followerEditContainer.appendChild(checkboxContainer);
         }
     }
 
-    // تحويل أي صفوف موجودة بالفعل
+    // تحويل أي صفوف موجودة في builder المهام الفرعية (تمت معالجتها مسبقاً عبر rebuildAllCustomFollowerSelectors)
     this.rebuildAllCustomFollowerSelectors();
 }
 
@@ -1875,14 +1927,12 @@ createTaskCard(task) {
     card.dataset.project = task.projectId || '';
     card.dataset.type = task.type;
     
-    // إذا كان العنصر من نوع طلب أو شراء (في الأرشيف)، نستخدم تنسيق مختلف
     if (task.entityType === 'request') {
         return this.createArchivedRequestCard(task);
     } else if (task.entityType === 'purchase') {
         return this.createArchivedPurchaseCard(task);
     }
     
-    // باقي الكود الخاص بالمهام العادية (لم يتغير)
     let footerButtons = '';
     const isSubtask = task.type === 'subtask';
     const isSent = task.type === 'sent';
@@ -1987,6 +2037,14 @@ createTaskCard(task) {
         </div>
     ` : '';
 
+    // أيقونة الشرح (description) - عند النقر تفتح مودال منفصل
+    const descriptionHtml = (task.description && task.description.trim() !== '') ? `
+        <div class="task-description-icon" data-task-id="${task.id}" data-description="${this.escapeHtml(task.description)}" title="عرض الشرح">
+            <i class="fas fa-align-left"></i>
+            <span>1</span>
+        </div>
+    ` : '';
+
     card.innerHTML = `
         <div class="task-card-priority priority-${task.priority}"></div>
         <div class="task-card-content">
@@ -2028,6 +2086,7 @@ createTaskCard(task) {
             
             <div class="task-footer">
                 ${commentsHtml}
+                ${descriptionHtml}
                 ${task.subtasks && task.subtasks.length > 0 ? `
                 <div class="task-subtasks" data-task-id="${task.id}">
                     <i class="fas fa-list-ul"></i>
@@ -2048,139 +2107,175 @@ createTaskCard(task) {
     return card;
 }
 
+// تحديث بطاقة مهمة واحدة فقط دون إعادة بناء كامل الواجهة
+// استبدل دالة updateSingleTaskCard الموجودة (في مكانها داخل الكلاس) بهذه النسخة
+
+updateSingleTaskCard(taskId) {
+    const task = this.tasks.find(t => t.id == taskId);
+    if (!task) return;
+
+    // البحث عن كافة البطاقات التي تحمل نفس المعرف (قد تكون في الصفحة الرئيسية أو داخل modal)
+    const existingCards = document.querySelectorAll(`.task-card[data-id="${taskId}"]`);
+    if (existingCards.length === 0) {
+        // إذا لم توجد أي بطاقة، ربما هي مهمة جديدة أو مؤرشفة - نقوم بتحديث كامل UI
+        this.updateTasksUI();
+        return;
+    }
+
+    const newCard = this.createTaskCard(task);
+    // استبدال كل بطاقة موجودة بالبطاقة الجديدة (مع الحفاظ على الموقع)
+    existingCards.forEach(card => {
+        card.parentNode.replaceChild(newCard.cloneNode(true), card);
+    });
+
+    // إعادة ربط الأحداث للبطاقات الجديدة (للتأكد من عمل الأزرار)
+    this.reattachTaskCardEvents();
+
+    // تحديث الإحصائيات والأقسام الأخرى
+    this.updateSectionsCount();
+    this.updateCharts();
+}
+
+
         async editSubtask(taskId) {
-            try {
-                const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
-                const task = result.data;
-                if (!task) {
-                    this.showNotification('المهمة غير موجودة', 'error');
-                    return;
-                }
-                if (task.type !== 'subtask' && task.parentTaskId === null) {
-                    this.showNotification('هذه المهمة ليست مهمة فرعية', 'error');
-                    return;
-                }
-
-                document.getElementById('edit-task-id').value = task.id;
-                document.getElementById('task-title').value = task.title;
-                document.getElementById('task-status').value = task.status;
-                document.getElementById('task-priority').value = task.priority;
-                if (task.dueDate) {
-                    document.getElementById('task-due-date').value = task.dueDate.split('T')[0];
-                } else {
-                    document.getElementById('task-due-date').value = '';
-                }
-                if (task.reminderDateTime) {
-                    const reminderDate = new Date(task.reminderDateTime);
-                    const formattedReminder = reminderDate.toISOString().slice(0, 16);
-                    document.getElementById('task-reminder-datetime').value = formattedReminder;
-                } else {
-                    document.getElementById('task-reminder-datetime').value = '';
-                }
-
-                if (task.assignees && task.assignees.length > 0) {
-                    const assigneeSelect = document.getElementById('task-assignee-edit');
-                    if (assigneeSelect) {
-                        assigneeSelect.value = task.assignees[0];
-                    }
-                } else {
-                    document.getElementById('task-assignee-edit').value = '';
-                }
-
-                const followerSelect = document.getElementById('task-follower-edit');
-                if (followerSelect) {
-                    if (task.followers && task.followers.length > 0) {
-                        Array.from(followerSelect.options).forEach(opt => {
-                            opt.selected = task.followers.includes(parseInt(opt.value));
-                        });
-                    } else {
-                        Array.from(followerSelect.options).forEach(opt => {
-                            opt.selected = false;
-                        });
-                    }
-                }
-
-                const editAssigneeGroup = document.getElementById('edit-assignee-group');
-                if (editAssigneeGroup) editAssigneeGroup.style.display = 'block';
-                const editFollowerGroup = document.getElementById('edit-follower-group');
-                if (editFollowerGroup) editFollowerGroup.style.display = 'block';
-                const subtasksBuilder = document.getElementById('subtasks-builder');
-                if (subtasksBuilder) subtasksBuilder.style.display = 'none';
-
-                const modalTitle = document.querySelector('#new-task-modal .modal-title');
-                if (modalTitle) modalTitle.textContent = this.getTranslation('editSubtask');
-                const submitBtn = document.getElementById('new-task-submit');
-                if (submitBtn) submitBtn.textContent = this.getTranslation('updateTask');
-
-                this.openModal(this.elements.newTaskModal);
-            } catch (error) {
-                console.error('Failed to load subtask for edit:', error);
-                this.showNotification('حدث خطأ أثناء تحميل بيانات المهمة الفرعية', 'error');
-            }
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
+        const task = result.data;
+        if (!task) {
+            this.showNotification('المهمة غير موجودة', 'error');
+            return;
         }
+        if (task.type !== 'subtask' && task.parentTaskId === null) {
+            this.showNotification('هذه المهمة ليست مهمة فرعية', 'error');
+            return;
+        }
+
+        document.getElementById('edit-task-id').value = task.id;
+        document.getElementById('task-title').value = task.title;
+        document.getElementById('task-description').value = task.description || '';
+        document.getElementById('task-status').value = task.status;
+        document.getElementById('task-priority').value = task.priority;
+        if (task.dueDate) {
+            document.getElementById('task-due-date').value = task.dueDate.split('T')[0];
+        } else {
+            document.getElementById('task-due-date').value = '';
+        }
+        if (task.reminderDateTime) {
+            const reminderDate = new Date(task.reminderDateTime);
+            const formattedReminder = reminderDate.toISOString().slice(0, 16);
+            document.getElementById('task-reminder-datetime').value = formattedReminder;
+        } else {
+            document.getElementById('task-reminder-datetime').value = '';
+        }
+
+        if (task.assignees && task.assignees.length > 0) {
+            const assigneeSelect = document.getElementById('task-assignee-edit');
+            if (assigneeSelect) {
+                assigneeSelect.value = task.assignees[0];
+            }
+        } else {
+            document.getElementById('task-assignee-edit').value = '';
+        }
+
+        // === التعديل: استبدال select المتابعين بـ checkboxes ===
+        const container = document.getElementById('task-follower-edit-container');
+        if (container) {
+            // مسح المحتوى القديم (قد يحتوي على select أو حاوية قديمة)
+            container.innerHTML = '';
+            // إنشاء حاوية checkboxes مع تحديد المتابعين الحاليين
+            const followerIds = task.followers || [];
+            const customContainer = this.createCustomFollowerContainer(followerIds);
+            container.appendChild(customContainer);
+        }
+
+        // إظهار الحقول المطلوبة
+        const editAssigneeGroup = document.getElementById('edit-assignee-group');
+        if (editAssigneeGroup) editAssigneeGroup.style.display = 'block';
+        const editFollowerGroup = document.getElementById('edit-follower-group');
+        if (editFollowerGroup) editFollowerGroup.style.display = 'block';
+        const subtasksBuilder = document.getElementById('subtasks-builder');
+        if (subtasksBuilder) subtasksBuilder.style.display = 'none';
+
+        const modalTitle = document.querySelector('#new-task-modal .modal-title');
+        if (modalTitle) modalTitle.textContent = this.getTranslation('editSubtask');
+        const submitBtn = document.getElementById('new-task-submit');
+        if (submitBtn) submitBtn.textContent = this.getTranslation('updateTask');
+
+        this.openModal(this.elements.newTaskModal);
+    } catch (error) {
+        console.error('Failed to load subtask for edit:', error);
+        this.showNotification('حدث خطأ أثناء تحميل بيانات المهمة الفرعية', 'error');
+    }
+}
 
         async updateTask() {
-            const taskId = document.getElementById('edit-task-id').value;
-            if (!taskId) {
-                this.showNotification('لم يتم تحديد مهمة للتعديل', 'error');
-                return;
-            }
+    const taskId = document.getElementById('edit-task-id').value;
+    if (!taskId) {
+        this.showNotification('لم يتم تحديد مهمة للتعديل', 'error');
+        return;
+    }
 
-            const title = document.getElementById('task-title')?.value;
-            if (!title || title.trim() === '') {
-                this.showNotification(this.getTranslation('enterTaskTitle'), 'error');
-                return;
-            }
+    const title = document.getElementById('task-title')?.value;
+    if (!title || title.trim() === '') {
+        this.showNotification(this.getTranslation('enterTaskTitle'), 'error');
+        return;
+    }
 
-            const status = document.getElementById('task-status')?.value || 'todo';
-            const priority = document.getElementById('task-priority')?.value || 'medium';
-            const dueDate = document.getElementById('task-due-date')?.value;
-            const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
-            const assigneeId = document.getElementById('task-assignee-edit')?.value;
-            
-            const followerSelect = document.getElementById('task-follower-edit');
-            let followers = [];
-            if (followerSelect) {
-                followers = Array.from(followerSelect.selectedOptions).map(opt => parseInt(opt.value));
-            }
+    const description = document.getElementById('task-description')?.value || '';
+    const status = document.getElementById('task-status')?.value || 'todo';
+    const priority = document.getElementById('task-priority')?.value || 'medium';
+    const dueDate = document.getElementById('task-due-date')?.value;
+    const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
+    const assigneeId = document.getElementById('task-assignee-edit')?.value;
 
-            const taskData = {
-                title: title.trim(),
-                status,
-                priority,
-                dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-                reminderDateTime: reminderDateTime ? new Date(reminderDateTime).toISOString() : null,
-                assignees: assigneeId && assigneeId !== '' ? [parseInt(assigneeId)] : [],
-                followers: followers
-            };
-
-            try {
-                await this.apiRequest(`/api/admin/tasks/${taskId}`, {
-                    method: 'PUT',
-                    body: taskData
-                });
-                await this.refreshAllData();
-                this.closeModal(this.elements.newTaskModal);
-                this.showNotification(this.getTranslation('taskUpdatedSuccess'), 'success');
-                
-                document.getElementById('edit-task-id').value = '';
-                const editAssigneeGroup = document.getElementById('edit-assignee-group');
-                if (editAssigneeGroup) editAssigneeGroup.style.display = 'none';
-                const editFollowerGroup = document.getElementById('edit-follower-group');
-                if (editFollowerGroup) editFollowerGroup.style.display = 'none';
-                const subtasksBuilder = document.getElementById('subtasks-builder');
-                if (subtasksBuilder) subtasksBuilder.style.display = '';
-                const modalTitle = document.querySelector('#new-task-modal .modal-title');
-                if (modalTitle) modalTitle.textContent = this.getTranslation('createNewTask');
-                const submitBtn = document.getElementById('new-task-submit');
-                if (submitBtn) submitBtn.textContent = this.getTranslation('createTask');
-                const rows = document.querySelectorAll('#subtasks-builder .subtask-row:not(#subtask-row-template)');
-                rows.forEach(r => r.remove());
-            } catch (error) {
-                console.error('Failed to update task:', error);
-                this.showNotification(error.message || 'حدث خطأ أثناء تحديث المهمة', 'error');
-            }
+    // قراءة المتابعين من حاوية checkboxes
+    let followers = [];
+    const followerContainer = document.getElementById('task-follower-edit-container');
+    if (followerContainer) {
+        const hiddenInput = followerContainer.querySelector('.follower-values');
+        if (hiddenInput && hiddenInput.value) {
+            followers = hiddenInput.value.split(',').filter(v => v).map(v => parseInt(v));
         }
+    }
+
+    const taskData = {
+        title: title.trim(),
+        description: description,
+        status,
+        priority,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        reminderDateTime: reminderDateTime ? new Date(reminderDateTime).toISOString() : null,
+        assignees: assigneeId && assigneeId !== '' ? [parseInt(assigneeId)] : [],
+        followers: followers
+    };
+
+    try {
+        await this.apiRequest(`/api/admin/tasks/${taskId}`, {
+            method: 'PUT',
+            body: taskData
+        });
+        await this.refreshAllData();
+        this.closeModal(this.elements.newTaskModal);
+        this.showNotification(this.getTranslation('taskUpdatedSuccess'), 'success');
+
+        document.getElementById('edit-task-id').value = '';
+        const editAssigneeGroup = document.getElementById('edit-assignee-group');
+        if (editAssigneeGroup) editAssigneeGroup.style.display = 'none';
+        const editFollowerGroup = document.getElementById('edit-follower-group');
+        if (editFollowerGroup) editFollowerGroup.style.display = 'none';
+        const subtasksBuilder = document.getElementById('subtasks-builder');
+        if (subtasksBuilder) subtasksBuilder.style.display = '';
+        const modalTitle = document.querySelector('#new-task-modal .modal-title');
+        if (modalTitle) modalTitle.textContent = this.getTranslation('createNewTask');
+        const submitBtn = document.getElementById('new-task-submit');
+        if (submitBtn) submitBtn.textContent = this.getTranslation('createTask');
+        const rows = document.querySelectorAll('#subtasks-builder .subtask-row:not(#subtask-row-template)');
+        rows.forEach(r => r.remove());
+    } catch (error) {
+        console.error('Failed to update task:', error);
+        this.showNotification(error.message || 'حدث خطأ أثناء تحديث المهمة', 'error');
+    }
+}
 
         renderRequests() {
             if (!this.userPermissions.includes('task_requests')) return;
@@ -3244,291 +3339,297 @@ createArchivedPurchaseCard(purchase) {
         }
 
         async openTaskDetails(taskId) {
-            try {
-                const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
-                const task = result.data;
-                if (!task) {
-                    this.showNotification('المهمة غير موجودة أو ليس لديك صلاحية الوصول إليها', 'error');
-                    return;
-                }
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
+        const task = result.data;
+        if (!task) {
+            this.showNotification('المهمة غير موجودة أو ليس لديك صلاحية الوصول إليها', 'error');
+            return;
+        }
 
-                this.selectedTask = task;
-                if (this.elements.modalTaskTitle) {
-                    this.translateElement(this.elements.modalTaskTitle, 'taskDetails');
-                }
+        this.selectedTask = task;
+        if (this.elements.modalTaskTitle) {
+            this.translateElement(this.elements.modalTaskTitle, 'taskDetails');
+        }
 
-                const body = this.elements.modalTaskBody;
-                if (!body) return;
+        const body = this.elements.modalTaskBody;
+        if (!body) return;
 
-                const isReceived = task.type === 'received';
-                const isSent = task.type === 'sent';
-                const isSubtask = task.type === 'subtask';
-                const isArchived = task.type === 'archived';
-                const isFollowed = task.type === 'followed';
-                const canRate = task.status === 'done' && task.senderId === this.currentUser?.id && !task.rating && !isSent;
+        const isReceived = task.type === 'received';
+        const isSent = task.type === 'sent';
+        const isSubtask = task.type === 'subtask';
+        const isArchived = task.type === 'archived';
+        const isFollowed = task.type === 'followed';
+        const canRate = task.status === 'done' && task.senderId === this.currentUser?.id && !task.rating && !isSent;
 
-                const footer = this.elements.modalTaskFooter;
-                if (footer) {
-                    if (isArchived) {
-                        footer.innerHTML = `
-                            <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
-                        `;
-                    } else if (isFollowed) {
-                        footer.innerHTML = `
-                            <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
-                        `;
-                    } else {
-                        footer.innerHTML = `
-                            <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
-                            ${(isReceived || isSubtask || isSent) ? `
-                                <button class="btn btn-outline" id="modal-add-subtask-btn">${this.getTranslation('addSubtask')}</button>
-                            ` : ''}
-                            ${canRate ? `<button class="btn btn-outline" id="modal-rate-task-btn">${this.getTranslation('rateTask')}</button>` : ''}
-                        `;
-                    }
-                    document.getElementById('modal-close-btn-2')?.addEventListener('click', () => this.closeModal(this.elements.taskDetailModal));
-                    if (!isFollowed) {
-                        document.getElementById('modal-add-subtask-btn')?.addEventListener('click', () => {
-                            this.closeModal(this.elements.taskDetailModal);
-                            this.openNewTaskModal(null, this.selectedTask.id);
-                        });
-                    }
-                    if (canRate) {
-                        document.getElementById('modal-rate-task-btn')?.addEventListener('click', () => {
-                            this.closeModal(this.elements.taskDetailModal);
-                            this.openRateTaskModal(taskId);
-                        });
-                    }
-                }
-
-                const assigneesHTML = (task.assigneesFull || []).map(user => {
-                    return `<div class="assignee-card">
-                        <div class="assignee-info">
-                            <div class="assignee-name">${user.fullName}</div>
-                            <div class="assignee-role">${user.role}</div>
-                            <div class="assignee-score">${this.getTranslation('averageScore')}: ${(user.averageScore || 0).toFixed(2)}</div>
-                        </div>
-                    </div>`;
-                }).join('') || '<p>' + this.getTranslation('noAssignees') + '</p>';
-
-                const followersNames = (task.followers || []).map(fid => this.users[fid]?.name).filter(n => n).join('، ') || this.getTranslation('notSpecified');
-                const followersHTML = `
-                    <div class="info-item">
-                        <span class="info-label">${this.getTranslation('followers')}</span>
-                        <span class="info-value"><i class="fas fa-eye"></i> ${followersNames}</span>
-                    </div>
+        const footer = this.elements.modalTaskFooter;
+        if (footer) {
+            if (isArchived) {
+                footer.innerHTML = `
+                    <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
                 `;
-
-                const subtasksHTML = task.subtasks && task.subtasks.length > 0 ?
-                    task.subtasks.map(st => `
-                        <div class="subtask-detail-item" data-id="${st.id}" style="border-right: 4px solid #9b59b6; margin-bottom: 12px; padding: 8px; background: rgba(155,89,182,0.1); border-radius: 8px;">
-                            <div class="subtask-detail-info">
-                                <h4><i class="fas fa-list-ul" style="color: #9b59b6;"></i> ${st.title}</h4>
-                                <div class="subtask-detail-meta">
-                                    <span>${this.getTranslation('assignee')}: ${this.users[st.assignees?.[0]]?.name || this.getTranslation('notSpecified')}</span>
-                                    <span>${this.getTranslation('dueDate')}: ${this.formatDate(st.dueDate)}</span>
-                                </div>
-                            </div>
-                            <div class="subtask-detail-status">
-                                <span>${st.progress}%</span>
-                                <div class="subtask-progress-small">
-                                    <div class="progress-fill" style="width: ${st.progress}%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('') : '<p>' + this.getTranslation('noSubtasks') + '</p>';
-
-                let parentTaskInfo = '';
-                if (task.parentTaskId) {
-                    const parentTask = this.tasks.find(t => t.id == task.parentTaskId);
-                    if (parentTask) {
-                        parentTaskInfo = `
-                            <div class="info-item">
-                                <span class="info-label">${this.getTranslation('parentTask')}</span>
-                                <span class="info-value parent-task-badge"><i class="fas fa-level-up-alt"></i> ${parentTask.title}</span>
-                            </div>
-                        `;
-                    }
-                }
-
-                const commentsHTML = task.comments && task.comments.length > 0 ?
-                    task.comments.map(c => `
-                        <div class="comment-detail-item">
-                            <div class="comment-detail-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/40?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
-                            <div class="comment-detail-content">
-                                <div class="comment-detail-header">
-                                    <span class="comment-detail-author">${c.fullName || c.userId}</span>
-                                    <span class="comment-detail-time">${this.formatDate(c.createdAt)}</span>
-                                </div>
-                                <div class="comment-detail-text">${c.comment}</div>
-                            </div>
-                        </div>
-                    `).join('') : '<p>' + this.getTranslation('noComments') + '</p>';
-
-                const activityHTML = `
-                    <div class="activity-timeline">
-                        <div class="activity-timeline-item">
-                            <span class="activity-time">${this.formatDate(task.createdAt)}</span>
-                            <span class="activity-text">${this.getTranslation('createdBy', { name: task.senderName || 'مستخدم' })}</span>
-                        </div>
-                        <div class="activity-timeline-item">
-                            <span class="activity-time">${this.formatDate(task.updatedAt)}</span>
-                            <span class="activity-text">${this.getTranslation('lastUpdated')}</span>
-                        </div>
-                        ${task.escalationHistory && task.escalationHistory.length > 0 ? task.escalationHistory.map(e => `
-                        <div class="activity-timeline-item">
-                            <span class="activity-time">${this.formatDate(e.escalatedAt)}</span>
-                            <span class="activity-text">${this.getTranslation('escalatedToLevel', { level: e.level, to: e.escalatedTo })}</span>
-                        </div>
-                        `).join('') : ''}
-                    </div>
+            } else if (isFollowed) {
+                footer.innerHTML = `
+                    <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
                 `;
-
-                body.innerHTML = `
-                    <div class="task-detail">
-                        <div class="task-detail-header">
-                            <div class="task-detail-icon">
-                                <i class="fas fa-tasks"></i>
-                            </div>
-                            <div class="task-detail-title-section">
-                                <h2>${task.title}</h2>
-                                <div class="task-detail-meta-tags">
-                                    <span class="task-detail-tag"><i class="fas fa-tag"></i> ${this.projects[task.projectId] || this.getTranslation('noProject')}</span>
-                                    <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.getTranslation('created')}: ${this.formatDate(task.createdAt)}</span>
-                                    <span class="task-detail-tag"><i class="fas fa-clock"></i> ${this.getTranslation('lastUpdated')}: ${this.formatDate(task.updatedAt)}</span>
-                                    ${task.rating ? `<span class="task-detail-tag"><i class="fas fa-star"></i> ${this.getTranslation('finalScore')}: ${task.rating.finalScore.toFixed(2)}</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="task-detail-grid">
-                            <div class="task-detail-info-card">
-                                <div class="info-card-title"><i class="fas fa-info-circle"></i> ${this.getTranslation('basicInfo')}</div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('status')}</span>
-                                    <span class="info-value">${this.getStatusText(task.status)}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('priority')}</span>
-                                    <span class="info-value"><span class="priority-badge ${task.priority}">${this.getPriorityText(task.priority)}</span></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('dueDate')}</span>
-                                    <span class="info-value ${task.isOverdue ? 'urgent' : ''}">${this.formatDate(task.dueDate)}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('progress')}</span>
-                                    <span class="info-value">${task.progress}%</span>
-                                </div>
-                                ${parentTaskInfo}
-                                ${followersHTML}
-                            </div>
-
-                            <div class="task-detail-info-card">
-                                <div class="info-card-title"><i class="fas fa-users"></i> ${this.getTranslation('stats')}</div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('comments')}</span>
-                                    <span class="info-value">${task.commentsCount || 0}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('attachments')}</span>
-                                    <span class="info-value">${task.attachmentsCount || 0}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">${this.getTranslation('subtasks')}</span>
-                                    <span class="info-value">${task.subtasks ? task.subtasks.length : 0}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="task-detail-assignees">
-                            <h4><i class="fas fa-users"></i> ${this.getTranslation('assignees')}</h4>
-                            <div class="assignees-grid">
-                                ${assigneesHTML}
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-align-left"></i> ${this.getTranslation('description')}</h4>
-                            <p>${task.description || ''}</p>
-                        </div>
-
-                        <div class="task-detail-tabs">
-                            <button class="tab-btn active" data-tab="delegations"><i class="fas fa-share-alt"></i> ${this.getTranslation('delegationHistory')} (0)</button>
-                            <button class="tab-btn" data-tab="subtasks"><i class="fas fa-list-ul"></i> ${this.getTranslation('subtasks')} (${task.subtasks?.length || 0})</button>
-                            <button class="tab-btn" data-tab="comments"><i class="fas fa-comments"></i> ${this.getTranslation('comments')} (${task.commentsCount || 0})</button>
-                            <button class="tab-btn" data-tab="activity"><i class="fas fa-history"></i> ${this.getTranslation('activity')}</button>
-                        </div>
-
-                        <div class="tab-pane active" id="tab-delegations">
-                            <div class="delegation-chain">
-                                <p>${this.getTranslation('noDelegationHistory')}</p>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane" id="tab-subtasks">
-                            <div class="subtasks-detail-list">
-                                ${subtasksHTML}
-                            </div>
-                        </div>
-
-                        <div class="tab-pane" id="tab-comments">
-                            <div class="comments-section" id="comments-section">
-                                ${commentsHTML}
-                            </div>
-                            <div class="add-comment">
-                                <textarea class="form-control" id="new-comment-detail" rows="2" placeholder="${this.getTranslation('writeComment')}"></textarea>
-                                <div class="comment-toolbar">
-                                    <button class="btn-icon" title="${this.getTranslation('attachFile')}"><i class="fas fa-paperclip"></i></button>
-                                    <button class="btn btn-primary btn-sm" id="send-comment-detail">${this.getTranslation('send')}</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane" id="tab-activity">
-                            ${activityHTML}
-                        </div>
-                    </div>
+            } else {
+                footer.innerHTML = `
+                    <button class="btn btn-secondary" id="modal-close-btn-2">${this.getTranslation('close')}</button>
+                    ${(isReceived || isSubtask || isSent) ? `
+                        <button class="btn btn-outline" id="modal-add-subtask-btn">${this.getTranslation('addSubtask')}</button>
+                    ` : ''}
+                    ${canRate ? `<button class="btn btn-outline" id="modal-rate-task-btn">${this.getTranslation('rateTask')}</button>` : ''}
                 `;
-
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                        const tabId = btn.dataset.tab;
-                        document.getElementById(`tab-${tabId}`).classList.add('active');
-                    });
+            }
+            document.getElementById('modal-close-btn-2')?.addEventListener('click', () => this.closeModal(this.elements.taskDetailModal));
+            if (!isFollowed) {
+                document.getElementById('modal-add-subtask-btn')?.addEventListener('click', () => {
+                    this.closeModal(this.elements.taskDetailModal);
+                    this.openNewTaskModal(null, this.selectedTask.id);
                 });
-
-                const sendCommentDetail = document.getElementById('send-comment-detail');
-                if (sendCommentDetail) {
-                    sendCommentDetail.addEventListener('click', async () => {
-                        const commentText = document.getElementById('new-comment-detail')?.value;
-                        if (commentText && commentText.trim() !== '') {
-                            await this.addNewComment(commentText);
-                            document.getElementById('new-comment-detail').value = '';
-                            await this.openTaskDetails(taskId);
-                        }
-                    });
-                }
-
-                document.querySelectorAll('.subtask-detail-item').forEach(item => {
-                    const subtaskId = item.dataset.id;
-                    if (subtaskId) {
-                        item.addEventListener('click', () => {
-                            this.closeModal(this.elements.taskDetailModal);
-                            this.openTaskDetails(subtaskId);
-                        });
-                    }
+            }
+            if (canRate) {
+                document.getElementById('modal-rate-task-btn')?.addEventListener('click', () => {
+                    this.closeModal(this.elements.taskDetailModal);
+                    this.openRateTaskModal(taskId);
                 });
-
-                this.openModal(this.elements.taskDetailModal);
-            } catch (error) {
-                console.error('Failed to load task details:', error);
-                this.showNotification(error.message || 'حدث خطأ أثناء تحميل تفاصيل المهمة', 'error');
             }
         }
+
+        // بناء محتوى التفاصيل مع إضافة قسم الشرح إذا كان موجوداً
+        const descriptionSection = (task.description && task.description.trim() !== '') ? `
+            <div class="detail-section">
+                <h4><i class="fas fa-align-left"></i> ${this.getTranslation('description')}</h4>
+                <p>${this.escapeHtml(task.description)}</p>
+            </div>
+        ` : '';
+
+        const assigneesHTML = (task.assigneesFull || []).map(user => {
+            return `<div class="assignee-card">
+                <div class="assignee-info">
+                    <div class="assignee-name">${user.fullName}</div>
+                    <div class="assignee-role">${user.role}</div>
+                    <div class="assignee-score">${this.getTranslation('averageScore')}: ${(user.averageScore || 0).toFixed(2)}</div>
+                </div>
+            </div>`;
+        }).join('') || '<p>' + this.getTranslation('noAssignees') + '</p>';
+
+        const followersNames = (task.followers || []).map(fid => this.users[fid]?.name).filter(n => n).join('، ') || this.getTranslation('notSpecified');
+        const followersHTML = `
+            <div class="info-item">
+                <span class="info-label">${this.getTranslation('followers')}</span>
+                <span class="info-value"><i class="fas fa-eye"></i> ${followersNames}</span>
+            </div>
+        `;
+
+        const subtasksHTML = task.subtasks && task.subtasks.length > 0 ?
+            task.subtasks.map(st => `
+                <div class="subtask-detail-item" data-id="${st.id}" style="border-right: 4px solid #9b59b6; margin-bottom: 12px; padding: 8px; background: rgba(155,89,182,0.1); border-radius: 8px;">
+                    <div class="subtask-detail-info">
+                        <h4><i class="fas fa-list-ul" style="color: #9b59b6;"></i> ${st.title}</h4>
+                        <div class="subtask-detail-meta">
+                            <span>${this.getTranslation('assignee')}: ${this.users[st.assignees?.[0]]?.name || this.getTranslation('notSpecified')}</span>
+                            <span>${this.getTranslation('dueDate')}: ${this.formatDate(st.dueDate)}</span>
+                        </div>
+                    </div>
+                    <div class="subtask-detail-status">
+                        <span>${st.progress}%</span>
+                        <div class="subtask-progress-small">
+                            <div class="progress-fill" style="width: ${st.progress}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p>' + this.getTranslation('noSubtasks') + '</p>';
+
+        let parentTaskInfo = '';
+        if (task.parentTaskId) {
+            const parentTask = this.tasks.find(t => t.id == task.parentTaskId);
+            if (parentTask) {
+                parentTaskInfo = `
+                    <div class="info-item">
+                        <span class="info-label">${this.getTranslation('parentTask')}</span>
+                        <span class="info-value parent-task-badge"><i class="fas fa-level-up-alt"></i> ${parentTask.title}</span>
+                    </div>
+                `;
+            }
+        }
+
+        const commentsHTML = task.comments && task.comments.length > 0 ?
+            task.comments.map(c => `
+                <div class="comment-detail-item">
+                    <div class="comment-detail-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/40?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                    <div class="comment-detail-content">
+                        <div class="comment-detail-header">
+                            <span class="comment-detail-author">${c.fullName || c.userId}</span>
+                            <span class="comment-detail-time">${this.formatDate(c.createdAt)}</span>
+                        </div>
+                        <div class="comment-detail-text">${c.comment}</div>
+                    </div>
+                </div>
+            `).join('') : '<p>' + this.getTranslation('noComments') + '</p>';
+
+        const activityHTML = `
+            <div class="activity-timeline">
+                <div class="activity-timeline-item">
+                    <span class="activity-time">${this.formatDate(task.createdAt)}</span>
+                    <span class="activity-text">${this.getTranslation('createdBy', { name: task.senderName || 'مستخدم' })}</span>
+                </div>
+                <div class="activity-timeline-item">
+                    <span class="activity-time">${this.formatDate(task.updatedAt)}</span>
+                    <span class="activity-text">${this.getTranslation('lastUpdated')}</span>
+                </div>
+                ${task.escalationHistory && task.escalationHistory.length > 0 ? task.escalationHistory.map(e => `
+                <div class="activity-timeline-item">
+                    <span class="activity-time">${this.formatDate(e.escalatedAt)}</span>
+                    <span class="activity-text">${this.getTranslation('escalatedToLevel', { level: e.level, to: e.escalatedTo })}</span>
+                </div>
+                `).join('') : ''}
+            </div>
+        `;
+
+        body.innerHTML = `
+            <div class="task-detail">
+                <div class="task-detail-header">
+                    <div class="task-detail-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="task-detail-title-section">
+                        <h2>${task.title}</h2>
+                        <div class="task-detail-meta-tags">
+                            <span class="task-detail-tag"><i class="fas fa-tag"></i> ${this.projects[task.projectId] || this.getTranslation('noProject')}</span>
+                            <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.getTranslation('created')}: ${this.formatDate(task.createdAt)}</span>
+                            <span class="task-detail-tag"><i class="fas fa-clock"></i> ${this.getTranslation('lastUpdated')}: ${this.formatDate(task.updatedAt)}</span>
+                            ${task.rating ? `<span class="task-detail-tag"><i class="fas fa-star"></i> ${this.getTranslation('finalScore')}: ${task.rating.finalScore.toFixed(2)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-detail-grid">
+                    <div class="task-detail-info-card">
+                        <div class="info-card-title"><i class="fas fa-info-circle"></i> ${this.getTranslation('basicInfo')}</div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('status')}</span>
+                            <span class="info-value">${this.getStatusText(task.status)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('priority')}</span>
+                            <span class="info-value"><span class="priority-badge ${task.priority}">${this.getPriorityText(task.priority)}</span></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('dueDate')}</span>
+                            <span class="info-value ${task.isOverdue ? 'urgent' : ''}">${this.formatDate(task.dueDate)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('progress')}</span>
+                            <span class="info-value">${task.progress}%</span>
+                        </div>
+                        ${parentTaskInfo}
+                        ${followersHTML}
+                    </div>
+
+                    <div class="task-detail-info-card">
+                        <div class="info-card-title"><i class="fas fa-users"></i> ${this.getTranslation('stats')}</div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('comments')}</span>
+                            <span class="info-value">${task.commentsCount || 0}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('attachments')}</span>
+                            <span class="info-value">${task.attachmentsCount || 0}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${this.getTranslation('subtasks')}</span>
+                            <span class="info-value">${task.subtasks ? task.subtasks.length : 0}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-detail-assignees">
+                    <h4><i class="fas fa-users"></i> ${this.getTranslation('assignees')}</h4>
+                    <div class="assignees-grid">
+                        ${assigneesHTML}
+                    </div>
+                </div>
+
+                ${descriptionSection}
+
+                <div class="task-detail-tabs">
+                    <button class="tab-btn active" data-tab="delegations"><i class="fas fa-share-alt"></i> ${this.getTranslation('delegationHistory')} (0)</button>
+                    <button class="tab-btn" data-tab="subtasks"><i class="fas fa-list-ul"></i> ${this.getTranslation('subtasks')} (${task.subtasks?.length || 0})</button>
+                    <button class="tab-btn" data-tab="comments"><i class="fas fa-comments"></i> ${this.getTranslation('comments')} (${task.commentsCount || 0})</button>
+                    <button class="tab-btn" data-tab="activity"><i class="fas fa-history"></i> ${this.getTranslation('activity')}</button>
+                </div>
+
+                <div class="tab-pane active" id="tab-delegations">
+                    <div class="delegation-chain">
+                        <p>${this.getTranslation('noDelegationHistory')}</p>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-subtasks">
+                    <div class="subtasks-detail-list">
+                        ${subtasksHTML}
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-comments">
+                    <div class="comments-section" id="comments-section">
+                        ${commentsHTML}
+                    </div>
+                    <div class="add-comment">
+                        <textarea class="form-control" id="new-comment-detail" rows="2" placeholder="${this.getTranslation('writeComment')}"></textarea>
+                        <div class="comment-toolbar">
+                            <button class="btn-icon" title="${this.getTranslation('attachFile')}"><i class="fas fa-paperclip"></i></button>
+                            <button class="btn btn-primary btn-sm" id="send-comment-detail">${this.getTranslation('send')}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-activity">
+                    ${activityHTML}
+                </div>
+            </div>
+        `;
+
+        // معالج الأزرار والأحداث
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                const tabId = btn.dataset.tab;
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            });
+        });
+
+        const sendCommentDetail = document.getElementById('send-comment-detail');
+        if (sendCommentDetail) {
+            sendCommentDetail.addEventListener('click', async () => {
+                const commentText = document.getElementById('new-comment-detail')?.value;
+                if (commentText && commentText.trim() !== '') {
+                    await this.addNewComment(commentText);
+                    document.getElementById('new-comment-detail').value = '';
+                    await this.openTaskDetails(taskId);
+                }
+            });
+        }
+
+        document.querySelectorAll('.subtask-detail-item').forEach(item => {
+            const subtaskId = item.dataset.id;
+            if (subtaskId) {
+                item.addEventListener('click', () => {
+                    this.closeModal(this.elements.taskDetailModal);
+                    this.openTaskDetails(subtaskId);
+                });
+            }
+        });
+
+        this.openModal(this.elements.taskDetailModal);
+    } catch (error) {
+        console.error('Failed to load task details:', error);
+        this.showNotification(error.message || 'حدث خطأ أثناء تحميل تفاصيل المهمة', 'error');
+    }
+}
 
         getPriorityText(priority) {
             const map = { urgent: this.getTranslation('urgent'), high: this.getTranslation('high'), medium: this.getTranslation('medium'), low: this.getTranslation('low') };
@@ -3572,9 +3673,9 @@ createArchivedPurchaseCard(purchase) {
     const subtasks = [];
     subtaskRows.forEach(row => {
         const subtaskTitle = row.querySelector('.subtask-title')?.value;
+        const subtaskDescription = row.querySelector('.subtask-description')?.value || '';  // حقل شرح المهمة الفرعية
         const subtaskAssignee = row.querySelector('.subtask-assignee')?.value;
 
-        // قراءة المتابعين من الحاوية المخصصة
         let followers = [];
         const customContainer = row.querySelector('.custom-multi-select-container');
         if (customContainer) {
@@ -3583,7 +3684,6 @@ createArchivedPurchaseCard(purchase) {
                 followers = hiddenInput.value.split(',').filter(v => v).map(v => parseInt(v));
             }
         } else {
-            // Fallback للـ select القديم (في حالة وجوده)
             const subtaskFollowerSelect = row.querySelector('.subtask-follower-multiple');
             if (subtaskFollowerSelect) {
                 followers = Array.from(subtaskFollowerSelect.selectedOptions).map(opt => parseInt(opt.value));
@@ -3593,9 +3693,9 @@ createArchivedPurchaseCard(purchase) {
         if (subtaskTitle && subtaskTitle.trim() !== '' && subtaskAssignee) {
             subtasks.push({
                 title: subtaskTitle,
+                description: subtaskDescription,
                 assignees: [parseInt(subtaskAssignee)],
                 followers: followers,
-                description: `${this.getTranslation('subtaskOf')} ${title}`,
                 priority: priority,
                 dueDate: dueDate
             });
@@ -3639,11 +3739,11 @@ createArchivedPurchaseCard(purchase) {
                     ...sub,
                     parentTaskId: newTaskId,
                     projectId: null,
-                    description: sub.description,
                     priority: sub.priority,
                     dueDate: sub.dueDate,
                     assignees: sub.assignees,
                     followers: sub.followers,
+                    description: sub.description,
                     checklist: [],
                     recurringPattern: null,
                     dependencies: []
@@ -3660,67 +3760,136 @@ createArchivedPurchaseCard(purchase) {
 }
 
         async updateTaskStatus(taskId, newStatus) {
-            try {
-                let status = '';
-                if (newStatus === 'sent') status = 'in-progress';
-                else if (newStatus === 'received') status = 'todo';
-                else if (newStatus === 'archived') status = 'archived';
-                else status = newStatus;
+    try {
+        let status = '';
+        if (newStatus === 'sent') status = 'in-progress';
+        else if (newStatus === 'received') status = 'todo';
+        else if (newStatus === 'archived') status = 'archived';
+        else status = newStatus;
 
-                await this.apiRequest(`/api/admin/tasks/${taskId}`, {
-                    method: 'PUT',
-                    body: { status }
-                });
-                await this.refreshAllData();
-                this.showNotification(this.getTranslation('taskStatusUpdated', { status: this.getStatusText(status) }), 'success');
-            } catch (error) {
-                console.error('Failed to update task status:', error);
-                this.showNotification('حدث خطأ أثناء تحديث حالة المهمة', 'error');
-            }
+        await this.apiRequest(`/api/admin/tasks/${taskId}`, {
+            method: 'PUT',
+            body: { status }
+        });
+        
+        // تحديث محلي
+        const taskIndex = this.tasks.findIndex(t => t.id == taskId);
+        if (taskIndex !== -1) {
+            this.tasks[taskIndex].status = status;
+            this.updateSingleTaskCard(taskId);
         }
+        
+        this.showNotification(this.getTranslation('taskStatusUpdated', { status: this.getStatusText(status) }), 'success');
+        this.refreshAllData().catch(e => console.warn('Background refresh failed', e));
+    } catch (error) {
+        console.error('Failed to update task status:', error);
+        this.showNotification('حدث خطأ أثناء تحديث حالة المهمة', 'error');
+    }
+}
 
         async archiveTask(taskId, taskStatus, taskTitle) {
-            const task = this.tasks.find(t => t.id == taskId);
-            if (task && task.status === 'done' && !task.rating && task.type !== 'sent') {
-                Swal.fire({
-                    title: this.getTranslation('rateTask'),
-                    text: 'هذه المهمة مكتملة ولكن لم يتم تقييمها. يرجى تقييم المهمة أولاً قبل أرشفتها.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3498db',
-                    cancelButtonColor: '#95a5a6',
-                    confirmButtonText: this.getTranslation('rateTask'),
-                    cancelButtonText: this.getTranslation('cancel')
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.openRateTaskModal(taskId);
-                    }
-                });
-                return;
+    const task = this.tasks.find(t => t.id == taskId);
+    if (task && task.status === 'done' && !task.rating && task.type !== 'sent') {
+        Swal.fire({
+            title: this.getTranslation('rateTask'),
+            html: `<div style="text-align:right">هذه المهمة مكتملة ولكن لم يتم تقييمها.<br>يرجى تقييم المهمة أولاً قبل أرشفتها.</div>`,
+            icon: 'warning',
+            background: 'rgba(26,26,26,0.95)',
+            backdrop: 'rgba(0,0,0,0.6)',
+            showCancelButton: true,
+            confirmButtonColor: '#3498db',
+            cancelButtonColor: '#95a5a6',
+            confirmButtonText: this.getTranslation('rateTask'),
+            cancelButtonText: this.getTranslation('cancel')
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.openRateTaskModal(taskId);
             }
+        });
+        return;
+    }
 
-            Swal.fire({
-                title: this.getTranslation('archiveConfirm'),
-                text: `هل تريد أرشفة المهمة "${taskTitle || ''}"؟`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#f39c12',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: this.getTranslation('archive'),
-                cancelButtonText: this.getTranslation('cancel')
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        await this.apiRequest(`/api/admin/tasks/${taskId}/archive`, { method: 'POST' });
-                        await this.refreshAllData();
-                        this.showNotification(this.getTranslation('taskArchived'), 'success');
-                    } catch (error) {
-                        console.error('Failed to archive task:', error);
-                        this.showNotification('حدث خطأ أثناء أرشفة المهمة', 'error');
-                    }
-                }
-            });
+    Swal.fire({
+        title: this.getTranslation('archiveConfirm'),
+        html: `<div style="text-align:right">هل تريد أرشفة المهمة "<strong>${this.escapeHtml(taskTitle || '')}</strong>"؟</div>`,
+        icon: 'question',
+        background: 'rgba(26,26,26,0.95)',
+        backdrop: 'rgba(0,0,0,0.6)',
+        showCancelButton: true,
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: '<i class="fas fa-archive"></i> ' + this.getTranslation('archive'),
+        cancelButtonText: '<i class="fas fa-times"></i> ' + this.getTranslation('cancel'),
+        timer: 10000,
+        timerProgressBar: true,
+        showClass: { popup: 'animate__animated animate__fadeInDown' },
+        hideClass: { popup: 'animate__animated animate__fadeOutUp' }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            this.showLoading();
+            try {
+                await this.apiRequest(`/api/admin/tasks/${taskId}/archive`, { method: 'POST' });
+                await this.refreshAllData();
+                this.showNotification(this.getTranslation('taskArchived'), 'success');
+                Swal.fire({
+                    title: 'تم!',
+                    text: 'تمت أرشفة المهمة بنجاح.',
+                    icon: 'success',
+                    background: 'rgba(26,26,26,0.95)',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Failed to archive task:', error);
+                this.showNotification('حدث خطأ أثناء أرشفة المهمة', 'error');
+                Swal.fire('خطأ', 'حدث خطأ أثناء أرشفة المهمة', 'error');
+            } finally {
+                this.hideLoading();
+            }
         }
+    });
+}
+
+async deleteTask(taskId, taskTitle) {
+    Swal.fire({
+        title: this.getTranslation('deleteConfirm'),
+        html: `<div style="text-align:right">هل أنت متأكد من حذف المهمة "<strong>${this.escapeHtml(taskTitle || '')}</strong>"؟<br>لا يمكن التراجع عن هذا الإجراء.</div>`,
+        icon: 'warning',
+        background: 'rgba(26,26,26,0.95)',
+        backdrop: 'rgba(0,0,0,0.6)',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: '<i class="fas fa-trash"></i> ' + this.getTranslation('delete'),
+        cancelButtonText: '<i class="fas fa-undo"></i> ' + this.getTranslation('cancel'),
+        timer: 10000,
+        timerProgressBar: true
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            this.showLoading();
+            try {
+                await this.apiRequest(`/api/admin/tasks/${taskId}`, { method: 'DELETE' });
+                await this.refreshAllData();
+                this.showNotification(this.getTranslation('taskDeleted'), 'success');
+                Swal.fire({
+                    title: 'تم الحذف',
+                    text: 'تم حذف المهمة بنجاح.',
+                    icon: 'success',
+                    background: 'rgba(26,26,26,0.95)',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Failed to delete task:', error);
+                this.showNotification('حدث خطأ أثناء حذف المهمة', 'error');
+                Swal.fire('خطأ', 'حدث خطأ أثناء حذف المهمة', 'error');
+            } finally {
+                this.hideLoading();
+            }
+        }
+    });
+}
+        
 
         async restoreTask(taskId) {
             try {
@@ -3734,18 +3903,35 @@ createArchivedPurchaseCard(purchase) {
         }
 
         async updateTaskProgress(taskId, newProgress, note) {
-            try {
-                await this.apiRequest(`/api/admin/tasks/${taskId}/progress`, {
-                    method: 'POST',
-                    body: { progress: newProgress, note: note || '' }
-                });
-                await this.refreshAllData();
-                this.showNotification(this.getTranslation('progressUpdated', { progress: newProgress }), 'success');
-            } catch (error) {
-                console.error('Failed to update progress:', error);
-                this.showNotification('حدث خطأ أثناء تحديث التقدم', 'error');
+    try {
+        await this.apiRequest(`/api/admin/tasks/${taskId}/progress`, {
+            method: 'POST',
+            body: { progress: newProgress, note: note || '' }
+        });
+        
+        // تحديث الكائن المحلي أولاً
+        const taskIndex = this.tasks.findIndex(t => t.id == taskId);
+        if (taskIndex !== -1) {
+            this.tasks[taskIndex].progress = newProgress;
+            // تحديث الحالة إذا وصلت 100%
+            if (newProgress === 100 && this.tasks[taskIndex].status !== 'done') {
+                this.tasks[taskIndex].status = 'done';
+            } else if (newProgress > 0 && newProgress < 100 && this.tasks[taskIndex].status === 'todo') {
+                this.tasks[taskIndex].status = 'in-progress';
             }
+            // تحديث البطاقة مباشرة
+            this.updateSingleTaskCard(taskId);
         }
+        
+        this.showNotification(this.getTranslation('progressUpdated', { progress: newProgress }), 'success');
+        
+        // جلب البيانات من الخادم في الخلفية لضمان التزامن (بدون إعادة رسم كامل)
+        this.refreshAllData().catch(e => console.warn('Background refresh failed', e));
+    } catch (error) {
+        console.error('Failed to update progress:', error);
+        this.showNotification('حدث خطأ أثناء تحديث التقدم', 'error');
+    }
+}
 
         async addNewComment(commentText) {
             const task = this.selectedTask;
@@ -3995,10 +4181,27 @@ reattachTaskCardEvents() {
             return;
         }
         
-        // ------------------- تحسين زر القائمة -------------------
+        // أيقونة الشرح
+        const descriptionIcon = card.querySelector('.task-description-icon');
+        if (descriptionIcon) {
+            descriptionIcon.removeEventListener('click', this.handleDescriptionClick);
+            descriptionIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const description = descriptionIcon.dataset.description;
+                if (description) {
+                    Swal.fire({
+                        title: 'شرح المهمة',
+                        html: `<div style="text-align:right; white-space:pre-wrap;">${description}</div>`,
+                        icon: 'info',
+                        confirmButtonText: 'إغلاق'
+                    });
+                }
+            });
+        }
+        
+        // بقية الأحداث كما هي (القائمة، الحذف، الأرشفة، إلخ)
         const menuBtn = card.querySelector('.task-menu-btn');
         if (menuBtn) {
-            // إزالة أي مستمع سابق
             const oldHandler = menuBtn._clickHandler;
             if (oldHandler) menuBtn.removeEventListener('click', oldHandler);
             
@@ -4006,18 +4209,16 @@ reattachTaskCardEvents() {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (!dropdown) return;
-                // إغلاق القوائم الأخرى أولاً
                 document.querySelectorAll('.card-dropdown.show').forEach(d => {
                     if (d !== dropdown) d.classList.remove('show');
                 });
-                // تبديل حالة القائمة الحالية
                 dropdown.classList.toggle('show');
             };
             menuBtn.addEventListener('click', clickHandler);
             menuBtn._clickHandler = clickHandler;
         }
         
-        // ------------------- زر الحذف مع إزالة فورية للبطاقة -------------------
+        // الحذف
         const deleteBtn = card.querySelector('.delete-task');
         if (deleteBtn) {
             deleteBtn.removeEventListener('click', this.handleDeleteTask);
@@ -4038,9 +4239,7 @@ reattachTaskCardEvents() {
                     if (result.isConfirmed) {
                         try {
                             await this.apiRequest(`/api/admin/tasks/${id}`, { method: 'DELETE' });
-                            // إزالة البطاقة مباشرة من DOM
                             card.remove();
-                            // تحديث البيانات من الخادم لضمان المزامنة
                             await this.refreshAllData();
                             this.showNotification(this.getTranslation('taskDeleted'), 'success');
                         } catch (error) {
@@ -4052,7 +4251,7 @@ reattachTaskCardEvents() {
             });
         }
         
-        // ------------------- زر الأرشفة مع إزالة فورية -------------------
+        // الأرشفة
         const archiveBtn = card.querySelector('.archive-task');
         if (archiveBtn) {
             archiveBtn.removeEventListener('click', this.handleArchiveTask);
@@ -4061,12 +4260,11 @@ reattachTaskCardEvents() {
                 e.stopPropagation();
                 const task = this.tasks.find(t => t.id == id);
                 await this.archiveTask(id, task?.status, task?.title);
-                // بعد الأرشفة، قم بإزالة البطاقة فوراً
                 card.remove();
             });
         }
         
-        // باقي الأحداث كما هي (تعديل، تحديث التقدم، التعليقات...)
+        // التعديل
         const editBtn = card.querySelector('.edit-task');
         if (editBtn) {
             editBtn.removeEventListener('click', this.handleEditSubtask);
@@ -4077,30 +4275,35 @@ reattachTaskCardEvents() {
             });
         }
         
+        // تحديث التقدم
         const progressBtn = card.querySelector('.btn-update-progress');
         if (progressBtn) {
             progressBtn.removeEventListener('click', this.handleUpdateProgress);
             progressBtn.addEventListener('click', () => this.openUpdateProgressModal(id));
         }
         
+        // التعليقات
         const commentsBtn = card.querySelector('.task-comments');
         if (commentsBtn) {
             commentsBtn.removeEventListener('click', this.handleComments);
             commentsBtn.addEventListener('click', () => this.openCommentsModal(id));
         }
         
+        // المرفقات
         const attachmentsBtn = card.querySelector('.task-attachments');
         if (attachmentsBtn) {
             attachmentsBtn.removeEventListener('click', this.handleAttachments);
             attachmentsBtn.addEventListener('click', () => this.openAttachmentsModal(id));
         }
         
+        // المهام الفرعية
         const subtasksBtn = card.querySelector('.task-subtasks');
         if (subtasksBtn) {
             subtasksBtn.removeEventListener('click', this.handleSubtasks);
             subtasksBtn.addEventListener('click', () => this.showSubtasks(id));
         }
         
+        // رابط المهمة الأم
         const parentLink = card.querySelector('.parent-task-link');
         if (parentLink) {
             parentLink.removeEventListener('click', this.handleParentClick);
@@ -4111,6 +4314,7 @@ reattachTaskCardEvents() {
             });
         }
         
+        // زر البدء
         const startBtn = card.querySelector('.task-start-btn');
         if (startBtn) {
             startBtn.removeEventListener('click', this.handleStartTask);
@@ -4121,6 +4325,7 @@ reattachTaskCardEvents() {
             });
         }
         
+        // متابعة
         const followIndicator = card.querySelector('.task-follow-indicator');
         if (followIndicator) {
             followIndicator.removeEventListener('click', this.handleFollowClick);
@@ -4131,15 +4336,14 @@ reattachTaskCardEvents() {
             });
         }
         
-        // فتح التفاصيل عند النقر على البطاقة (مع تجاهل النقر على الأزرار)
+        // فتح التفاصيل عند النقر على البطاقة
         card.removeEventListener('click', this.handleCardClick);
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item, .btn-update-progress, .task-comments, .task-attachments, .task-subtasks, .task-start-btn, .parent-task-link, .edit-task, .task-follow-indicator, .delete-task, .archive-task')) return;
+            if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item, .btn-update-progress, .task-comments, .task-attachments, .task-subtasks, .task-start-btn, .parent-task-link, .edit-task, .task-follow-indicator, .delete-task, .archive-task, .task-description-icon')) return;
             this.openTaskDetails(id);
         });
     });
     
-    // إغلاق القوائم عند النقر في أي مكان خارجها
     document.removeEventListener('click', this.closeAllDropdowns);
     this.closeAllDropdowns = (e) => {
         if (!e.target.closest('.task-menu-btn')) {
@@ -4150,18 +4354,27 @@ reattachTaskCardEvents() {
 }
 
         async startTask(taskId) {
-            try {
-                await this.apiRequest(`/api/admin/tasks/${taskId}`, {
-                    method: 'PUT',
-                    body: { status: 'in-progress', progress: 1 }
-                });
-                await this.refreshAllData();
-                this.showNotification(this.getTranslation('taskStarted'), 'success');
-            } catch (error) {
-                console.error('Failed to start task:', error);
-                this.showNotification(this.getTranslation('cannotStartTask'), 'error');
-            }
+    try {
+        await this.apiRequest(`/api/admin/tasks/${taskId}`, {
+            method: 'PUT',
+            body: { status: 'in-progress', progress: 1 }
+        });
+        
+        // تحديث محلي
+        const taskIndex = this.tasks.findIndex(t => t.id == taskId);
+        if (taskIndex !== -1) {
+            this.tasks[taskIndex].status = 'in-progress';
+            this.tasks[taskIndex].progress = 1;
+            this.updateSingleTaskCard(taskId);
         }
+        
+        this.showNotification(this.getTranslation('taskStarted'), 'success');
+        this.refreshAllData().catch(e => console.warn('Background refresh failed', e));
+    } catch (error) {
+        console.error('Failed to start task:', error);
+        this.showNotification(this.getTranslation('cannotStartTask'), 'error');
+    }
+}
 
         reattachRequestCardEvents(sectionId) {
             const container = document.getElementById(`${sectionId}-tasks`);
@@ -5428,42 +5641,43 @@ if (addSubtaskRowBtn) {
         }
 
         setupModalCloseButtons() {
-            const closeIds = ['modal-close-btn', 'modal-close-btn-2', 'new-task-modal-close', 'new-task-cancel',
-                'new-request-modal-close', 'new-request-cancel',
-                'new-purchase-modal-close', 'new-purchase-cancel',
-                'new-appointment-modal-close', 'new-appointment-cancel',
-                'progress-modal-close', 'progress-cancel', 'comments-modal-close', 'attachments-modal-close',
-                'calendar-modal-close', 'appointment-day-close', 'appointment-day-close-btn', 'appointment-detail-close', 'appointment-detail-close-btn',
-                'remove-penalty-modal-close', 'remove-penalty-cancel',
-                'request-detail-close', 'request-detail-close-btn',
-                'purchase-detail-close', 'purchase-detail-close-btn',
-                'rate-modal-close', 'rate-cancel',
-                'new-manual-penalty-close', 'new-manual-penalty-cancel',
-                'manual-penalty-detail-close', 'manual-penalty-detail-close-btn'];
-            closeIds.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    btn.addEventListener('click', () => {
-                        const modal = btn.closest('.modal');
-                        if (modal) this.closeModal(modal);
-                    });
-                }
+    const closeIds = ['modal-close-btn', 'modal-close-btn-2', 'new-task-modal-close', 'new-task-cancel',
+        'new-request-modal-close', 'new-request-cancel',
+        'new-purchase-modal-close', 'new-purchase-cancel',
+        'new-appointment-modal-close', 'new-appointment-cancel',
+        'progress-modal-close', 'progress-cancel', 'comments-modal-close', 'attachments-modal-close',
+        'calendar-modal-close', 'appointment-day-close', 'appointment-day-close-btn', 'appointment-detail-close', 'appointment-detail-close-btn',
+        'remove-penalty-modal-close', 'remove-penalty-cancel',
+        'request-detail-close', 'request-detail-close-btn',
+        'purchase-detail-close', 'purchase-detail-close-btn',
+        'rate-modal-close', 'rate-cancel',
+        'new-manual-penalty-close', 'new-manual-penalty-cancel',
+        'manual-penalty-detail-close', 'manual-penalty-detail-close-btn',
+        'description-modal-close', 'description-modal-close-btn'];   // تم إضافة أزرار مودال الشرح
+    closeIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const modal = btn.closest('.modal');
+                if (modal) this.closeModal(modal);
             });
-            const sectionModalClose = document.getElementById('section-modal-close');
-            if (sectionModalClose) {
-                sectionModalClose.addEventListener('click', () => {
-                    const modal = document.getElementById('section-content-modal');
-                    if (modal) this.closeModal(modal);
-                });
-            }
-            const sectionModalCloseBtn = document.getElementById('section-modal-close-btn');
-            if (sectionModalCloseBtn) {
-                sectionModalCloseBtn.addEventListener('click', () => {
-                    const modal = document.getElementById('section-content-modal');
-                    if (modal) this.closeModal(modal);
-                });
-            }
         }
+    });
+    const sectionModalClose = document.getElementById('section-modal-close');
+    if (sectionModalClose) {
+        sectionModalClose.addEventListener('click', () => {
+            const modal = document.getElementById('section-content-modal');
+            if (modal) this.closeModal(modal);
+        });
+    }
+    const sectionModalCloseBtn = document.getElementById('section-modal-close-btn');
+    if (sectionModalCloseBtn) {
+        sectionModalCloseBtn.addEventListener('click', () => {
+            const modal = document.getElementById('section-content-modal');
+            if (modal) this.closeModal(modal);
+        });
+    }
+}
 
         openModal(modal) {
             if (modal) modal.classList.add('active');
