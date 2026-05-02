@@ -976,6 +976,8 @@
                 this.setupEmployeeSearchEvents();
             } else {
                 searchContainer.style.display = 'none';
+                searchContainer.style.visibility = 'hidden';
+                searchContainer.style.pointerEvents = 'none';
             }
         }
 
