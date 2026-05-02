@@ -195,7 +195,7 @@
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link quick-nav-section-btn" data-section="sent">
+                        <button class="nav-link quick-nav-section-btn" data-section="subtasks">
                             <span class="nav-icon"><i class="fas fa-paper-plane"></i></span>
                             <span class="nav-text" data-i18n="tasksSent">المهام المرسلة</span>
                         </button>
@@ -206,12 +206,7 @@
                             <span class="nav-text" data-i18n="tasksReceived">المهام المستلمة</span>
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link quick-nav-section-btn" data-section="subtasks">
-                            <span class="nav-icon"><i class="fas fa-list-ul"></i></span>
-                            <span class="nav-text" data-i18n="subtasks">المهام الفرعية</span>
-                        </button>
-                    </li>
+                    
                     <li class="nav-item">
                         <button class="nav-link quick-nav-section-btn" data-section="followed">
                             <span class="nav-icon"><i class="fas fa-eye"></i></span>
@@ -526,37 +521,28 @@
 
             <!-- 🎯 الأقسام الرئيسية للكروت -->
             <div class="tasks-board" id="tasks-board">
-                <!-- القسم 1: المهام التي بعتها (المرسلة) -->
-                <div class="board-section" data-section="sent">
+
+                <!-- القسم 3: المهام الفرعية -->
+                <div class="board-section" data-section="subtasks">
                     <div class="section-header">
                         <div class="section-title-wrapper">
                             <h2 class="section-title">
-                                <i class="fas fa-paper-plane" style="color: #3498db;"></i>
+                                <i class="fas fa-paper-plane" style="color: #9b59b6;"></i>
                                 <span data-i18n="tasksSent">المهام المرسلة</span>
                             </h2>
-                            <span class="tasks-count" id="sent-count">0</span>
+                            <span class="tasks-count" id="subtasks-count">0</span>
                         </div>
                         <div class="section-header-actions">
-                            <div class="section-filters" data-section="sent">
+                            <div class="section-filters" data-section="subtasks">
                                 <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
                                 <button class="filter-status-btn" data-status="todo"><span data-i18n="todo">بانتظار</span> <span class="count">0</span></button>
                                 <button class="filter-status-btn" data-status="in-progress"><span data-i18n="inProgress">قيد التنفيذ</span> <span class="count">0</span></button>
                                 <button class="filter-status-btn" data-status="review"><span data-i18n="review">مراجعة</span> <span class="count">0</span></button>
                                 <button class="filter-status-btn" data-status="done"><span data-i18n="done">مكتمل</span> <span class="count">0</span></button>
                             </div>
-                            <span class="section-status-badge" data-i18n="overdueTasksShort">متأخرة: 0</span>
-                            <span class="section-status-badge success" data-i18n="completedTasksShort">منجزة: 0</span>
-                            <button class="section-add-btn" title="إضافة مهمة جديدة" data-i18n-title="addNewTask">
-                                <i class="fas fa-plus"></i>
-                            </button>
                         </div>
                     </div>
-                    
-                    <div class="tasks-container horizontal-scroll" id="sent-tasks" data-status="sent">
-                        <div class="quick-add-task">
-                            <i class="fas fa-plus"></i>
-                            <span data-i18n="quickAddTask">إضافة مهمة جديدة</span>
-                        </div>
+                    <div class="tasks-container horizontal-scroll" id="subtasks-tasks" data-status="subtasks">
                     </div>
                 </div>
 
@@ -587,30 +573,6 @@
                     </div>
                 </div>
 
-                <!-- القسم 3: المهام الفرعية -->
-                <div class="board-section" data-section="subtasks">
-                    <div class="section-header">
-                        <div class="section-title-wrapper">
-                            <h2 class="section-title">
-                                <i class="fas fa-list-ul" style="color: #9b59b6;"></i>
-                                <span data-i18n="subtasks">المهام الفرعية</span>
-                            </h2>
-                            <span class="tasks-count" id="subtasks-count">0</span>
-                        </div>
-                        <div class="section-header-actions">
-                            <div class="section-filters" data-section="subtasks">
-                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="todo"><span data-i18n="todo">بانتظار</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="in-progress"><span data-i18n="inProgress">قيد التنفيذ</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="review"><span data-i18n="review">مراجعة</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="done"><span data-i18n="done">مكتمل</span> <span class="count">0</span></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tasks-container horizontal-scroll" id="subtasks-tasks" data-status="subtasks">
-                    </div>
-                </div>
-
                 <!-- القسم 4: المهام المطلوب متابعتها -->
                 <div class="board-section" data-section="followed">
                     <div class="section-header">
@@ -635,34 +597,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 5: المهام المكتملة (زيادة من الملف الأول) -->
-                <div class="board-section" data-section="finish">
-                    <div class="section-header">
-                        <div class="section-title-wrapper">
-                            <h2 class="section-title">
-                                <i class="fas fa-check-circle" style="color: #27ae60;"></i>
-                                <span data-i18n="tasksFinish">المهام المكتملة</span>
-                            </h2>
-                            <span class="tasks-count" id="finish-count">0</span>
-                        </div>
-                        <div class="section-header-actions">
-                            <div class="section-filters" data-section="finish">
-                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="this-week"><span data-i18n="thisWeek">هذا الأسبوع</span> <span class="count">0</span></button>
-                                <button class="filter-status-btn" data-status="this-month"><span data-i18n="thisMonth">هذا الشهر</span> <span class="count">0</span></button>
-                            </div>
-                            <span class="section-status-badge success" data-i18n="averageCompletion">متوسط الإنجاز: 0%</span>
-                        </div>
-                    </div>
-                    <div class="tasks-container horizontal-scroll" id="finish-tasks" data-status="finish">
-                        <div class="quick-add-task">
-                            <i class="fas fa-chart-line"></i>
-                            <span data-i18n="completedTasksHint">المهام التي تم إنجازها بنجاح</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- القسم 6: الطلبات المرسلة -->
+                <!-- القسم 5: الطلبات المرسلة -->
                 <div class="board-section" data-section="requests-sent">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -689,7 +624,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 7: الطلبات المستلمة -->
+                <!-- القسم 6: الطلبات المستلمة -->
                 <div class="board-section" data-section="requests-received">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -709,7 +644,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 8: طلبات الشراء المرسلة -->
+                <!-- القسم 7: طلبات الشراء المرسلة -->
                 <div class="board-section" data-section="purchases-sent">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -736,7 +671,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 9: طلبات الشراء المستلمة -->
+                <!-- القسم 8: طلبات الشراء المستلمة -->
                 <div class="board-section" data-section="purchases-received">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -756,7 +691,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 10: الجزاءات (تلقائية) -->
+                <!-- القسم 9: الجزاءات (تلقائية) -->
                 <div class="board-section" data-section="penalties">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -784,7 +719,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 11: الجزاءات اليدوية -->
+                <!-- القسم 10: الجزاءات اليدوية -->
                 <div class="board-section" data-section="manual-penalties">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -811,7 +746,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 12: المؤرشفة -->
+                <!-- القسم 11: المؤرشفة -->
                 <div class="board-section" data-section="archived">
                     <div class="section-header">
                         <div class="section-title-wrapper">
