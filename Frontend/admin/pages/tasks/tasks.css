@@ -484,6 +484,23 @@ body {
     transform: translateY(0);
 }
 
+@media (max-width: 768px) {
+    .notifications-dropdown .notifications-content,
+    .chat-dropdown .chat-content {
+        width: 320px !important;
+        right: 0 !important;
+        left: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .notifications-dropdown .notifications-content,
+    .chat-dropdown .chat-content {
+        width: 280px !important;
+        right: -10px !important;
+    }
+}
+
 .notifications-header {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
@@ -6244,5 +6261,398 @@ body.sidebar-open .sidebar-reveal-btn {
     line-height: 1.7;
     font-size: 1rem;
     color: var(--color-text-secondary);
+}
+
+/* ========== طريقة العرض المصغرة داخل المودال ========== */
+
+/* شريط تبديل العرض داخل المودال */
+.modal-view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: 1rem;
+}
+
+.modal-view-toggle .view-toggle-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: rgba(203, 205, 205, 0.1);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.modal-view-toggle .view-toggle-btn:hover {
+    background: rgba(203, 205, 205, 0.18);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.modal-view-toggle .view-toggle-btn.active {
+    background: var(--gradient-primary);
+    color: var(--color-bg-primary);
+    border-color: var(--color-primary);
+}
+
+/* حاوية العرض الكبير (افتراضي) */
+.section-content-wrapper.view-large {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+/* حاوية العرض المصغر */
+.section-content-wrapper.view-small {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+/* الكرت المصغر للمهام */
+.task-card-small {
+    background: linear-gradient(145deg, rgba(26, 26, 26, 0.7), rgba(17, 17, 17, 0.8));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.task-card-small:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-subtle);
+}
+
+.task-card-small .task-title-small {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.task-card-small .task-assignee-small {
+    font-size: 0.7rem;
+    color: var(--color-text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.task-card-small .task-assignee-small i {
+    font-size: 0.65rem;
+    color: var(--color-primary);
+}
+
+.task-card-small .task-progress-small {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+}
+
+.task-card-small .progress-bar-small {
+    flex: 1;
+    height: 4px;
+    background: rgba(203, 205, 205, 0.2);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.task-card-small .progress-fill-small {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.2s;
+}
+
+.task-card-small .progress-percent-small {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    min-width: 38px;
+    text-align: left;
+}
+
+/* الكرت المصغر للطلبات */
+.request-card-small,
+.purchase-card-small,
+.penalty-card-small,
+.manual-penalty-card-small,
+.appointment-card-small {
+    background: linear-gradient(145deg, rgba(26, 26, 26, 0.7), rgba(17, 17, 17, 0.8));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.request-card-small:hover,
+.purchase-card-small:hover,
+.penalty-card-small:hover,
+.manual-penalty-card-small:hover,
+.appointment-card-small:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+}
+
+.request-card-small .title,
+.purchase-card-small .title,
+.penalty-card-small .title,
+.manual-penalty-card-small .title,
+.appointment-card-small .title {
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.request-card-small .meta,
+.purchase-card-small .meta,
+.penalty-card-small .meta,
+.manual-penalty-card-small .meta,
+.appointment-card-small .meta {
+    font-size: 0.7rem;
+    color: var(--color-text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* أيقونات إضافية */
+.request-card-small i,
+.purchase-card-small i,
+.penalty-card-small i,
+.manual-penalty-card-small i,
+.appointment-card-small i {
+    font-size: 0.65rem;
+    color: var(--color-primary);
+}
+
+/* استجابة للجوال */
+@media (max-width: 768px) {
+    .section-content-wrapper.view-small {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.5rem;
+    }
+    .task-card-small .task-title-small {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-content-wrapper.view-small {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+}
+
+/* ======== إعادة ترتيب مودال عرض الأقسام الكبير ======== */
+#section-content-modal .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    direction: ltr;   /* اجبار الاتجاه الأفقي ليكون من اليسار لليمين لضبط الترتيب */
+}
+
+/* زر الإغلاق: يبقى في أقصى اليسار */
+#section-content-modal .modal-header .modal-close {
+    order: 1;
+    margin-left: 0;
+    margin-right: auto; /* لا يتحرك لليمين لأنه أول عنصر في الوضع LTR */
+}
+
+/* العنوان: يأخذ المساحة المتبقية ويتمركز */
+#section-content-modal .modal-header .modal-title {
+    order: 2;
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* أزرار تبديل العرض: تنتقل إلى أقصى اليمين */
+#section-content-modal .modal-header .modal-view-toggle {
+    order: 3;
+    margin-right: 0;
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ===== جعل حقل البحث عن الموظف في سطر لوحده على الجوال ===== */
+/* ===== جعل حقل البحث عن الموظف في سطر لوحده على الجوال ===== */
+@media (max-width: 768px) {
+    /* جعل منطقة أيقونات المستخدم تسمح بالتفاف العناصر */
+    .admin-user-area {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;   /* تقليل المسافة بين الأسطر */
+    }
+
+    /* حقل البحث عن الموظف يأخذ عرض كامل ويظهر في سطر مستقل */
+    #employee-search-container {
+        order: 1;
+        width: 100%;
+        margin: 0.2rem 0 0 0;  /* تقليل المارجن من الأعلى */
+        display: block !important;
+        text-align: center;     /* توسيط المحتوى */
+    }
+
+    /* باقي العناصر (اللغة، الإشعارات، الدردشة، الميل) تبقى في سطر ثان */
+    .admin-user-area .language-switcher,
+    .admin-user-area .notifications-dropdown,
+    .admin-user-area .chat-dropdown {
+        order: 2;
+    }
+
+    /* تنسيق إضافي لجعل صندوق البحث يتمدد بشكل كامل ومتمركز */
+    .employee-search-wrapper {
+        width: 100%;
+        max-width: 300px;       /* عرض مناسب للجوال */
+        margin: 0 auto;         /* توسيط الصندوق */
+    }
+    
+    .employee-search-box {
+        width: 100%;
+        justify-content: center; /* توسيط المحتوى داخلياً */
+        gap: 0.5rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    /* تقليل المارجن من أعلى شريط البحث العلوي إذا كان موجوداً */
+    .admin-search.advanced-search {
+        margin-bottom: 0.2rem;
+    }
+}
+
+/* ===== جعل قائمة نتائج البحث عن موظف غير شفافة ===== */
+.employee-search-results {
+    background: var(--color-bg-elevated) !important;  /* لون خلفية صلب ومعتم (rgb(37,37,37)) */
+    backdrop-filter: none !important;                 /* إزالة أي شفافية أو blur */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);       /* تعزيز الظل قليلاً للعمق */
+}
+
+/* ===== جعل الكروت المصغرة تدعم القائمة المنسدلة (3 نقاط) ===== */
+.task-card-small,
+.request-card-small,
+.purchase-card-small,
+.penalty-card-small,
+.manual-penalty-card-small,
+.appointment-card-small {
+    position: relative;
+}
+
+.task-card-small .card-dropdown,
+.request-card-small .card-dropdown,
+.purchase-card-small .card-dropdown,
+.penalty-card-small .card-dropdown,
+.manual-penalty-card-small .card-dropdown,
+.appointment-card-small .card-dropdown {
+    position: absolute;
+    top: 2rem;
+    left: 0.5rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-medium);
+    min-width: 140px;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    padding: 0.3rem 0;
+}
+
+.task-card-small .card-dropdown.show,
+.request-card-small .card-dropdown.show,
+.purchase-card-small .card-dropdown.show,
+.penalty-card-small .card-dropdown.show,
+.manual-penalty-card-small .card-dropdown.show,
+.appointment-card-small .card-dropdown.show {
+    display: flex;
+}
+
+.task-card-small .task-menu-btn,
+.request-card-small .request-menu-btn,
+.purchase-card-small .purchase-menu-btn,
+.penalty-card-small .penalty-menu-btn,
+.manual-penalty-card-small .manual-penalty-menu-btn,
+.appointment-card-small .appointment-menu-btn {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-size: 0.9rem;
+    z-index: 5;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+}
+
+.task-card-small .task-menu-btn:hover,
+.request-card-small .request-menu-btn:hover,
+.purchase-card-small .purchase-menu-btn:hover,
+.penalty-card-small .penalty-menu-btn:hover,
+.manual-penalty-card-small .manual-penalty-menu-btn:hover,
+.appointment-card-small .appointment-menu-btn:hover {
+    background: rgba(203, 205, 205, 0.3);
+    color: var(--color-text-primary);
+}
+
+/* تحسين ظهور القائمة في الكروت الصغيرة */
+@media (max-width: 768px) {
+    .task-card-small .card-dropdown,
+    .request-card-small .card-dropdown,
+    .purchase-card-small .card-dropdown,
+    .penalty-card-small .card-dropdown,
+    .manual-penalty-card-small .card-dropdown,
+    .appointment-card-small .card-dropdown {
+        top: 1.8rem;
+        left: 0.2rem;
+        min-width: 120px;
+    }
+    .task-card-small .task-menu-btn,
+    .request-card-small .request-menu-btn,
+    .purchase-card-small .purchase-menu-btn,
+    .penalty-card-small .penalty-menu-btn,
+    .manual-penalty-card-small .manual-penalty-menu-btn,
+    .appointment-card-small .appointment-menu-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
 }
 /* ===== نهاية التحسينات المطلوبة ===== */

@@ -219,6 +219,12 @@
                         </button>
                     </li>
                     <li class="nav-item">
+                        <button class="nav-link quick-nav-section-btn" data-section="finish">
+                            <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
+                            <span class="nav-text" data-i18n="tasksFinish">المهام المكتملة</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
                         <button class="nav-link quick-nav-section-btn" data-section="requests">
                             <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
                             <span class="nav-text" data-i18n="requests">الطلبات</span>
@@ -520,7 +526,7 @@
 
             <!-- 🎯 الأقسام الرئيسية للكروت -->
             <div class="tasks-board" id="tasks-board">
-                <!-- القسم 1: المهام التي بعتها -->
+                <!-- القسم 1: المهام التي بعتها (المرسلة) -->
                 <div class="board-section" data-section="sent">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -629,7 +635,34 @@
                     </div>
                 </div>
 
-                <!-- القسم 5: الطلبات المرسلة -->
+                <!-- القسم 5: المهام المكتملة (زيادة من الملف الأول) -->
+                <div class="board-section" data-section="finish">
+                    <div class="section-header">
+                        <div class="section-title-wrapper">
+                            <h2 class="section-title">
+                                <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                                <span data-i18n="tasksFinish">المهام المكتملة</span>
+                            </h2>
+                            <span class="tasks-count" id="finish-count">0</span>
+                        </div>
+                        <div class="section-header-actions">
+                            <div class="section-filters" data-section="finish">
+                                <button class="filter-status-btn active" data-status="all"><span data-i18n="all">الكل</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="this-week"><span data-i18n="thisWeek">هذا الأسبوع</span> <span class="count">0</span></button>
+                                <button class="filter-status-btn" data-status="this-month"><span data-i18n="thisMonth">هذا الشهر</span> <span class="count">0</span></button>
+                            </div>
+                            <span class="section-status-badge success" data-i18n="averageCompletion">متوسط الإنجاز: 0%</span>
+                        </div>
+                    </div>
+                    <div class="tasks-container horizontal-scroll" id="finish-tasks" data-status="finish">
+                        <div class="quick-add-task">
+                            <i class="fas fa-chart-line"></i>
+                            <span data-i18n="completedTasksHint">المهام التي تم إنجازها بنجاح</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- القسم 6: الطلبات المرسلة -->
                 <div class="board-section" data-section="requests-sent">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -656,7 +689,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 6: الطلبات المستلمة -->
+                <!-- القسم 7: الطلبات المستلمة -->
                 <div class="board-section" data-section="requests-received">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -676,7 +709,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 7: طلبات الشراء المرسلة -->
+                <!-- القسم 8: طلبات الشراء المرسلة -->
                 <div class="board-section" data-section="purchases-sent">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -703,7 +736,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 8: طلبات الشراء المستلمة -->
+                <!-- القسم 9: طلبات الشراء المستلمة -->
                 <div class="board-section" data-section="purchases-received">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -723,7 +756,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 9: الجزاءات (تلقائية) -->
+                <!-- القسم 10: الجزاءات (تلقائية) -->
                 <div class="board-section" data-section="penalties">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -751,7 +784,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 10: الجزاءات اليدوية -->
+                <!-- القسم 11: الجزاءات اليدوية -->
                 <div class="board-section" data-section="manual-penalties">
                     <div class="section-header">
                         <div class="section-title-wrapper">
@@ -778,7 +811,7 @@
                     </div>
                 </div>
 
-                <!-- القسم 11: المؤرشفة -->
+                <!-- القسم 12: المؤرشفة -->
                 <div class="board-section" data-section="archived">
                     <div class="section-header">
                         <div class="section-title-wrapper">
