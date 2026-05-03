@@ -3824,73 +3824,7 @@ createArchivedPurchaseCard(purchase) {
     const task = this.tasks.find(t => t.id == taskId);
     if (!task) return;
 
-    // ---------------------------------------------
-    // 1. حالة المهمة الفرعية (subtask)
-    // ---------------------------------------------
-    if (task.type === 'subtask') {
-        const isDone = (task.status === 'done' || task.progress === 100);
-        const isRated = !!task.rating; // true إذا كان تقييمها موجوداً
-
-        // إذا كانت مكتملة ولكن لم يتم تقييمها → منع الأرشفة مهما كان المستخدم
-        if (isDone && !isRated) {
-            Swal.fire({
-                title: this.getTranslation('rateTask'),
-                html: `<div style="text-align:right">هذه المهمة الفرعية مكتملة ولكن لم يتم تقييمها.<br>يرجى تقييم المهمة أولاً قبل أرشفتها.</div>`,
-                icon: 'warning',
-                background: 'rgba(26,26,26,0.95)',
-                backdrop: 'rgba(0,0,0,0.6)',
-                showCancelButton: true,
-                confirmButtonColor: '#3498db',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: this.getTranslation('rateTask'),
-                cancelButtonText: this.getTranslation('cancel')
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.openRateTaskModal(taskId);
-                }
-            });
-            return; // لا نكمل الأرشفة
-        }
-        // إذا كانت المهمة الفرعية غير مكتملة أو مقيمة → نسمح بالأرشفة (تستمر)
-    }
-
-    // ---------------------------------------------
-    // 2. حالة المهمة المستلمة (received)
-    // ---------------------------------------------
-    else if (task.type === 'received') {
-        const isDone = (task.status === 'done' || task.progress === 100);
-        const isRated = !!task.rating;
-        const isGeneralManager = (this.currentUser.role === 'مشرف_عام');
-
-        if (isDone && !isRated && !isGeneralManager) {
-            // المستخدم العادي لا يمكنه أرشفة مهمة مستلمة مكتملة بدون تقييم
-            Swal.fire({
-                title: this.getTranslation('rateTask'),
-                html: `<div style="text-align:right">هذه المهمة المستلمة مكتملة ولكن لم يتم تقييمها.<br>يرجى تقييم المهمة أولاً قبل أرشفتها.</div>`,
-                icon: 'warning',
-                background: 'rgba(26,26,26,0.95)',
-                backdrop: 'rgba(0,0,0,0.6)',
-                showCancelButton: true,
-                confirmButtonColor: '#3498db',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: this.getTranslation('rateTask'),
-                cancelButtonText: this.getTranslation('cancel')
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.openRateTaskModal(taskId);
-                }
-            });
-            return;
-        }
-        // إذا كان المشرف العام أو المهمة مقيمة أو غير مكتملة → يسمح بالأرشفة
-    }
-
-    // ---------------------------------------------
-    // 3. باقي أنواع المهام (sent, followed, archived, إلخ)
-    //    لا يوجد شرط تقييم، تٌرشف طبيعياً
-    // ---------------------------------------------
-
-    // ------------------- مربع تأكيد الأرشفة -------------------
+    // ------------------- مربع تأكيد الأرشفة (بدون شروط التقييم) -------------------
     Swal.fire({
         title: this.getTranslation('archiveConfirm'),
         html: `<div style="text-align:right">هل تريد أرشفة المهمة "<strong>${this.escapeHtml(taskTitle || '')}</strong>"؟</div>`,
