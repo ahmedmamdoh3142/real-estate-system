@@ -423,11 +423,12 @@ class TasksService {
         `;
         const tasks = await this.queryAsync(tasksQuery, [safeUserId, safeUserId]);
         
-        // 2. Archived requests
+        // 2. Archived requests with comments count
         const requestsQuery = `
             SELECT 
                 r.id, r.title, r.description, r.assigneeId, r.projectId, r.status, 
                 r.createdAt, r.updatedAt, r.createdBy, r.reminderDateTime, r.reminderSent,
+                (SELECT COUNT(*) FROM RequestComments WHERE requestId = r.id) AS commentsCount,
                 c.fullName AS createdByName,
                 u.fullName AS assigneeName,
                 'request' AS entityType,
@@ -440,11 +441,12 @@ class TasksService {
         `;
         const requests = await this.queryAsync(requestsQuery, [safeUserId, safeUserId]);
 
-        // 3. Archived purchase requests
+        // 3. Archived purchase requests with comments count
         const purchasesQuery = `
             SELECT 
                 p.id, p.item, p.quantity, p.urgency, p.description, p.assigneeId, 
                 p.status, p.createdAt, p.updatedAt, p.createdBy, p.reminderDateTime, p.reminderSent,
+                (SELECT COUNT(*) FROM PurchaseRequestComments WHERE purchaseRequestId = p.id) AS commentsCount,
                 c.fullName AS createdByName,
                 u.fullName AS assigneeName,
                 'purchase' AS entityType,
@@ -592,7 +594,7 @@ class TasksService {
         task.comments = await this.queryAsync(commentsQuery, [taskId]);
 
         const attachmentsQuery = `
-            SELECT id, fileName, fileUrl, fileSize, mimeType, uploadedAt
+            SELECT id, fileName, fileUrl, fileSize, mimeType, uploadedAt, uploadedBy
             FROM TaskAttachments
             WHERE taskId = ?
         `;
@@ -805,7 +807,7 @@ class TasksService {
         if (data.progress !== undefined) {
             updates.push('progress = ?');
             params.push(data.progress);
-            if (data.progress === 100 && data.completedAt === undefined) {
+            if (data.progress === 100) {
                 updates.push('completedAt = GETDATE(), isOverdue = 0, daysOverdue = 0');
                 const task = await this.getTaskById(taskId, userId);
                 if (task && task.dueDate && new Date(task.dueDate) < new Date()) {
@@ -1067,10 +1069,11 @@ class TasksService {
         `, [taskId, userId, userId]);
         if (check.length === 0) throw new Error('Permission denied');
 
+        const relativePath = `/uploads/tasks/${path.basename(fileData.fileUrl)}`;
         await this.executeAsync(`
-            INSERT INTO TaskAttachments (taskId, fileName, fileUrl, fileSize, mimeType, uploadedAt)
-            VALUES (?, ?, ?, ?, ?, GETDATE())
-        `, [taskId, fileData.fileName, fileData.fileUrl, fileData.fileSize, fileData.mimeType]);
+            INSERT INTO TaskAttachments (taskId, fileName, fileUrl, fileSize, mimeType, uploadedAt, uploadedBy)
+            VALUES (?, ?, ?, ?, ?, GETDATE(), ?)
+        `, [taskId, fileData.fileName, relativePath, fileData.fileSize, fileData.mimeType, userId]);
 
         const task = await this.getTaskById(taskId, userId);
         const uploader = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
@@ -1093,6 +1096,38 @@ class TasksService {
         return { success: true };
     }
 
+    async deleteAttachment(attachmentId, taskId, userId) {
+        attachmentId = this._toSafeInt(attachmentId, null, true);
+        taskId = this._toSafeInt(taskId, null, true);
+        userId = this._toSafeInt(userId, null, true);
+        
+        const attachment = await this.queryAsync(`
+            SELECT a.id, a.fileUrl, a.uploadedBy, t.senderId
+            FROM TaskAttachments a
+            INNER JOIN Tasks t ON a.taskId = t.id
+            WHERE a.id = ? AND a.taskId = ?
+        `, [attachmentId, taskId]);
+        
+        if (attachment.length === 0) throw new Error('Attachment not found');
+        
+        const isGM = await this._isGeneralManager(userId);
+        const isSender = (attachment[0].senderId === userId);
+        const isUploader = (attachment[0].uploadedBy === userId);
+        
+        if (!isGM && !isSender && !isUploader) {
+            throw new Error('You do not have permission to delete this attachment');
+        }
+        
+        const filePath = path.join(__dirname, '../../../', attachment[0].fileUrl);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+        
+        await this.executeAsync(`DELETE FROM TaskAttachments WHERE id = ?`, [attachmentId]);
+        
+        return { success: true };
+    }
+
     async updateProgress(taskId, progress, note, userId) {
         taskId = this._toSafeInt(taskId, null, true);
         userId = this._toSafeInt(userId, null, true);
@@ -1101,10 +1136,10 @@ class TasksService {
 
         const check = await this.queryAsync(`
             SELECT 1 FROM Tasks t
-            INNER JOIN TaskAssignees ta ON t.id = ta.taskId
-            WHERE t.id = ? AND ta.userId = ?
-        `, [taskId, userId]);
-        if (check.length === 0) throw new Error('Only assignees can update progress');
+            LEFT JOIN TaskAssignees ta ON t.id = ta.taskId
+            WHERE t.id = ? AND (t.senderId = ? OR ta.userId = ?)
+        `, [taskId, userId, userId]);
+        if (check.length === 0) throw new Error('Only sender or assignees can update progress');
 
         let completedAtUpdate = '';
         if (progress === 100) {
@@ -1651,6 +1686,7 @@ class TasksService {
             SELECT 
                 r.id, r.title, r.description, r.assigneeId, r.projectId, r.status, 
                 r.createdAt, r.updatedAt, r.createdBy, r.reminderDateTime, r.reminderSent,
+                (SELECT COUNT(*) FROM RequestComments WHERE requestId = r.id) AS commentsCount,
                 u.fullName AS assigneeName, 
                 c.fullName AS createdByName
             FROM Requests r
@@ -1815,6 +1851,72 @@ class TasksService {
         return { success: true };
     }
 
+    // ========== REQUEST COMMENTS ==========
+    async getRequestComments(requestId, userId, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
+        const check = await this.queryAsync(`
+            SELECT 1 FROM Requests r
+            WHERE r.id = ?
+              AND (r.createdBy = ? OR r.assigneeId = ?)
+        `, [requestId, safeUserId, safeUserId]);
+        if (check.length === 0) throw new Error('Access denied');
+
+        const comments = await this.queryAsync(`
+            SELECT rc.id, rc.comment, rc.createdAt, rc.updatedAt,
+                   u.id as userId, u.fullName, u.profileImage
+            FROM RequestComments rc
+            INNER JOIN Users u ON rc.userId = u.id
+            WHERE rc.requestId = ?
+            ORDER BY rc.createdAt ASC
+        `, [requestId]);
+        return comments;
+    }
+
+    async addRequestComment(requestId, comment, userId) {
+        requestId = this._toSafeInt(requestId, null, true);
+        userId = this._toSafeInt(userId, null, true);
+        if (!comment || comment.trim() === '') throw new Error('Comment cannot be empty');
+
+        const check = await this.queryAsync(`
+            SELECT 1 FROM Requests r
+            WHERE r.id = ?
+              AND (r.createdBy = ? OR r.assigneeId = ?)
+        `, [requestId, userId, userId]);
+        if (check.length === 0) throw new Error('Permission denied');
+
+        await this.executeAsync(`
+            INSERT INTO RequestComments (requestId, userId, comment, createdAt, updatedAt)
+            VALUES (?, ?, ?, GETDATE(), GETDATE())
+        `, [requestId, userId, comment]);
+
+        await this.executeAsync(`
+            UPDATE Requests
+            SET commentsCount = (SELECT COUNT(*) FROM RequestComments WHERE requestId = ?)
+            WHERE id = ?
+        `, [requestId, requestId]);
+
+        const request = await this.queryAsync(`SELECT title, createdBy, assigneeId FROM Requests WHERE id = ?`, [requestId]);
+        if (request.length) {
+            const r = request[0];
+            const commenter = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
+            const commenterName = commenter[0]?.fullName || 'مستخدم';
+            const recipients = [r.createdBy, r.assigneeId].filter(id => id && id !== userId);
+            for (const recId of recipients) {
+                await this._createNotification(
+                    recId,
+                    'comment_added',
+                    `تعليق جديد على طلب "${r.title}"`,
+                    `${commenterName} أضاف تعليقاً: "${comment.substring(0,100)}..."`,
+                    'request',
+                    requestId,
+                    { requestTitle: r.title, commenter: commenterName, commentPreview: comment.substring(0,100) }
+                );
+            }
+        }
+        return { success: true };
+    }
+
     // ========== PURCHASE REQUESTS (with isArchived) ==========
     async getPurchaseRequests(userId, folder = 'all', page = 1, limit = 25, viewingUserId = null) {
         const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
@@ -1845,6 +1947,7 @@ class TasksService {
             SELECT 
                 p.id, p.item, p.quantity, p.urgency, p.description, p.assigneeId, 
                 p.status, p.createdAt, p.updatedAt, p.createdBy, p.reminderDateTime, p.reminderSent,
+                (SELECT COUNT(*) FROM PurchaseRequestComments WHERE purchaseRequestId = p.id) AS commentsCount,
                 u.fullName AS assigneeName, 
                 c.fullName AS createdByName
             FROM PurchaseRequests p
@@ -2023,6 +2126,72 @@ class TasksService {
         `, [purchaseId, userId]);
         if (check.length === 0) throw new Error('Only creator can delete purchase request');
         await this.executeAsync(`DELETE FROM PurchaseRequests WHERE id = ?`, [purchaseId]);
+        return { success: true };
+    }
+
+    // ========== PURCHASE REQUEST COMMENTS ==========
+    async getPurchaseComments(purchaseId, userId, viewingUserId = null) {
+        const targetUserId = viewingUserId && await this._isGeneralManager(userId) ? viewingUserId : userId;
+        const safeUserId = this._toSafeInt(targetUserId, null, true);
+        const check = await this.queryAsync(`
+            SELECT 1 FROM PurchaseRequests p
+            WHERE p.id = ?
+              AND (p.createdBy = ? OR p.assigneeId = ?)
+        `, [purchaseId, safeUserId, safeUserId]);
+        if (check.length === 0) throw new Error('Access denied');
+
+        const comments = await this.queryAsync(`
+            SELECT pc.id, pc.comment, pc.createdAt, pc.updatedAt,
+                   u.id as userId, u.fullName, u.profileImage
+            FROM PurchaseRequestComments pc
+            INNER JOIN Users u ON pc.userId = u.id
+            WHERE pc.purchaseRequestId = ?
+            ORDER BY pc.createdAt ASC
+        `, [purchaseId]);
+        return comments;
+    }
+
+    async addPurchaseComment(purchaseId, comment, userId) {
+        purchaseId = this._toSafeInt(purchaseId, null, true);
+        userId = this._toSafeInt(userId, null, true);
+        if (!comment || comment.trim() === '') throw new Error('Comment cannot be empty');
+
+        const check = await this.queryAsync(`
+            SELECT 1 FROM PurchaseRequests p
+            WHERE p.id = ?
+              AND (p.createdBy = ? OR p.assigneeId = ?)
+        `, [purchaseId, userId, userId]);
+        if (check.length === 0) throw new Error('Permission denied');
+
+        await this.executeAsync(`
+            INSERT INTO PurchaseRequestComments (purchaseRequestId, userId, comment, createdAt, updatedAt)
+            VALUES (?, ?, ?, GETDATE(), GETDATE())
+        `, [purchaseId, userId, comment]);
+
+        await this.executeAsync(`
+            UPDATE PurchaseRequests
+            SET commentsCount = (SELECT COUNT(*) FROM PurchaseRequestComments WHERE purchaseRequestId = ?)
+            WHERE id = ?
+        `, [purchaseId, purchaseId]);
+
+        const purchase = await this.queryAsync(`SELECT item, createdBy, assigneeId FROM PurchaseRequests WHERE id = ?`, [purchaseId]);
+        if (purchase.length) {
+            const p = purchase[0];
+            const commenter = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
+            const commenterName = commenter[0]?.fullName || 'مستخدم';
+            const recipients = [p.createdBy, p.assigneeId].filter(id => id && id !== userId);
+            for (const recId of recipients) {
+                await this._createNotification(
+                    recId,
+                    'comment_added',
+                    `تعليق جديد على طلب شراء "${p.item}"`,
+                    `${commenterName} أضاف تعليقاً: "${comment.substring(0,100)}..."`,
+                    'purchase',
+                    purchaseId,
+                    { purchaseItem: p.item, commenter: commenterName, commentPreview: comment.substring(0,100) }
+                );
+            }
+        }
         return { success: true };
     }
 

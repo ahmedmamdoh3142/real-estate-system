@@ -487,16 +487,6 @@
                         </select>
                     </div>
                     
-                    <div class="filter-group">
-                        <label><i class="fas fa-project-diagram"></i> <span data-i18n="project">المشروع</span></label>
-                        <select id="filter-project" class="filter-select">
-                            <option value="all" data-i18n="allProjects">جميع المشاريع</option>
-                            <option value="1">مشروع النخيل</option>
-                            <option value="2">أبراج الأعمال</option>
-                            <option value="3">شقق السفير</option>
-                        </select>
-                    </div>
-                    
                     <button class="btn btn-outline btn-sm" id="clear-filters" title="مسح جميع الفلاتر" data-i18n-title="clearFilters">
                         <i class="fas fa-times"></i> <span data-i18n="clear">مسح</span>
                     </button>
@@ -799,12 +789,6 @@
                         <span data-i18n="analyticsReports">تحليلات الأداء والتقارير</span>
                     </h3>
                     <div class="section-actions">
-                        <select class="period-select" id="analytics-period">
-                            <option value="week" data-i18n="last7Days">آخر 7 أيام</option>
-                            <option value="month" selected data-i18n="last30Days">آخر 30 يوم</option>
-                            <option value="quarter" data-i18n="last3Months">آخر 3 شهور</option>
-                            <option value="year" data-i18n="lastYear">آخر سنة</option>
-                        </select>
                         <button class="btn btn-outline btn-sm" id="refresh-charts">
                             <i class="fas fa-sync-alt"></i> <span data-i18n="refresh">تحديث</span>
                         </button>
@@ -953,6 +937,14 @@
                             <label data-i18n="reminderDateTime">تاريخ ووقت التذكير</label>
                             <input type="datetime-local" class="form-control" id="task-reminder-datetime">
                         </div>
+                        <!-- مجموعة تعديل نسبة الإنجاز (تظهر فقط في وضع التعديل) -->
+                        <div class="form-group" id="task-progress-group" style="display: none;">
+                            <label data-i18n="progressPercentage">نسبة الإنجاز %</label>
+                            <input type="range" class="progress-slider" id="task-progress-slider" min="0" max="100" value="0">
+                            <div class="progress-value-display">
+                                <span id="task-progress-value">0</span>%
+                            </div>
+                        </div>
                     </div>
 
                     <!-- حقل المسؤول (يظهر فقط في وضع التعديل) -->
@@ -981,16 +973,19 @@
                                     <input type="text" class="form-control form-control-sm subtask-title" placeholder="عنوان المهمة الفرعية">
                                     <button type="button" class="voice-input-btn" title="إدخال صوتي" data-target-subtask><i class="fas fa-microphone"></i></button>
                                 </div>
-                                <!-- حقل شرح المهمة الفرعية -->
                                 <div class="input-with-voice subtask-desc-voice">
                                     <input type="text" class="form-control form-control-sm subtask-description" placeholder="شرح إضافي (اختياري)">
                                     <button type="button" class="voice-input-btn" title="إدخال صوتي للشرح" data-target-subtask-desc><i class="fas fa-microphone"></i></button>
                                 </div>
                                 <select class="form-control form-control-sm subtask-assignee">
-                                    <option value="" data-i18n="selectAssignee">اختر مسؤولاً</option>
+                                    <option value="">اختر مسؤولاً</option>
                                 </select>
-                                <!-- حاوية المتابعين (سيتم استبدالها بـ checkboxes عبر createCustomFollowerContainer) -->
                                 <div class="subtask-follower-wrapper"></div>
+                                <!-- تاريخ الاستحقاق الجديد -->
+                                <div class="form-group subtask-due-group">
+                                    <label class="subtask-due-label"><i class="fas fa-calendar-alt"></i> تاريخ الاستحقاق</label>
+                                    <input type="date" class="form-control form-control-sm subtask-due-date">
+                                </div>
                                 <button type="button" class="btn-icon remove-subtask"><i class="fas fa-times"></i></button>
                             </div>
                             <button type="button" class="btn btn-outline btn-sm" id="add-subtask-row"><i class="fas fa-plus"></i> <span data-i18n="addSubtask">إضافة مهمة فرعية</span></button>

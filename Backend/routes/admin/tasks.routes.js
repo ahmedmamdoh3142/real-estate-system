@@ -110,4 +110,13 @@ router.post('/penalties/generate', tasksController.generatePenalties);
 router.post('/manual-penalties', tasksController.createManualPenalty);
 router.delete('/manual-penalties/:id', tasksController.deleteManualPenalty);
 
+// ========== مسارات التعليقات الإضافية ==========
+router.get('/requests/:id/comments', tasksController.getRequestComments);
+router.post('/requests/:id/comments', tasksController.addRequestComment);
+router.get('/purchases/:id/comments', tasksController.getPurchaseComments);
+router.post('/purchases/:id/comments', tasksController.addPurchaseComment);
+
+// ========== حذف مرفق معين من مهمة ==========
+router.delete('/:taskId/attachments/:attachmentId', tasksController.deleteAttachment);
+
 module.exports = router;

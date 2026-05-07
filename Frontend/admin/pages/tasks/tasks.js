@@ -45,6 +45,8 @@
             this.isLoading = false;
             this.charts = {};
             this.calendarCurrentDate = new Date();
+
+            this.currentCommentsEntity = null;      // { type: 'request', id: 123 } أو { type: 'purchase', id: 456 }
             
             this.users = {};
             this.projects = {};
@@ -1948,9 +1950,7 @@ createTaskCard(task) {
     const isFollowed = task.type === 'followed';
     const canRate = isSubtask && task.status === 'done' && !task.rating;
     
-    // إخفاء أزرار التقدم والبدء تمامًا للمهام المرسلة والمهام الفرعية
     if (!isArchived && !isFollowed && !isSent && !isSubtask) {
-        // فقط للمهام المستلمة (received) وغير المؤرشفة وغير المتابعة
         if (task.type === 'received' && task.status === 'todo' && task.progress === 0) {
             footerButtons = `
                 <button class="task-start-btn" data-task-id="${task.id}" title="${this.getTranslation('start')}">
@@ -2059,8 +2059,8 @@ createTaskCard(task) {
         </div>
     ` : '';
 
-    // إخفاء شريط التقدم للمهام المرسلة والمتابعة والمؤرشفة
-    const showProgress = !isSent && !isFollowed && !isArchived;
+    // ✅ التعديل: إخفاء شريط التقدم إذا كانت نسبة الإنجاز = 0 (مهمة جديدة)
+    const showProgress = !isSent && !isFollowed && !isArchived && progressPercent > 0;
 
     card.innerHTML = `
         <div class="task-card-priority priority-${task.priority}"></div>
@@ -2133,7 +2133,7 @@ updateSingleTaskCard(taskId) {
     const task = this.tasks.find(t => t.id == taskId);
     if (!task) return;
 
-    // البحث عن كافة البطاقات التي تحمل نفس المعرف (قد تكون في الصفحة الرئيسية أو داخل modal)
+    // البحث عن كافة البطاقات التي تحمل نفس المعرف (في الصفحة الرئيسية وفي المودالات)
     const existingCards = document.querySelectorAll(`.task-card[data-id="${taskId}"]`);
     if (existingCards.length === 0) {
         // إذا لم توجد أي بطاقة، ربما هي مهمة جديدة أو مؤرشفة - نقوم بتحديث كامل UI
@@ -2196,18 +2196,28 @@ updateSingleTaskCard(taskId) {
             document.getElementById('task-assignee-edit').value = '';
         }
 
-        // === التعديل: استبدال select المتابعين بـ checkboxes ===
+        // ---------- إضافة تعديل نسبة الإنجاز ----------
+        const progressGroup = document.getElementById('task-progress-group');
+        if (progressGroup) progressGroup.style.display = 'block';
+        const progressSlider = document.getElementById('task-progress-slider');
+        const progressValueSpan = document.getElementById('task-progress-value');
+        if (progressSlider && progressValueSpan) {
+            progressSlider.value = task.progress || 0;
+            progressValueSpan.textContent = task.progress || 0;
+            progressSlider.oninput = () => {
+                progressValueSpan.textContent = progressSlider.value;
+            };
+        }
+        // -------------------------------------------
+
         const container = document.getElementById('task-follower-edit-container');
         if (container) {
-            // مسح المحتوى القديم (قد يحتوي على select أو حاوية قديمة)
             container.innerHTML = '';
-            // إنشاء حاوية checkboxes مع تحديد المتابعين الحاليين
             const followerIds = task.followers || [];
             const customContainer = this.createCustomFollowerContainer(followerIds);
             container.appendChild(customContainer);
         }
 
-        // إظهار الحقول المطلوبة
         const editAssigneeGroup = document.getElementById('edit-assignee-group');
         if (editAssigneeGroup) editAssigneeGroup.style.display = 'block';
         const editFollowerGroup = document.getElementById('edit-follower-group');
@@ -2246,8 +2256,10 @@ updateSingleTaskCard(taskId) {
     const dueDate = document.getElementById('task-due-date')?.value;
     const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
     const assigneeId = document.getElementById('task-assignee-edit')?.value;
+    // قراءة نسبة الإنجاز
+    const progressSlider = document.getElementById('task-progress-slider');
+    const progress = progressSlider ? parseInt(progressSlider.value) : undefined;
 
-    // قراءة المتابعين من حاوية checkboxes
     let followers = [];
     const followerContainer = document.getElementById('task-follower-edit-container');
     if (followerContainer) {
@@ -2265,7 +2277,8 @@ updateSingleTaskCard(taskId) {
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         reminderDateTime: reminderDateTime ? new Date(reminderDateTime).toISOString() : null,
         assignees: assigneeId && assigneeId !== '' ? [parseInt(assigneeId)] : [],
-        followers: followers
+        followers: followers,
+        progress: progress   // إضافة حقل التقدم
     };
 
     try {
@@ -2274,10 +2287,20 @@ updateSingleTaskCard(taskId) {
             body: taskData
         });
         await this.refreshAllData();
+        
+        // 🔥 التعديل المهم: تحديث المودال المفتوح إذا كان موجوداً
+        this.refreshCurrentModal();
+        
+        // تحديث البطاقة الفردية (للوحة الرئيسية)
+        this.updateSingleTaskCard(taskId);
+        
         this.closeModal(this.elements.newTaskModal);
         this.showNotification(this.getTranslation('taskUpdatedSuccess'), 'success');
 
+        // إعادة تعيين النموذج وإخفاء مجموعة النسبة
         document.getElementById('edit-task-id').value = '';
+        const progressGroup = document.getElementById('task-progress-group');
+        if (progressGroup) progressGroup.style.display = 'none';
         const editAssigneeGroup = document.getElementById('edit-assignee-group');
         if (editAssigneeGroup) editAssigneeGroup.style.display = 'none';
         const editFollowerGroup = document.getElementById('edit-follower-group');
@@ -2322,32 +2345,42 @@ updateSingleTaskCard(taskId) {
         }
 
         createRequestCard(req, type) {
-            const card = document.createElement('div');
-            card.className = `request-card ${type}`;
-            card.dataset.id = req.id;
-            const assigneeName = req.assigneeId ? (this.users[req.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
-            const archiveBtn = `
-                <button class="request-archive-btn" title="${this.getTranslation('archive')}">
-                    <i class="fas fa-archive"></i> ${this.getTranslation('archive')}
-                </button>
-            `;
-            card.innerHTML = `
-                <div class="request-card-content">
-                    <div class="request-card-header">
-                        <h3 class="request-title">${this.escapeHtml(req.title)}</h3>
-                        ${archiveBtn}
-                    </div>
-                    <p class="request-description">${this.escapeHtml(req.description || '')}</p>
-                    <div class="request-meta">
-                        <div class="request-assignee">
-                            <i class="fas fa-user"></i>
-                            <span>${assigneeName}</span>
-                        </div>
-                    </div>
+    const card = document.createElement('div');
+    card.className = `request-card ${type}`;
+    card.dataset.id = req.id;
+    const assigneeName = req.assigneeId ? (this.users[req.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
+    const archiveBtn = `
+        <button class="request-archive-btn" title="${this.getTranslation('archive')}">
+            <i class="fas fa-archive"></i>
+        </button>
+    `;
+    const commentsCount = req.commentsCount || 0;
+    const commentsHtml = `
+        <div class="request-comments" data-request-id="${req.id}" title="${this.getTranslation('comments')}">
+            <i class="fas fa-comment"></i>
+            <span>${commentsCount}</span>
+        </div>
+    `;
+    card.innerHTML = `
+        <div class="request-card-content">
+            <div class="request-card-header">
+                <h3 class="request-title">${this.escapeHtml(req.title)}</h3>
+                <div class="request-card-actions">
+                    ${archiveBtn}
                 </div>
-            `;
-            return card;
-        }
+            </div>
+            <p class="request-description">${this.escapeHtml(req.description || '')}</p>
+            <div class="request-meta">
+                <div class="request-assignee">
+                    <i class="fas fa-user"></i>
+                    <span>${assigneeName}</span>
+                </div>
+                ${commentsHtml}
+            </div>
+        </div>
+    `;
+    return card;
+}
 
         renderPurchases() {
             if (!this.userPermissions.includes('purchase_requests')) return;
@@ -2375,37 +2408,47 @@ updateSingleTaskCard(taskId) {
         }
 
         createPurchaseCard(purchase, type) {
-            const card = document.createElement('div');
-            card.className = `purchase-card ${type} ${purchase.urgency}`;
-            card.dataset.id = purchase.id;
-            const assigneeName = purchase.assigneeId ? (this.users[purchase.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
-            const archiveBtn = `
-                <button class="purchase-archive-btn" title="${this.getTranslation('archive')}">
-                    <i class="fas fa-archive"></i> ${this.getTranslation('archive')}
-                </button>
-            `;
-            card.innerHTML = `
-                <div class="purchase-card-content">
-                    <div class="purchase-card-header">
-                        <h3 class="purchase-title">${this.escapeHtml(purchase.item)}</h3>
-                        ${archiveBtn}
-                    </div>
-                    <p class="purchase-description">${this.escapeHtml(purchase.description)}</p>
-                    <div class="purchase-meta">
-                        <div class="purchase-quantity">
-                            <i class="fas fa-cubes"></i>
-                            <span>${purchase.quantity}</span>
-                        </div>
-                        <span class="purchase-urgency ${purchase.urgency}">${purchase.urgency === 'urgent' ? this.getTranslation('urgent') : this.getTranslation('normal')}</span>
-                    </div>
-                    <div class="purchase-assignee">
-                        <i class="fas fa-user"></i>
-                        <span>${assigneeName}</span>
-                    </div>
+    const card = document.createElement('div');
+    card.className = `purchase-card ${type} ${purchase.urgency}`;
+    card.dataset.id = purchase.id;
+    const assigneeName = purchase.assigneeId ? (this.users[purchase.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
+    const archiveBtn = `
+        <button class="purchase-archive-btn" title="${this.getTranslation('archive')}">
+            <i class="fas fa-archive"></i>
+        </button>
+    `;
+    const commentsCount = purchase.commentsCount || 0;
+    const commentsHtml = `
+        <div class="purchase-comments" data-purchase-id="${purchase.id}" title="${this.getTranslation('comments')}">
+            <i class="fas fa-comment"></i>
+            <span>${commentsCount}</span>
+        </div>
+    `;
+    card.innerHTML = `
+        <div class="purchase-card-content">
+            <div class="purchase-card-header">
+                <h3 class="purchase-title">${this.escapeHtml(purchase.item)}</h3>
+                <div class="purchase-card-actions">
+                    ${archiveBtn}
                 </div>
-            `;
-            return card;
-        }
+            </div>
+            <p class="purchase-description">${this.escapeHtml(purchase.description)}</p>
+            <div class="purchase-meta">
+                <div class="purchase-quantity">
+                    <i class="fas fa-cubes"></i>
+                    <span>${purchase.quantity}</span>
+                </div>
+                <span class="purchase-urgency ${purchase.urgency}">${purchase.urgency === 'urgent' ? this.getTranslation('urgent') : this.getTranslation('normal')}</span>
+                ${commentsHtml}
+            </div>
+            <div class="purchase-assignee">
+                <i class="fas fa-user"></i>
+                <span>${assigneeName}</span>
+            </div>
+        </div>
+    `;
+    return card;
+}
 
         async archiveRequest(requestId) {
             try {
@@ -3013,91 +3056,102 @@ createArchivedPurchaseCard(purchase) {
         }
 
         showAppointmentsForDay(date) {
-            const appointments = this.appointments.filter(a => {
-                if (!a.appointmentDate) return false;
-                const aDate = new Date(a.appointmentDate);
-                const dDate = new Date(date);
-                return aDate.toDateString() === dDate.toDateString();
-            });
-            const modal = this.elements.appointmentDayModal;
-            const body = document.getElementById('appointment-day-body');
-            if (!body) return;
+    const appointments = this.appointments.filter(a => {
+        if (!a.appointmentDate) return false;
+        const aDate = new Date(a.appointmentDate);
+        const dDate = new Date(date);
+        return aDate.toDateString() === dDate.toDateString();
+    });
+    const modal = this.elements.appointmentDayModal;
+    const body = document.getElementById('appointment-day-body');
+    if (!body) return;
 
-            if (appointments.length === 0) {
-                body.innerHTML = `<p class="text-center">${this.getTranslation('noAppointments')}</p>`;
-            } else {
-                let html = '<div class="appointments-list">';
-                appointments.forEach(app => {
-                    const typeClass = app.type || 'other';
-                    const attendeesNames = (app.attendees || []).map(att => {
-                        if (typeof att === 'object' && att.fullName) return att.fullName;
-                        if (typeof att === 'number') return this.users[att]?.name || att;
-                        if (typeof att === 'string') return att;
-                        return '';
-                    }).filter(n => n).join('، ');
-                    let formattedTime = '';
-                    if (app.appointmentTime) {
-                        const timeParts = app.appointmentTime.split(':');
-                        let hours = parseInt(timeParts[0], 10);
-                        const minutes = timeParts[1];
-                        const ampm = hours >= 12 ? 'م' : 'ص';
-                        hours = hours % 12 || 12;
-                        formattedTime = `${hours}:${minutes} ${ampm}`;
-                    }
-                    const formattedDate = app.appointmentDate ? moment(app.appointmentDate).format('YYYY-MM-DD') : '';
-                    const senderName = this.users[app.createdBy]?.name || this.getTranslation('unknown');
-                    html += `
-                        <div class="appointment-card ${typeClass}" data-id="${app.id}">
-                            <div class="appointment-header">
-                                <span class="appointment-title">${this.escapeHtml(app.title)}</span>
-                                <span class="appointment-time"><i class="fas fa-clock"></i> ${formattedTime}</span>
-                            </div>
-                            <div class="appointment-details">
-                                <span class="appointment-location"><i class="fas fa-map-marker-alt"></i> ${app.location || this.getTranslation('notSpecified')}</span>
-                                <span class="appointment-attendees"><i class="fas fa-users"></i> ${attendeesNames}</span>
-                                <span class="appointment-sender"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
-                            </div>
-                            ${app.notes ? `<div class="appointment-notes"><i class="fas fa-sticky-note"></i> ${this.escapeHtml(app.notes)}</div>` : ''}
-                            <div class="appointment-actions">
-                                <button class="appointment-edit-btn" data-id="${app.id}" title="${this.getTranslation('editAppointment')}"><i class="fas fa-edit"></i></button>
-                                <button class="appointment-delete-btn" data-id="${app.id}" title="${this.getTranslation('delete')}"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                body.innerHTML = html;
-
-                document.querySelectorAll('.appointment-edit-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const appId = btn.dataset.id;
-                        const appointment = appointments.find(a => a.id == appId);
-                        if (appointment) {
-                            this.closeModal(modal);
-                            this.openEditAppointmentModal(appointment);
-                        }
-                    });
-                });
-                document.querySelectorAll('.appointment-delete-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const appId = btn.dataset.id;
-                        this.deleteAppointmentWithConfirm(appId);
-                    });
-                });
-                document.querySelectorAll('.appointment-card').forEach(card => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.closest('.appointment-edit-btn') || e.target.closest('.appointment-delete-btn')) return;
-                        const appId = card.dataset.id;
-                        const appointment = appointments.find(a => a.id == appId);
-                        if (appointment) this.showAppointmentDetails(appointment);
-                    });
-                });
+    if (appointments.length === 0) {
+        body.innerHTML = `<p class="text-center">${this.getTranslation('noAppointments')}</p>`;
+    } else {
+        let html = '<div class="appointments-list">';
+        appointments.forEach(app => {
+            const typeClass = app.type || 'other';
+            const attendeesNames = (app.attendees || []).map(att => {
+                if (typeof att === 'object' && att.fullName) return att.fullName;
+                if (typeof att === 'number') return this.users[att]?.name || att;
+                if (typeof att === 'string') return att;
+                return '';
+            }).filter(n => n).join('، ');
+            let formattedTime = '';
+            if (app.appointmentTime) {
+                const timeParts = app.appointmentTime.split(':');
+                let hours = parseInt(timeParts[0], 10);
+                const minutes = timeParts[1];
+                const ampm = hours >= 12 ? 'م' : 'ص';
+                hours = hours % 12 || 12;
+                formattedTime = `${hours}:${minutes} ${ampm}`;
             }
+            const formattedDate = app.appointmentDate ? moment(app.appointmentDate).format('YYYY-MM-DD') : '';
+            const senderName = this.users[app.createdBy]?.name || this.getTranslation('unknown');
+            
+            // ✅ التحقق: إظهار أزرار التعديل والحذف فقط إذا كان المستخدم الحالي هو المرسل
+            const isCreator = this.currentUser && app.createdBy === this.currentUser.id;
+            const actionsHtml = isCreator ? `
+                <div class="appointment-actions">
+                    <button class="appointment-edit-btn" data-id="${app.id}" title="${this.getTranslation('editAppointment')}"><i class="fas fa-edit"></i></button>
+                    <button class="appointment-delete-btn" data-id="${app.id}" title="${this.getTranslation('delete')}"><i class="fas fa-trash"></i></button>
+                </div>
+            ` : '';
+            
+            html += `
+                <div class="appointment-card ${typeClass}" data-id="${app.id}">
+                    <div class="appointment-header">
+                        <span class="appointment-title">${this.escapeHtml(app.title)}</span>
+                        <span class="appointment-time"><i class="fas fa-clock"></i> ${formattedTime}</span>
+                    </div>
+                    <div class="appointment-details">
+                        <span class="appointment-location"><i class="fas fa-map-marker-alt"></i> ${app.location || this.getTranslation('notSpecified')}</span>
+                        <span class="appointment-attendees"><i class="fas fa-users"></i> ${attendeesNames}</span>
+                        <span class="appointment-sender"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
+                    </div>
+                    ${app.notes ? `<div class="appointment-notes"><i class="fas fa-sticky-note"></i> ${this.escapeHtml(app.notes)}</div>` : ''}
+                    ${actionsHtml}
+                </div>
+            `;
+        });
+        html += '</div>';
+        body.innerHTML = html;
 
-            this.openModal(modal);
-        }
+        // ربط الأحداث فقط للأزرار الموجودة
+        document.querySelectorAll('.appointment-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const appId = btn.dataset.id;
+                const appointment = appointments.find(a => a.id == appId);
+                if (appointment && this.currentUser && appointment.createdBy === this.currentUser.id) {
+                    this.closeModal(modal);
+                    this.openEditAppointmentModal(appointment);
+                }
+            });
+        });
+        document.querySelectorAll('.appointment-delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const appId = btn.dataset.id;
+                const appointment = appointments.find(a => a.id == appId);
+                if (appointment && this.currentUser && appointment.createdBy === this.currentUser.id) {
+                    this.deleteAppointmentWithConfirm(appId);
+                }
+            });
+        });
+        document.querySelectorAll('.appointment-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.appointment-edit-btn') || e.target.closest('.appointment-delete-btn')) return;
+                const appId = card.dataset.id;
+                const appointment = appointments.find(a => a.id == appId);
+                if (appointment) this.showAppointmentDetails(appointment);
+            });
+        });
+    }
+
+    this.openModal(modal);
+}
 
         showDueTasksForDay(date) {
             const tasks = this.tasks.filter(t => {
@@ -3161,48 +3215,185 @@ createArchivedPurchaseCard(purchase) {
     }
 }
 
-        async openEditAppointmentModal(appointment) {
-            const modal = this.elements.newAppointmentModal;
-            if (!modal) return;
-            
-            document.getElementById('appointment-title').value = appointment.title;
-            document.getElementById('appointment-date').value = appointment.appointmentDate;
-            document.getElementById('appointment-time').value = appointment.appointmentTime ? appointment.appointmentTime.substring(0,5) : '';
-            document.getElementById('appointment-location').value = appointment.location || '';
-            document.getElementById('appointment-type').value = appointment.type || '';
-            document.getElementById('appointment-notes').value = appointment.notes || '';
-            if (appointment.reminderDateTime) {
-                const reminderDate = new Date(appointment.reminderDateTime);
-                const formattedReminder = reminderDate.toISOString().slice(0, 16);
-                document.getElementById('appointment-reminder-datetime').value = formattedReminder;
-            } else {
-                document.getElementById('appointment-reminder-datetime').value = '';
-            }
-            
-            const container = document.getElementById('appointment-attendees-checkboxes');
-            if (container) {
-                let html = '';
-                for (const userId in this.users) {
-                    const user = this.users[userId];
-                    const isChecked = appointment.attendees && appointment.attendees.some(a => (a.id || a) == userId);
-                    html += `
-                        <label class="checkbox-label">
-                            <input type="checkbox" value="${user.id}" ${isChecked ? 'checked' : ''}> ${user.name}
-                        </label>
-                    `;
-                }
-                container.innerHTML = html;
-            }
-            
-            modal.dataset.editId = appointment.id;
-            
-            const modalTitle = modal.querySelector('.modal-title');
-            if (modalTitle) modalTitle.textContent = this.getTranslation('editAppointment');
-            const submitBtn = document.getElementById('new-appointment-submit');
-            if (submitBtn) submitBtn.textContent = this.getTranslation('update');
-            
-            this.openModal(modal);
+
+// ========== دوال تعليقات الطلبات ==========
+async fetchRequestComments(requestId) {
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/requests/${requestId}/comments`);
+        return result.data || [];
+    } catch (error) {
+        console.error('Failed to fetch request comments', error);
+        return [];
+    }
+}
+
+async addRequestCommentFromModal(commentText) {
+    if (!this.currentCommentsEntity || this.currentCommentsEntity.type !== 'request') return;
+    const requestId = this.currentCommentsEntity.id;
+    try {
+        await this.apiRequest(`/api/admin/tasks/requests/${requestId}/comments`, {
+            method: 'POST',
+            body: { comment: commentText }
+        });
+        // تحديث العدد في الكرت
+        const request = this.requestsSent.find(r => r.id == requestId) || this.requestsReceived.find(r => r.id == requestId);
+        if (request) {
+            request.commentsCount = (request.commentsCount || 0) + 1;
+            this.renderRequests();
         }
+        this.showNotification(this.getTranslation('commentAdded'), 'success');
+    } catch (error) {
+        console.error('Failed to add request comment', error);
+        this.showNotification('حدث خطأ أثناء إضافة التعليق', 'error');
+    }
+}
+
+async openRequestCommentsModal(requestId) {
+    const comments = await this.fetchRequestComments(requestId);
+    const request = this.requestsSent.find(r => r.id == requestId) || this.requestsReceived.find(r => r.id == requestId);
+    if (!request) return;
+
+    this.currentCommentsEntity = { type: 'request', id: requestId };
+    const modal = this.elements.commentsModal;
+    const modalTitle = modal.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.innerHTML = `<i class="fas fa-comments"></i> ${this.getTranslation('comments')} - ${this.escapeHtml(request.title)}`;
+    }
+    const commentsThread = document.getElementById('comments-thread');
+    if (commentsThread) {
+        if (comments && comments.length) {
+            commentsThread.innerHTML = comments.map(c => `
+                <div class="comment-item">
+                    <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                    <div class="comment-content">
+                        <div class="comment-author">${c.fullName}</div>
+                        <div class="comment-time">${this.formatDate(c.createdAt)}</div>
+                        <div class="comment-text">${this.escapeHtml(c.comment)}</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            commentsThread.innerHTML = '<p>' + this.getTranslation('noComments') + '</p>';
+        }
+    }
+
+    // إعادة تعيين حقل الإدخال
+    document.getElementById('new-comment').value = '';
+    this.openModal(modal);
+}
+
+// ========== دوال تعليقات طلبات الشراء ==========
+async fetchPurchaseComments(purchaseId) {
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/purchases/${purchaseId}/comments`);
+        return result.data || [];
+    } catch (error) {
+        console.error('Failed to fetch purchase comments', error);
+        return [];
+    }
+}
+
+async addPurchaseCommentFromModal(commentText) {
+    if (!this.currentCommentsEntity || this.currentCommentsEntity.type !== 'purchase') return;
+    const purchaseId = this.currentCommentsEntity.id;
+    try {
+        await this.apiRequest(`/api/admin/tasks/purchases/${purchaseId}/comments`, {
+            method: 'POST',
+            body: { comment: commentText }
+        });
+        const purchase = this.purchasesSent.find(p => p.id == purchaseId) || this.purchasesReceived.find(p => p.id == purchaseId);
+        if (purchase) {
+            purchase.commentsCount = (purchase.commentsCount || 0) + 1;
+            this.renderPurchases();
+        }
+        this.showNotification(this.getTranslation('commentAdded'), 'success');
+    } catch (error) {
+        console.error('Failed to add purchase comment', error);
+        this.showNotification('حدث خطأ أثناء إضافة التعليق', 'error');
+    }
+}
+
+async openPurchaseCommentsModal(purchaseId) {
+    const comments = await this.fetchPurchaseComments(purchaseId);
+    const purchase = this.purchasesSent.find(p => p.id == purchaseId) || this.purchasesReceived.find(p => p.id == purchaseId);
+    if (!purchase) return;
+
+    this.currentCommentsEntity = { type: 'purchase', id: purchaseId };
+    const modal = this.elements.commentsModal;
+    const modalTitle = modal.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.innerHTML = `<i class="fas fa-comments"></i> ${this.getTranslation('comments')} - ${this.escapeHtml(purchase.item)}`;
+    }
+    const commentsThread = document.getElementById('comments-thread');
+    if (commentsThread) {
+        if (comments && comments.length) {
+            commentsThread.innerHTML = comments.map(c => `
+                <div class="comment-item">
+                    <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                    <div class="comment-content">
+                        <div class="comment-author">${c.fullName}</div>
+                        <div class="comment-time">${this.formatDate(c.createdAt)}</div>
+                        <div class="comment-text">${this.escapeHtml(c.comment)}</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            commentsThread.innerHTML = '<p>' + this.getTranslation('noComments') + '</p>';
+        }
+    }
+
+    document.getElementById('new-comment').value = '';
+    this.openModal(modal);
+}
+
+        async openEditAppointmentModal(appointment) {
+    // ✅ التأكد من أن المستخدم الحالي هو منشئ الموعد
+    if (!this.currentUser || appointment.createdBy !== this.currentUser.id) {
+        this.showNotification('ليس لديك صلاحية لتعديل هذا الموعد', 'error');
+        return;
+    }
+    
+    const modal = this.elements.newAppointmentModal;
+    if (!modal) return;
+    
+    document.getElementById('appointment-title').value = appointment.title;
+    document.getElementById('appointment-date').value = appointment.appointmentDate;
+    document.getElementById('appointment-time').value = appointment.appointmentTime ? appointment.appointmentTime.substring(0,5) : '';
+    document.getElementById('appointment-location').value = appointment.location || '';
+    document.getElementById('appointment-type').value = appointment.type || '';
+    document.getElementById('appointment-notes').value = appointment.notes || '';
+    if (appointment.reminderDateTime) {
+        const reminderDate = new Date(appointment.reminderDateTime);
+        const formattedReminder = reminderDate.toISOString().slice(0, 16);
+        document.getElementById('appointment-reminder-datetime').value = formattedReminder;
+    } else {
+        document.getElementById('appointment-reminder-datetime').value = '';
+    }
+    
+    const container = document.getElementById('appointment-attendees-checkboxes');
+    if (container) {
+        let html = '';
+        for (const userId in this.users) {
+            const user = this.users[userId];
+            const isChecked = appointment.attendees && appointment.attendees.some(a => (a.id || a) == userId);
+            html += `
+                <label class="checkbox-label">
+                    <input type="checkbox" value="${user.id}" ${isChecked ? 'checked' : ''}> ${user.name}
+                </label>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    modal.dataset.editId = appointment.id;
+    
+    const modalTitle = modal.querySelector('.modal-title');
+    if (modalTitle) modalTitle.textContent = this.getTranslation('editAppointment');
+    const submitBtn = document.getElementById('new-appointment-submit');
+    if (submitBtn) submitBtn.textContent = this.getTranslation('update');
+    
+    this.openModal(modal);
+}
 
         async updateAppointmentSubmit() {
             const modal = this.elements.newAppointmentModal;
@@ -3272,97 +3463,135 @@ createArchivedPurchaseCard(purchase) {
         }
 
         async deleteAppointmentWithConfirm(appointmentId) {
-            Swal.fire({
-                title: this.getTranslation('deleteAppointmentConfirm'),
-                text: this.getTranslation('deleteAppointmentConfirm'),
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e74c3c',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: this.getTranslation('delete'),
-                cancelButtonText: this.getTranslation('cancel')
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        await this.apiRequest(`/api/admin/tasks/appointments/${appointmentId}`, { method: 'DELETE' });
-                        await this.refreshAllData();
-                        this.showNotification(this.getTranslation('appointmentDeleted'), 'success');
-                        if (this.currentView === 'calendar') {
-                            this.renderCalendar();
-                        }
-                        const dayModal = this.elements.appointmentDayModal;
-                        if (dayModal && dayModal.classList.contains('active')) {
-                            this.closeModal(dayModal);
-                        }
-                    } catch (error) {
-                        console.error('Failed to delete appointment:', error);
-                        this.showNotification('حدث خطأ أثناء حذف الموعد', 'error');
-                    }
+    // ✅ البحث عن الموعد والتحقق من الصلاحية
+    const appointment = this.appointments.find(a => a.id == appointmentId);
+    if (!appointment) return;
+    if (!this.currentUser || appointment.createdBy !== this.currentUser.id) {
+        this.showNotification('ليس لديك صلاحية لحذف هذا الموعد', 'error');
+        return;
+    }
+    
+    Swal.fire({
+        title: this.getTranslation('deleteAppointmentConfirm'),
+        text: this.getTranslation('deleteAppointmentConfirm'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: this.getTranslation('delete'),
+        cancelButtonText: this.getTranslation('cancel')
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await this.apiRequest(`/api/admin/tasks/appointments/${appointmentId}`, { method: 'DELETE' });
+                await this.refreshAllData();
+                this.showNotification(this.getTranslation('appointmentDeleted'), 'success');
+                if (this.currentView === 'calendar') {
+                    this.renderCalendar();
                 }
-            });
+                const dayModal = this.elements.appointmentDayModal;
+                if (dayModal && dayModal.classList.contains('active')) {
+                    this.closeModal(dayModal);
+                }
+            } catch (error) {
+                console.error('Failed to delete appointment:', error);
+                this.showNotification('حدث خطأ أثناء حذف الموعد', 'error');
+            }
         }
+    });
+}
 
         showAppointmentDetails(appointment) {
-            this.selectedAppointment = appointment;
-            const modal = this.elements.appointmentDetailModal;
-            const body = document.getElementById('appointment-detail-body');
-            if (!body) return;
+    // ✅ التحقق من الصلاحية: عرض الأزرار فقط إذا كان المستخدم الحالي هو المرسل
+    const isCreator = this.currentUser && appointment.createdBy === this.currentUser.id;
+    
+    this.selectedAppointment = appointment;
+    const modal = this.elements.appointmentDetailModal;
+    const body = document.getElementById('appointment-detail-body');
+    if (!body) return;
 
-            const attendeesNames = (appointment.attendees || []).map(att => {
-                if (typeof att === 'object' && att.fullName) return att.fullName;
-                if (typeof att === 'number') return this.users[att]?.name || att;
-                if (typeof att === 'string') return att;
-                return '';
-            }).filter(n => n).join('، ');
-            const typeTrans = appointment.type || this.getTranslation('notSpecified');
-            const formattedDate = appointment.appointmentDate ? moment(appointment.appointmentDate).format('YYYY-MM-DD') : '';
-            let formattedTime = '';
-            if (appointment.appointmentTime) {
-                const timeParts = appointment.appointmentTime.split(':');
-                let hours = parseInt(timeParts[0], 10);
-                const minutes = timeParts[1];
-                const ampm = hours >= 12 ? 'م' : 'ص';
-                hours = hours % 12 || 12;
-                formattedTime = `${hours}:${minutes} ${ampm}`;
-            }
-            const senderName = this.users[appointment.createdBy]?.name || this.getTranslation('unknown');
+    const attendeesNames = (appointment.attendees || []).map(att => {
+        if (typeof att === 'object' && att.fullName) return att.fullName;
+        if (typeof att === 'number') return this.users[att]?.name || att;
+        if (typeof att === 'string') return att;
+        return '';
+    }).filter(n => n).join('، ');
+    const typeTrans = appointment.type || this.getTranslation('notSpecified');
+    const formattedDate = appointment.appointmentDate ? moment(appointment.appointmentDate).format('YYYY-MM-DD') : '';
+    let formattedTime = '';
+    if (appointment.appointmentTime) {
+        const timeParts = appointment.appointmentTime.split(':');
+        let hours = parseInt(timeParts[0], 10);
+        const minutes = timeParts[1];
+        const ampm = hours >= 12 ? 'م' : 'ص';
+        hours = hours % 12 || 12;
+        formattedTime = `${hours}:${minutes} ${ampm}`;
+    }
+    const senderName = this.users[appointment.createdBy]?.name || this.getTranslation('unknown');
 
-            body.innerHTML = `
-                <div class="task-detail-header">
-                    <div class="task-detail-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="task-detail-title-section">
-                        <h2>${this.escapeHtml(appointment.title)}</h2>
-                        <div class="task-detail-meta-tags">
-                            <span class="task-detail-tag"><i class="fas fa-tag"></i> ${typeTrans}</span>
-                            <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${formattedDate}</span>
-                            <span class="task-detail-tag"><i class="fas fa-clock"></i> ${formattedTime}</span>
-                            <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
-                        </div>
-                    </div>
+    // ✅ إضافة أزرار التعديل والحذف فقط إذا كان المستخدم هو المرسل
+    const actionsHtml = isCreator ? `
+        <div class="appointment-detail-actions" style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn btn-primary" id="appointment-detail-edit-btn"><i class="fas fa-edit"></i> ${this.getTranslation('edit')}</button>
+            <button class="btn btn-danger" id="appointment-detail-delete-btn"><i class="fas fa-trash"></i> ${this.getTranslation('delete')}</button>
+        </div>
+    ` : '';
+
+    body.innerHTML = `
+        <div class="task-detail-header">
+            <div class="task-detail-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="task-detail-title-section">
+                <h2>${this.escapeHtml(appointment.title)}</h2>
+                <div class="task-detail-meta-tags">
+                    <span class="task-detail-tag"><i class="fas fa-tag"></i> ${typeTrans}</span>
+                    <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${formattedDate}</span>
+                    <span class="task-detail-tag"><i class="fas fa-clock"></i> ${formattedTime}</span>
+                    <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
                 </div>
-                <div class="task-detail-grid" style="grid-template-columns: 1fr 1fr;">
-                    <div class="task-detail-info-card">
-                        <div class="info-card-title"><i class="fas fa-info-circle"></i> ${this.getTranslation('basicInfo')}</div>
-                        <div class="info-item">
-                            <span class="info-label">${this.getTranslation('appointmentLocation')}</span>
-                            <span class="info-value">${appointment.location || this.getTranslation('notSpecified')}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">${this.getTranslation('appointmentAttendees')}</span>
-                            <span class="info-value">${attendeesNames}</span>
-                        </div>
-                    </div>
-                    <div class="task-detail-info-card">
-                        <div class="info-card-title"><i class="fas fa-sticky-note"></i> ${this.getTranslation('notes')}</div>
-                        <div class="info-item">
-                            <span class="info-value">${appointment.notes || this.getTranslation('noNotes')}</span>
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="task-detail-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="task-detail-info-card">
+                <div class="info-card-title"><i class="fas fa-info-circle"></i> ${this.getTranslation('basicInfo')}</div>
+                <div class="info-item">
+                    <span class="info-label">${this.getTranslation('appointmentLocation')}</span>
+                    <span class="info-value">${appointment.location || this.getTranslation('notSpecified')}</span>
                 </div>
-            `;
+                <div class="info-item">
+                    <span class="info-label">${this.getTranslation('appointmentAttendees')}</span>
+                    <span class="info-value">${attendeesNames}</span>
+                </div>
+            </div>
+            <div class="task-detail-info-card">
+                <div class="info-card-title"><i class="fas fa-sticky-note"></i> ${this.getTranslation('notes')}</div>
+                <div class="info-item">
+                    <span class="info-value">${appointment.notes || this.getTranslation('noNotes')}</span>
+                </div>
+            </div>
+        </div>
+        ${actionsHtml}
+    `;
 
-            this.openModal(modal);
+    // ربط أحداث الأزرار إذا وجدت
+    if (isCreator) {
+        const editBtn = document.getElementById('appointment-detail-edit-btn');
+        const deleteBtn = document.getElementById('appointment-detail-delete-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => {
+                this.closeModal(modal);
+                this.openEditAppointmentModal(appointment);
+            });
         }
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                this.deleteAppointmentWithConfirm(appointment.id);
+                this.closeModal(modal);
+            });
+        }
+    }
+
+    this.openModal(modal);
+}
 
         async openTaskDetails(taskId) {
     try {
@@ -3698,7 +3927,7 @@ createArchivedPurchaseCard(purchase) {
 
     const status = document.getElementById('task-status')?.value || 'todo';
     const priority = document.getElementById('task-priority')?.value || 'medium';
-    const dueDate = document.getElementById('task-due-date')?.value;
+    const dueDateMain = document.getElementById('task-due-date')?.value;
     const parent = document.getElementById('task-parent-id')?.value;
     const reminderDateTime = document.getElementById('task-reminder-datetime')?.value;
 
@@ -3706,8 +3935,9 @@ createArchivedPurchaseCard(purchase) {
     const subtasks = [];
     subtaskRows.forEach(row => {
         const subtaskTitle = row.querySelector('.subtask-title')?.value;
-        const subtaskDescription = row.querySelector('.subtask-description')?.value || '';  // حقل شرح المهمة الفرعية
+        const subtaskDescription = row.querySelector('.subtask-description')?.value || '';
         const subtaskAssignee = row.querySelector('.subtask-assignee')?.value;
+        const subtaskDueDate = row.querySelector('.subtask-due-date')?.value;
 
         let followers = [];
         const customContainer = row.querySelector('.custom-multi-select-container');
@@ -3730,7 +3960,7 @@ createArchivedPurchaseCard(purchase) {
                 assignees: [parseInt(subtaskAssignee)],
                 followers: followers,
                 priority: priority,
-                dueDate: dueDate
+                dueDate: subtaskDueDate ? new Date(subtaskDueDate).toISOString() : null   // 🔥 هنا التعديل
             });
         }
     });
@@ -3749,7 +3979,7 @@ createArchivedPurchaseCard(purchase) {
         priority,
         status,
         progress: 0,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDateMain ? new Date(dueDateMain).toISOString() : null,
         projectId: null,
         parentTaskId: parent ? parseInt(parent) : null,
         assignees: assignees,
@@ -3773,7 +4003,7 @@ createArchivedPurchaseCard(purchase) {
                     parentTaskId: newTaskId,
                     projectId: null,
                     priority: sub.priority,
-                    dueDate: sub.dueDate,
+                    dueDate: sub.dueDate,        // يستخدم تاريخ المهمة الفرعية
                     assignees: sub.assignees,
                     followers: sub.followers,
                     description: sub.description,
@@ -4179,8 +4409,9 @@ async deleteTask(taskId, taskTitle) {
         }
 
         // ========== إعادة ربط أحداث البطاقات (دعم الطلبات والمشتريات في الأرشيف) ==========
-reattachTaskCardEvents() {
-    document.querySelectorAll('.task-card').forEach(card => {
+reattachTaskCardEvents(container = document) {
+    const cards = container.querySelectorAll('.task-card');
+    cards.forEach(card => {
         const id = card.dataset.id;
         if (!id) return;
         const entityType = card.dataset.entityType;
@@ -4218,17 +4449,15 @@ reattachTaskCardEvents() {
             });
         }
         
-        // بقية الأحداث كما هي (القائمة، الحذف، الأرشفة، إلخ)
         const menuBtn = card.querySelector('.task-menu-btn');
         if (menuBtn) {
             const oldHandler = menuBtn._clickHandler;
             if (oldHandler) menuBtn.removeEventListener('click', oldHandler);
-            
             const clickHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (!dropdown) return;
-                document.querySelectorAll('.card-dropdown.show').forEach(d => {
+                container.querySelectorAll('.card-dropdown.show').forEach(d => {
                     if (d !== dropdown) d.classList.remove('show');
                 });
                 dropdown.classList.toggle('show');
@@ -4237,7 +4466,6 @@ reattachTaskCardEvents() {
             menuBtn._clickHandler = clickHandler;
         }
         
-        // الحذف
         const deleteBtn = card.querySelector('.delete-task');
         if (deleteBtn) {
             deleteBtn.removeEventListener('click', this.handleDeleteTask);
@@ -4270,7 +4498,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // الأرشفة
         const archiveBtn = card.querySelector('.archive-task');
         if (archiveBtn) {
             archiveBtn.removeEventListener('click', this.handleArchiveTask);
@@ -4283,7 +4510,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // التعديل
         const editBtn = card.querySelector('.edit-task');
         if (editBtn) {
             editBtn.removeEventListener('click', this.handleEditSubtask);
@@ -4294,7 +4520,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // تحديث التقدم
         const progressBtn = card.querySelector('.btn-update-progress');
         if (progressBtn) {
             progressBtn.removeEventListener('click', this.handleUpdateProgress);
@@ -4311,28 +4536,24 @@ reattachTaskCardEvents() {
             rateBtn.hasListener = true;
         }
         
-        // التعليقات
         const commentsBtn = card.querySelector('.task-comments');
         if (commentsBtn) {
             commentsBtn.removeEventListener('click', this.handleComments);
             commentsBtn.addEventListener('click', () => this.openCommentsModal(id));
         }
         
-        // المرفقات
         const attachmentsBtn = card.querySelector('.task-attachments');
         if (attachmentsBtn) {
             attachmentsBtn.removeEventListener('click', this.handleAttachments);
             attachmentsBtn.addEventListener('click', () => this.openAttachmentsModal(id));
         }
         
-        // المهام الفرعية
         const subtasksBtn = card.querySelector('.task-subtasks');
         if (subtasksBtn) {
             subtasksBtn.removeEventListener('click', this.handleSubtasks);
             subtasksBtn.addEventListener('click', () => this.showSubtasks(id));
         }
         
-        // رابط المهمة الأم
         const parentLink = card.querySelector('.parent-task-link');
         if (parentLink) {
             parentLink.removeEventListener('click', this.handleParentClick);
@@ -4343,7 +4564,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // زر البدء
         const startBtn = card.querySelector('.task-start-btn');
         if (startBtn) {
             startBtn.removeEventListener('click', this.handleStartTask);
@@ -4354,7 +4574,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // متابعة
         const followIndicator = card.querySelector('.task-follow-indicator');
         if (followIndicator) {
             followIndicator.removeEventListener('click', this.handleFollowClick);
@@ -4365,7 +4584,6 @@ reattachTaskCardEvents() {
             });
         }
         
-        // فتح التفاصيل عند النقر على البطاقة
         card.removeEventListener('click', this.handleCardClick);
         card.addEventListener('click', (e) => {
             if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item, .btn-update-progress, .task-comments, .task-attachments, .task-subtasks, .task-start-btn, .parent-task-link, .edit-task, .task-follow-indicator, .delete-task, .archive-task, .task-description-icon')) return;
@@ -4405,247 +4623,434 @@ reattachTaskCardEvents() {
     }
 }
 
-        reattachRequestCardEvents(sectionId) {
-            const container = document.getElementById(`${sectionId}-tasks`);
-            if (!container) return;
-            container.querySelectorAll('.request-card').forEach(card => {
-                const archiveBtn = card.querySelector('.request-archive-btn');
-                if (archiveBtn) {
-                    archiveBtn.removeEventListener('click', this.handleRequestArchive);
-                    archiveBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = card.dataset.id;
-                        this.archiveRequest(id);
-                    });
+        reattachRequestCardEvents(sectionId, container = null) {
+    let targetContainer = container;
+    if (!targetContainer) {
+        targetContainer = document.getElementById(`${sectionId}-tasks`);
+    }
+    if (!targetContainer) return;
+    targetContainer.querySelectorAll('.request-card').forEach(card => {
+        const archiveBtn = card.querySelector('.request-archive-btn');
+        if (archiveBtn) {
+            archiveBtn.removeEventListener('click', this.handleRequestArchive);
+            archiveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = card.dataset.id;
+                this.archiveRequest(id);
+            });
+        }
+        const commentsBtn = card.querySelector('.request-comments');
+        if (commentsBtn) {
+            commentsBtn.removeEventListener('click', this.handleRequestComments);
+            commentsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const requestId = commentsBtn.dataset.requestId;
+                if (requestId) {
+                    this.openRequestCommentsModal(requestId);
                 }
-                card.removeEventListener('click', this.handleRequestCardClick);
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.request-archive-btn')) return;
-                    const id = card.dataset.id;
-                    this.openRequestDetails(id);
-                });
+            });
+        }
+        card.removeEventListener('click', this.handleRequestCardClick);
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.request-archive-btn, .request-comments')) return;
+            const id = card.dataset.id;
+            this.openRequestDetails(id);
+        });
+    });
+}
+
+reattachPurchaseCardEvents(sectionId, container = null) {
+    let targetContainer = container;
+    if (!targetContainer) {
+        targetContainer = document.getElementById(`${sectionId}-tasks`);
+    }
+    if (!targetContainer) return;
+    targetContainer.querySelectorAll('.purchase-card').forEach(card => {
+        const archiveBtn = card.querySelector('.purchase-archive-btn');
+        if (archiveBtn) {
+            archiveBtn.removeEventListener('click', this.handlePurchaseArchive);
+            archiveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = card.dataset.id;
+                this.archivePurchase(id);
+            });
+        }
+        const commentsBtn = card.querySelector('.purchase-comments');
+        if (commentsBtn) {
+            commentsBtn.removeEventListener('click', this.handlePurchaseComments);
+            commentsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const purchaseId = commentsBtn.dataset.purchaseId;
+                if (purchaseId) {
+                    this.openPurchaseCommentsModal(purchaseId);
+                }
+            });
+        }
+        card.removeEventListener('click', this.handlePurchaseCardClick);
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.purchase-archive-btn, .purchase-comments')) return;
+            const id = card.dataset.id;
+            this.openPurchaseDetails(id);
+        });
+    });
+}
+
+        reattachPenaltyCardEvents(container = document) {
+    container.querySelectorAll('.penalty-card').forEach(card => {
+        const removeBtn = card.querySelector('.penalty-remove-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = card.dataset.id;
+                this.removePenalty(id);
+            });
+        }
+        
+        const commentsBtn = card.querySelector('.task-comments');
+        if (commentsBtn) {
+            commentsBtn.removeEventListener('click', this.handlePenaltyComments);
+            commentsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const taskId = commentsBtn.dataset.taskId;
+                if (taskId) {
+                    this.openCommentsModal(taskId);
+                }
+            });
+        }
+        
+        const attachmentsBtn = card.querySelector('.task-attachments');
+        if (attachmentsBtn) {
+            attachmentsBtn.removeEventListener('click', this.handlePenaltyAttachments);
+            attachmentsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const taskId = attachmentsBtn.dataset.taskId;
+                if (taskId) {
+                    this.openAttachmentsModal(taskId);
+                }
             });
         }
 
-        reattachPurchaseCardEvents(sectionId) {
-            const container = document.getElementById(`${sectionId}-tasks`);
-            if (!container) return;
-            container.querySelectorAll('.purchase-card').forEach(card => {
-                const archiveBtn = card.querySelector('.purchase-archive-btn');
-                if (archiveBtn) {
-                    archiveBtn.removeEventListener('click', this.handlePurchaseArchive);
-                    archiveBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = card.dataset.id;
-                        this.archivePurchase(id);
-                    });
-                }
-                card.removeEventListener('click', this.handlePurchaseCardClick);
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.purchase-archive-btn')) return;
-                    const id = card.dataset.id;
-                    this.openPurchaseDetails(id);
-                });
-            });
-        }
-
-        reattachPenaltyCardEvents() {
-            document.querySelectorAll('.penalty-card').forEach(card => {
-                const removeBtn = card.querySelector('.penalty-remove-btn');
-                if (removeBtn) {
-                    removeBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = card.dataset.id;
-                        this.removePenalty(id);
-                    });
-                }
-                
-                const commentsBtn = card.querySelector('.task-comments');
-                if (commentsBtn) {
-                    commentsBtn.removeEventListener('click', this.handlePenaltyComments);
-                    commentsBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const taskId = commentsBtn.dataset.taskId;
-                        if (taskId) {
-                            this.openCommentsModal(taskId);
-                        }
-                    });
-                }
-                
-                const attachmentsBtn = card.querySelector('.task-attachments');
-                if (attachmentsBtn) {
-                    attachmentsBtn.removeEventListener('click', this.handlePenaltyAttachments);
-                    attachmentsBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const taskId = attachmentsBtn.dataset.taskId;
-                        if (taskId) {
-                            this.openAttachmentsModal(taskId);
-                        }
-                    });
-                }
-
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.penalty-remove-btn, .task-comments, .task-attachments')) return;
-                    const taskId = card.dataset.taskId;
-                    if (taskId) {
-                        this.openTaskDetails(taskId);
-                    }
-                });
-            });
-        }
-
-        reattachManualPenaltyCardEvents() {
-            document.querySelectorAll('.manual-penalty-card').forEach(card => {
-                const removeBtn = card.querySelector('.manual-penalty-remove-btn');
-                if (removeBtn) {
-                    removeBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = card.dataset.id;
-                        this.selectedManualPenalty = this.manualPenalties.find(p => p.id == id);
-                        if (this.selectedManualPenalty) {
-                            Swal.fire({
-                                title: this.getTranslation('removePenalty'),
-                                text: this.getTranslation('confirmRemovePenalty'),
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#e74c3c',
-                                cancelButtonColor: '#95a5a6',
-                                confirmButtonText: this.getTranslation('removePenalty'),
-                                cancelButtonText: this.getTranslation('cancel')
-                            }).then(async (result) => {
-                                if (result.isConfirmed) {
-                                    await this.deleteManualPenalty(this.selectedManualPenalty.id);
-                                    await this.refreshAllData();
-                                }
-                            });
-                        }
-                    });
-                }
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.manual-penalty-remove-btn')) return;
-                    const id = card.dataset.id;
-                    this.showManualPenaltyDetails(id);
-                });
-            });
-        }
-
-        openRequestDetails(requestId) {
-            let request = this.requestsReceived.find(r => r.id == requestId);
-            if (!request) request = this.requestsSent.find(r => r.id == requestId);
-            if (!request) {
-                this.showNotification('الطلب غير موجود', 'error');
-                return;
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.penalty-remove-btn, .task-comments, .task-attachments')) return;
+            const taskId = card.dataset.taskId;
+            if (taskId) {
+                this.openTaskDetails(taskId);
             }
-            const modal = document.getElementById('request-detail-modal');
-            const body = document.getElementById('request-detail-body');
-            if (!modal || !body) return;
-            const assigneeName = request.assigneeId ? (this.users[request.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
-            const senderName = request.senderName || (this.users[request.senderId]?.name) || this.getTranslation('unknown');
-            body.innerHTML = `
-                <div class="task-detail">
-                    <div class="task-detail-header">
-                        <div class="task-detail-icon"><i class="fas fa-file-alt"></i></div>
-                        <div class="task-detail-title-section">
-                            <h2>${this.escapeHtml(request.title)}</h2>
-                            <div class="task-detail-meta-tags">
-                                <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
-                                <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.formatDate(request.createdAt)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="request-detail-grid">
-                        <div class="detail-card">
-                            <h4>${this.getTranslation('basicInfo')}</h4>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('description')}</span>
-                                <span class="detail-value">${this.escapeHtml(request.description)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('assignee')}</span>
-                                <span class="detail-value">${assigneeName}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('status')}</span>
-                                <span class="detail-value">${request.status}</span>
-                            </div>
-                        </div>
-                        <div class="detail-card">
-                            <h4>${this.getTranslation('stats')}</h4>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('created')}</span>
-                                <span class="detail-value">${this.formatDate(request.createdAt)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('lastUpdated')}</span>
-                                <span class="detail-value">${this.formatDate(request.updatedAt)}</span>
-                            </div>
-                        </div>
+        });
+    });
+}
+
+        reattachManualPenaltyCardEvents(container = document) {
+    container.querySelectorAll('.manual-penalty-card').forEach(card => {
+        const removeBtn = card.querySelector('.manual-penalty-remove-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = card.dataset.id;
+                this.selectedManualPenalty = this.manualPenalties.find(p => p.id == id);
+                if (this.selectedManualPenalty) {
+                    Swal.fire({
+                        title: this.getTranslation('removePenalty'),
+                        text: this.getTranslation('confirmRemovePenalty'),
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e74c3c',
+                        cancelButtonColor: '#95a5a6',
+                        confirmButtonText: this.getTranslation('removePenalty'),
+                        cancelButtonText: this.getTranslation('cancel')
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            await this.deleteManualPenalty(this.selectedManualPenalty.id);
+                            await this.refreshAllData();
+                        }
+                    });
+                }
+            });
+        }
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.manual-penalty-remove-btn')) return;
+            const id = card.dataset.id;
+            this.showManualPenaltyDetails(id);
+        });
+    });
+}
+
+        async openRequestDetails(requestId) {
+    let request = this.requestsReceived.find(r => r.id == requestId);
+    if (!request) request = this.requestsSent.find(r => r.id == requestId);
+    if (!request) {
+        this.showNotification('الطلب غير موجود', 'error');
+        return;
+    }
+    this.selectedRequest = request;
+
+    const modal = document.getElementById('request-detail-modal');
+    const body = document.getElementById('request-detail-body');
+    if (!modal || !body) return;
+
+    // جلب التعليقات من الخادم
+    const comments = await this.fetchRequestComments(requestId);
+    const assigneeName = request.assigneeId ? (this.users[request.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
+    const senderName = request.senderName || (this.users[request.senderId]?.name) || this.getTranslation('unknown');
+
+    let commentsHtml = '';
+    if (comments && comments.length) {
+        commentsHtml = comments.map(c => `
+            <div class="comment-item">
+                <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                <div class="comment-content">
+                    <div class="comment-author">${c.fullName}</div>
+                    <div class="comment-time">${this.formatDate(c.createdAt)}</div>
+                    <div class="comment-text">${this.escapeHtml(c.comment)}</div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        commentsHtml = '<p>' + this.getTranslation('noComments') + '</p>';
+    }
+
+    body.innerHTML = `
+        <div class="task-detail">
+            <div class="task-detail-header">
+                <div class="task-detail-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="task-detail-title-section">
+                    <h2>${this.escapeHtml(request.title)}</h2>
+                    <div class="task-detail-meta-tags">
+                        <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
+                        <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.formatDate(request.createdAt)}</span>
                     </div>
                 </div>
-            `;
-            this.openModal(modal);
-        }
-
-        openPurchaseDetails(purchaseId) {
-            let purchase = this.purchasesReceived.find(p => p.id == purchaseId);
-            if (!purchase) purchase = this.purchasesSent.find(p => p.id == purchaseId);
-            if (!purchase) {
-                this.showNotification('طلب الشراء غير موجود', 'error');
-                return;
-            }
-            const modal = document.getElementById('purchase-detail-modal');
-            const body = document.getElementById('purchase-detail-body');
-            if (!modal || !body) return;
-            const assigneeName = purchase.assigneeId ? (this.users[purchase.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
-            const senderName = purchase.senderName || (this.users[purchase.senderId]?.name) || this.getTranslation('unknown');
-            body.innerHTML = `
-                <div class="task-detail">
-                    <div class="task-detail-header">
-                        <div class="task-detail-icon"><i class="fas fa-shopping-cart"></i></div>
-                        <div class="task-detail-title-section">
-                            <h2>${this.escapeHtml(purchase.item)}</h2>
-                            <div class="task-detail-meta-tags">
-                                <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
-                                <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.formatDate(purchase.createdAt)}</span>
-                            </div>
-                        </div>
+            </div>
+            <div class="request-detail-grid">
+                <div class="detail-card">
+                    <h4>${this.getTranslation('basicInfo')}</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('description')}</span>
+                        <span class="detail-value">${this.escapeHtml(request.description)}</span>
                     </div>
-                    <div class="purchase-detail-grid">
-                        <div class="detail-card">
-                            <h4>${this.getTranslation('basicInfo')}</h4>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('quantity')}</span>
-                                <span class="detail-value">${purchase.quantity}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('urgency')}</span>
-                                <span class="detail-value">${purchase.urgency === 'urgent' ? this.getTranslation('urgent') : this.getTranslation('normal')}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('description')}</span>
-                                <span class="detail-value">${this.escapeHtml(purchase.description)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('assignee')}</span>
-                                <span class="detail-value">${assigneeName}</span>
-                            </div>
-                        </div>
-                        <div class="detail-card">
-                            <h4>${this.getTranslation('stats')}</h4>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('created')}</span>
-                                <span class="detail-value">${this.formatDate(purchase.createdAt)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${this.getTranslation('lastUpdated')}</span>
-                                <span class="detail-value">${this.formatDate(purchase.updatedAt)}</span>
-                            </div>
-                        </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('assignee')}</span>
+                        <span class="detail-value">${assigneeName}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('status')}</span>
+                        <span class="detail-value">${request.status}</span>
                     </div>
                 </div>
-            `;
-            this.openModal(modal);
+                <div class="detail-card">
+                    <h4>${this.getTranslation('stats')}</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('created')}</span>
+                        <span class="detail-value">${this.formatDate(request.createdAt)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('lastUpdated')}</span>
+                        <span class="detail-value">${this.formatDate(request.updatedAt)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="task-detail-tabs">
+                <button class="tab-btn active" data-tab="comments"><i class="fas fa-comments"></i> ${this.getTranslation('comments')} (${comments.length})</button>
+            </div>
+            <div class="tab-pane active" id="tab-comments">
+                <div class="comments-section" id="request-comments-section">
+                    ${commentsHtml}
+                </div>
+                <div class="add-comment">
+                    <textarea class="form-control" id="new-request-comment" rows="2" placeholder="${this.getTranslation('writeComment')}"></textarea>
+                    <div class="comment-toolbar">
+                        <button class="btn btn-primary btn-sm" id="send-request-comment">${this.getTranslation('send')}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // ربط إرسال التعليق
+    const sendBtn = document.getElementById('send-request-comment');
+    if (sendBtn) {
+        sendBtn.removeEventListener('click', this.requestCommentSendHandler);
+        this.requestCommentSendHandler = async () => {
+            const commentText = document.getElementById('new-request-comment')?.value;
+            if (commentText && commentText.trim() !== '') {
+                await this.addRequestComment(requestId, commentText);
+                await this.openRequestDetails(requestId); // إعادة فتح لتحديث التعليقات
+                this.refreshAllData();
+            }
+        };
+        sendBtn.addEventListener('click', this.requestCommentSendHandler);
+    }
+
+    this.openModal(modal);
+}
+
+async fetchRequestComments(requestId) {
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/requests/${requestId}/comments`);
+        return result.data || [];
+    } catch (error) {
+        console.error('Failed to fetch request comments', error);
+        return [];
+    }
+}
+
+async addRequestComment(requestId, commentText) {
+    try {
+        await this.apiRequest(`/api/admin/tasks/requests/${requestId}/comments`, {
+            method: 'POST',
+            body: { comment: commentText }
+        });
+        // تحديث عدد التعليقات في الكرت
+        const request = this.requestsSent.find(r => r.id == requestId) || this.requestsReceived.find(r => r.id == requestId);
+        if (request) {
+            request.commentsCount = (request.commentsCount || 0) + 1;
+            this.renderRequests(); // إعادة رسم الطلبات
         }
+        this.showNotification(this.getTranslation('commentAdded'), 'success');
+    } catch (error) {
+        console.error('Failed to add request comment', error);
+        this.showNotification('حدث خطأ أثناء إضافة التعليق', 'error');
+    }
+}
+
+        async openPurchaseDetails(purchaseId) {
+    let purchase = this.purchasesReceived.find(p => p.id == purchaseId);
+    if (!purchase) purchase = this.purchasesSent.find(p => p.id == purchaseId);
+    if (!purchase) {
+        this.showNotification('طلب الشراء غير موجود', 'error');
+        return;
+    }
+    this.selectedPurchase = purchase;
+
+    const modal = document.getElementById('purchase-detail-modal');
+    const body = document.getElementById('purchase-detail-body');
+    if (!modal || !body) return;
+
+    const comments = await this.fetchPurchaseComments(purchaseId);
+    const assigneeName = purchase.assigneeId ? (this.users[purchase.assigneeId]?.name || this.getTranslation('notAssigned')) : this.getTranslation('notAssigned');
+    const senderName = purchase.senderName || (this.users[purchase.senderId]?.name) || this.getTranslation('unknown');
+
+    let commentsHtml = '';
+    if (comments && comments.length) {
+        commentsHtml = comments.map(c => `
+            <div class="comment-item">
+                <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                <div class="comment-content">
+                    <div class="comment-author">${c.fullName}</div>
+                    <div class="comment-time">${this.formatDate(c.createdAt)}</div>
+                    <div class="comment-text">${this.escapeHtml(c.comment)}</div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        commentsHtml = '<p>' + this.getTranslation('noComments') + '</p>';
+    }
+
+    body.innerHTML = `
+        <div class="task-detail">
+            <div class="task-detail-header">
+                <div class="task-detail-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="task-detail-title-section">
+                    <h2>${this.escapeHtml(purchase.item)}</h2>
+                    <div class="task-detail-meta-tags">
+                        <span class="task-detail-tag"><i class="fas fa-user"></i> ${this.getTranslation('sentBy', { name: senderName })}</span>
+                        <span class="task-detail-tag"><i class="fas fa-calendar"></i> ${this.formatDate(purchase.createdAt)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="purchase-detail-grid">
+                <div class="detail-card">
+                    <h4>${this.getTranslation('basicInfo')}</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('quantity')}</span>
+                        <span class="detail-value">${purchase.quantity}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('urgency')}</span>
+                        <span class="detail-value">${purchase.urgency === 'urgent' ? this.getTranslation('urgent') : this.getTranslation('normal')}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('description')}</span>
+                        <span class="detail-value">${this.escapeHtml(purchase.description)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('assignee')}</span>
+                        <span class="detail-value">${assigneeName}</span>
+                    </div>
+                </div>
+                <div class="detail-card">
+                    <h4>${this.getTranslation('stats')}</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('created')}</span>
+                        <span class="detail-value">${this.formatDate(purchase.createdAt)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">${this.getTranslation('lastUpdated')}</span>
+                        <span class="detail-value">${this.formatDate(purchase.updatedAt)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="task-detail-tabs">
+                <button class="tab-btn active" data-tab="comments"><i class="fas fa-comments"></i> ${this.getTranslation('comments')} (${comments.length})</button>
+            </div>
+            <div class="tab-pane active" id="tab-comments">
+                <div class="comments-section" id="purchase-comments-section">
+                    ${commentsHtml}
+                </div>
+                <div class="add-comment">
+                    <textarea class="form-control" id="new-purchase-comment" rows="2" placeholder="${this.getTranslation('writeComment')}"></textarea>
+                    <div class="comment-toolbar">
+                        <button class="btn btn-primary btn-sm" id="send-purchase-comment">${this.getTranslation('send')}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const sendBtn = document.getElementById('send-purchase-comment');
+    if (sendBtn) {
+        sendBtn.removeEventListener('click', this.purchaseCommentSendHandler);
+        this.purchaseCommentSendHandler = async () => {
+            const commentText = document.getElementById('new-purchase-comment')?.value;
+            if (commentText && commentText.trim() !== '') {
+                await this.addPurchaseComment(purchaseId, commentText);
+                await this.openPurchaseDetails(purchaseId);
+                this.refreshAllData();
+            }
+        };
+        sendBtn.addEventListener('click', this.purchaseCommentSendHandler);
+    }
+
+    this.openModal(modal);
+}
+
+async fetchPurchaseComments(purchaseId) {
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/purchases/${purchaseId}/comments`);
+        return result.data || [];
+    } catch (error) {
+        console.error('Failed to fetch purchase comments', error);
+        return [];
+    }
+}
+
+async addPurchaseComment(purchaseId, commentText) {
+    try {
+        await this.apiRequest(`/api/admin/tasks/purchases/${purchaseId}/comments`, {
+            method: 'POST',
+            body: { comment: commentText }
+        });
+        const purchase = this.purchasesSent.find(p => p.id == purchaseId) || this.purchasesReceived.find(p => p.id == purchaseId);
+        if (purchase) {
+            purchase.commentsCount = (purchase.commentsCount || 0) + 1;
+            this.renderPurchases();
+        }
+        this.showNotification(this.getTranslation('commentAdded'), 'success');
+    } catch (error) {
+        console.error('Failed to add purchase comment', error);
+        this.showNotification('حدث خطأ أثناء إضافة التعليق', 'error');
+    }
+}
 
         openUpdateProgressModal(taskId) {
             const task = this.tasks.find(t => t.id == taskId);
@@ -4686,103 +5091,135 @@ reattachTaskCardEvents() {
         }
 
         async openCommentsModal(taskId) {
-            try {
-                const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
-                const task = result.data;
-                if (!task) return;
-                this.selectedTask = task;
-                const commentsThread = document.getElementById('comments-thread');
-                if (commentsThread) {
-                    if (task.comments && task.comments.length > 0) {
-                        commentsThread.innerHTML = task.comments.map(c => `
-                            <div class="comment-item">
-                                <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
-                                <div class="comment-content">
-                                    <div class="comment-author">${c.fullName || 'مستخدم'}</div>
-                                    <div class="comment-time">${this.formatDate(c.createdAt)}</div>
-                                    <div class="comment-text">${c.comment}</div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        commentsThread.innerHTML = '<p>' + this.getTranslation('noComments') + '</p>';
-                    }
-                }
-                this.openModal(this.elements.commentsModal);
-            } catch (error) {
-                console.error('Failed to load comments:', error);
-                this.showNotification('حدث خطأ أثناء تحميل التعليقات', 'error');
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
+        const task = result.data;
+        if (!task) return;
+        this.selectedTask = task;
+        this.currentCommentsEntity = { type: 'task', id: taskId };
+        
+        const commentsThread = document.getElementById('comments-thread');
+        if (commentsThread) {
+            if (task.comments && task.comments.length > 0) {
+                commentsThread.innerHTML = task.comments.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-avatar"><img src="${c.profileImage || `https://i.pravatar.cc/32?img=${c.userId}`}" alt="${c.fullName}" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                        <div class="comment-content">
+                            <div class="comment-author">${c.fullName || 'مستخدم'}</div>
+                            <div class="comment-time">${this.formatDate(c.createdAt)}</div>
+                            <div class="comment-text">${c.comment}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                commentsThread.innerHTML = '<p>' + this.getTranslation('noComments') + '</p>';
             }
         }
+        const modalTitle = this.elements.commentsModal.querySelector('.modal-title');
+        if (modalTitle) modalTitle.innerHTML = `<i class="fas fa-comments"></i> ${this.getTranslation('comments')} - ${this.escapeHtml(task.title)}`;
+        document.getElementById('new-comment').value = '';
+        this.openModal(this.elements.commentsModal);
+    } catch (error) {
+        console.error('Failed to load comments:', error);
+        this.showNotification('حدث خطأ أثناء تحميل التعليقات', 'error');
+    }
+}
 
         async openAttachmentsModal(taskId) {
-            try {
-                const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
-                const task = result.data;
-                if (!task) return;
-                const modal = this.elements.attachmentsModal;
-                const list = document.getElementById('attachments-list');
-                if (list) {
-                    list.innerHTML = '';
-                    if (task.attachments && task.attachments.length > 0) {
-                        task.attachments.forEach(att => {
-                            const BASE_URL = "https://abh-properties.com";
-                            const fileUrl = att.fileUrl.startsWith('http')
-                            ? att.fileUrl
-                            : `${BASE_URL}${att.fileUrl}`;
-                            list.innerHTML += `
-                                <div class="attachment-item">
-                                    <div class="attachment-icon"><i class="fas ${att.mimeType?.startsWith('image/') ? 'fa-image' : 'fa-file'}"></i></div>
-                                    <div class="attachment-info">
-                                        <div class="attachment-name">${att.fileName}</div>
-                                        <div class="attachment-meta">${att.fileSize} bytes • ${this.formatDate(att.uploadedAt)}</div>
-                                    </div>
-                                    <a href="${fileUrl}" target="_blank" class="attachment-download"><i class="fas fa-download"></i></a>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        list.innerHTML = '<div class="text-center">لا توجد مرفقات</div>';
-                    }
-                }
-
-                const uploadBtn = document.getElementById('upload-attachment-btn');
-                const fileInput = document.getElementById('attachment-file-input');
-                if (uploadBtn && fileInput) {
-                    const newUploadBtn = uploadBtn.cloneNode(true);
-                    uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
-                    const newFileInput = fileInput.cloneNode(true);
-                    fileInput.parentNode.replaceChild(newFileInput, fileInput);
+    try {
+        const result = await this.apiRequest(`/api/admin/tasks/${taskId}`);
+        const task = result.data;
+        if (!task) return;
+        
+        const modal = this.elements.attachmentsModal;
+        const list = document.getElementById('attachments-list');
+        if (list) {
+            list.innerHTML = '';
+            if (task.attachments && task.attachments.length > 0) {
+                const isSender = (this.currentUser && task.senderId === this.currentUser.id);
+                
+                task.attachments.forEach(att => {
+                    const BASE_URL = "https://abh-properties.com";
+                    const fileUrl = att.fileUrl.startsWith('http')
+                        ? att.fileUrl
+                        : `${BASE_URL}${att.fileUrl}`;
                     
-                    newUploadBtn.addEventListener('click', () => {
-                        newFileInput.click();
-                    });
-                    newFileInput.addEventListener('change', async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        const formData = new FormData();
-                        formData.append('attachments', file);
-                        try {
-                            await this.apiRequest(`/api/admin/tasks/${taskId}/attachments`, {
-                                method: 'POST',
-                                body: formData
-                            });
-                            await this.refreshAllData();
-                            this.showNotification('تم رفع الملف بنجاح', 'success');
-                            this.closeModal(modal);
-                            this.openAttachmentsModal(taskId);
-                        } catch (error) {
-                            console.error('Failed to upload attachment:', error);
-                            this.showNotification('حدث خطأ أثناء رفع الملف', 'error');
+                    const canDelete = isSender || (this.currentUser && att.uploadedBy === this.currentUser.id) || this.currentUser?.role === 'مشرف_عام';
+                    const deleteButton = canDelete ? `
+                        <button class="attachment-delete-btn" data-attachment-id="${att.id}" title="حذف المرفق">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    ` : '';
+                    
+                    list.innerHTML += `
+                        <div class="attachment-item" data-attachment-id="${att.id}">
+                            <div class="attachment-icon"><i class="fas ${att.mimeType?.startsWith('image/') ? 'fa-image' : 'fa-file'}"></i></div>
+                            <div class="attachment-info">
+                                <div class="attachment-name">${this.escapeHtml(att.fileName)}</div>
+                                <div class="attachment-meta">${att.fileSize} bytes • ${this.formatDate(att.uploadedAt)}</div>
+                            </div>
+                            <a href="${fileUrl}" target="_blank" class="attachment-download"><i class="fas fa-download"></i></a>
+                            ${deleteButton}
+                        </div>
+                    `;
+                });
+                
+                // ربط أحداث الحذف
+                list.querySelectorAll('.attachment-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const attachmentId = btn.dataset.attachmentId;
+                        if (attachmentId && confirm('هل أنت متأكد من حذف هذا المرفق؟')) {
+                            await this.deleteAttachment(taskId, attachmentId);
                         }
                     });
-                }
-                this.openModal(modal);
-            } catch (error) {
-                console.error('Failed to load attachments:', error);
-                this.showNotification('حدث خطأ أثناء تحميل المرفقات', 'error');
+                });
+            } else {
+                list.innerHTML = '<div class="text-center">لا توجد مرفقات</div>';
             }
         }
+
+        // زر رفع الملف العادي (بدون إضافة زر كاميرا منفصل)
+        const uploadBtn = document.getElementById('upload-attachment-btn');
+        const fileInput = document.getElementById('attachment-file-input');
+        
+        if (uploadBtn && fileInput) {
+            // إزالة المستمعات القديمة
+            const newUploadBtn = uploadBtn.cloneNode(true);
+            uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
+            const newFileInput = fileInput.cloneNode(true);
+            fileInput.parentNode.replaceChild(newFileInput, fileInput);
+            
+            newUploadBtn.addEventListener('click', () => {
+                newFileInput.click();
+            });
+            newFileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('attachments', file);
+                try {
+                    await this.apiRequest(`/api/admin/tasks/${taskId}/attachments`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    await this.refreshAllData();
+                    this.showNotification('تم رفع الملف بنجاح', 'success');
+                    this.closeModal(modal);
+                    this.openAttachmentsModal(taskId);
+                } catch (error) {
+                    console.error('Failed to upload attachment:', error);
+                    this.showNotification('حدث خطأ أثناء رفع الملف', 'error');
+                }
+            });
+        }
+        
+        this.openModal(modal);
+    } catch (error) {
+        console.error('Failed to load attachments:', error);
+        this.showNotification('حدث خطأ أثناء تحميل المرفقات', 'error');
+    }
+}
 
         showSubtasks(taskId) {
             this.openTaskDetails(taskId);
@@ -4842,32 +5279,26 @@ if (addSubtaskRowBtn) {
             newRow.id = '';
             newRow.style.display = 'flex';
 
-            // إعادة تعبئة حقول الصف
+            // إعادة تعبئة الحقول
             const titleInput = newRow.querySelector('.subtask-title');
+            const descInput = newRow.querySelector('.subtask-description');
             const assigneeSelect = newRow.querySelector('.subtask-assignee');
+            const dueDateInput = newRow.querySelector('.subtask-due-date');
             if (titleInput) titleInput.value = '';
+            if (descInput) descInput.value = '';
+            if (dueDateInput) dueDateInput.value = '';
             if (assigneeSelect) assigneeSelect.selectedIndex = 0;
 
-            // **التغيير الجوهري**: إزالة أي حاوية متابعين قديمة (سواء كانت select أو custom) واستبدالها بحاوية فارغة جديدة
+            // حاوية المتابعين
             const existingContainer = newRow.querySelector('.custom-multi-select-container');
             const existingSelect = newRow.querySelector('.subtask-follower-multiple');
-            if (existingContainer) {
-                existingContainer.remove();
-            }
-            if (existingSelect) {
-                existingSelect.remove();
-            }
-            // إنشاء حاوية جديدة فارغة
+            if (existingContainer) existingContainer.remove();
+            if (existingSelect) existingSelect.remove();
             const freshContainer = this.createCustomFollowerContainer([]);
-            // إضافة الحاوية في نفس مكان الـ select السابق (عادة داخل .subtask-follower-wrapper أو مباشرة)
             const wrapper = newRow.querySelector('.subtask-follower-wrapper');
-            if (wrapper) {
-                wrapper.appendChild(freshContainer);
-            } else {
-                newRow.appendChild(freshContainer);
-            }
+            if (wrapper) wrapper.appendChild(freshContainer);
 
-            // إعادة تعبئة قائمة المسؤول (assignee)
+            // تعبئة قائمة المسؤول
             if (assigneeSelect) {
                 assigneeSelect.innerHTML = '<option value="">' + this.getTranslation('selectAssignee') + '</option>';
                 for (const userId in this.users) {
@@ -4890,22 +5321,22 @@ if (addSubtaskRowBtn) {
                 removeBtn._removeSubtaskHandler = removeHandler;
             }
 
-            // زر الميكروفون (اختياري)
-            const voiceWrapper = newRow.querySelector('.input-with-voice');
-            if (voiceWrapper) {
-                const micBtn = voiceWrapper.querySelector('.voice-input-btn');
-                if (micBtn) {
-                    micBtn.removeEventListener('click', this._voiceSubtaskHandler);
-                    const voiceHandler = (e) => {
-                        e.preventDefault();
-                        const subtaskTitleInput = voiceWrapper.querySelector('.subtask-title');
-                        if (subtaskTitleInput) {
-                            this.startVoiceInput(subtaskTitleInput, micBtn);
-                        }
-                    };
-                    micBtn.addEventListener('click', voiceHandler);
-                    micBtn._voiceSubtaskHandler = voiceHandler;
-                }
+            // الميكروفونات
+            const voiceTitleBtn = newRow.querySelector('.subtask-voice .voice-input-btn');
+            if (voiceTitleBtn) {
+                voiceTitleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = newRow.querySelector('.subtask-title');
+                    if (input) this.startVoiceInput(input, voiceTitleBtn);
+                });
+            }
+            const voiceDescBtn = newRow.querySelector('.subtask-desc-voice .voice-input-btn');
+            if (voiceDescBtn) {
+                voiceDescBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = newRow.querySelector('.subtask-description');
+                    if (input) this.startVoiceInput(input, voiceDescBtn);
+                });
             }
 
             builderContainer.insertBefore(newRow, newAddBtn);
@@ -5030,7 +5461,8 @@ if (addSubtaskRowBtn) {
 
     this.currentSectionItems = items;
     this.currentSectionId = sectionId;
-    this.currentSectionView = 'large'; // إعادة تعيين العرض إلى الكبير في كل مرة
+    this.currentModalSectionId = sectionId;   // <-- هذا السطر مهم جداً
+    this.currentSectionView = 'large';
 
     const modal = document.getElementById('section-content-modal');
     if (!modal) return;
@@ -5040,16 +5472,13 @@ if (addSubtaskRowBtn) {
         modalTitle.innerHTML = `<i class="fas fa-layer-group"></i> ${this.getTranslation('modalTitle', { title: this.getTranslation(titleKey) })}`;
     }
 
-    // ===== الترتيب الجديد: زر الإغلاق أولاً ثم العنوان ثم أزرار التبديل =====
     let header = modal.querySelector('.modal-header');
     if (header) {
-        // 1. نقل زر الإغلاق ليكون أول عنصر (إذا كان موجوداً)
         const closeBtn = header.querySelector('.modal-close');
         if (closeBtn && closeBtn.parentNode === header) {
             header.insertBefore(closeBtn, header.firstChild);
         }
 
-        // 2. إضافة أزرار تبديل العرض إن لم تكن موجودة
         if (!header.querySelector('.modal-view-toggle')) {
             const toggleDiv = document.createElement('div');
             toggleDiv.className = 'modal-view-toggle';
@@ -5057,10 +5486,8 @@ if (addSubtaskRowBtn) {
                 <button class="view-toggle-btn active" data-view="large" title="عرض كروت كبيرة"><i class="fas fa-th-large"></i></button>
                 <button class="view-toggle-btn" data-view="small" title="عرض كروت صغيرة جداً"><i class="fas fa-th"></i></button>
             `;
-            // نضع أزرار التبديل بعد العنوان (أي بعد آخر عنصر في header)
             header.appendChild(toggleDiv);
 
-            // ربط الأحداث
             const largeBtn = toggleDiv.querySelector('[data-view="large"]');
             const smallBtn = toggleDiv.querySelector('[data-view="small"]');
             if (largeBtn) {
@@ -5082,7 +5509,6 @@ if (addSubtaskRowBtn) {
                 });
             }
         } else {
-            // تحديث حالة الأزرار إن وجدت
             const largeBtn = header.querySelector('[data-view="large"]');
             const smallBtn = header.querySelector('[data-view="small"]');
             if (largeBtn && smallBtn) {
@@ -5116,7 +5542,6 @@ renderSectionModalView() {
     } else {
         this.currentSectionItems.forEach(item => {
             if (isLarge) {
-                // العرض الكبير - استخدام الدوال الموجودة
                 if (item.type === 'sent' || item.type === 'received' || item.type === 'subtask' || item.type === 'followed' || item.type === 'archived' || item.type === 'finish') {
                     html += this.createTaskCard(item).outerHTML;
                 } else if (this.requestsSent.includes(item) || this.requestsReceived.includes(item)) {
@@ -5129,39 +5554,46 @@ renderSectionModalView() {
                     html += this.createManualPenaltyCard(item).outerHTML;
                 } else if (item.penaltyId !== undefined || item.reason !== undefined) {
                     html += this.createPenaltyCard(item).outerHTML;
-                } else if (item.appointmentDate !== undefined) {
-                    // موعد
-                    const attendeesNames = (item.attendees || []).map(att => {
-                        if (typeof att === 'object' && att.fullName) return att.fullName;
-                        if (typeof att === 'number') return this.users[att]?.name || att;
-                        if (typeof att === 'string') return att;
-                        return '';
-                    }).filter(n => n).join('، ');
-                    let formattedTime = '';
-                    if (item.appointmentTime) {
-                        const timeParts = item.appointmentTime.split(':');
-                        let hours = parseInt(timeParts[0], 10);
-                        const minutes = timeParts[1];
-                        const ampm = hours >= 12 ? 'م' : 'ص';
-                        hours = hours % 12 || 12;
-                        formattedTime = `${hours}:${minutes} ${ampm}`;
-                    }
-                    html += `
-                        <div class="appointment-card ${item.type || 'other'}" data-id="${item.id}">
-                            <div class="appointment-header">
-                                <span class="appointment-title">${this.escapeHtml(item.title)}</span>
-                                <span class="appointment-time"><i class="fas fa-clock"></i> ${formattedTime}</span>
-                            </div>
-                            <div class="appointment-details">
-                                <span class="appointment-location"><i class="fas fa-map-marker-alt"></i> ${item.location || this.getTranslation('notSpecified')}</span>
-                                <span class="appointment-attendees"><i class="fas fa-users"></i> ${attendeesNames}</span>
-                            </div>
-                            ${item.notes ? `<div class="appointment-notes"><i class="fas fa-sticky-note"></i> ${this.escapeHtml(item.notes)}</div>` : ''}
-                        </div>
-                    `;
-                }
+                } // داخل renderSectionModalView، في القسم if (isLarge) ... else if (item.appointmentDate !== undefined)
+else if (item.appointmentDate !== undefined) {
+    const attendeesNames = (item.attendees || []).map(att => {
+        if (typeof att === 'object' && att.fullName) return att.fullName;
+        if (typeof att === 'number') return this.users[att]?.name || att;
+        if (typeof att === 'string') return att;
+        return '';
+    }).filter(n => n).join('، ');
+    let formattedTime = '';
+    if (item.appointmentTime) {
+        const timeParts = item.appointmentTime.split(':');
+        let hours = parseInt(timeParts[0], 10);
+        const minutes = timeParts[1];
+        const ampm = hours >= 12 ? 'م' : 'ص';
+        hours = hours % 12 || 12;
+        formattedTime = `${hours}:${minutes} ${ampm}`;
+    }
+    const isCreator = this.currentUser && item.createdBy === this.currentUser.id;
+    const actionsHtml = isCreator ? `
+        <div class="appointment-actions">
+            <button class="appointment-edit-btn" data-id="${item.id}" title="${this.getTranslation('editAppointment')}"><i class="fas fa-edit"></i></button>
+            <button class="appointment-delete-btn" data-id="${item.id}" title="${this.getTranslation('delete')}"><i class="fas fa-trash"></i></button>
+        </div>
+    ` : '';
+    html += `
+        <div class="appointment-card ${item.type || 'other'}" data-id="${item.id}">
+            <div class="appointment-header">
+                <span class="appointment-title">${this.escapeHtml(item.title)}</span>
+                <span class="appointment-time"><i class="fas fa-clock"></i> ${formattedTime}</span>
+            </div>
+            <div class="appointment-details">
+                <span class="appointment-location"><i class="fas fa-map-marker-alt"></i> ${item.location || this.getTranslation('notSpecified')}</span>
+                <span class="appointment-attendees"><i class="fas fa-users"></i> ${attendeesNames}</span>
+            </div>
+            ${item.notes ? `<div class="appointment-notes"><i class="fas fa-sticky-note"></i> ${this.escapeHtml(item.notes)}</div>` : ''}
+            ${actionsHtml}
+        </div>
+    `;
+}
             } else {
-                // العرض المصغر - استخدام الدوال المصغرة
                 if (item.type === 'sent' || item.type === 'received' || item.type === 'subtask' || item.type === 'followed' || item.type === 'archived' || item.type === 'finish') {
                     html += this.createTaskCardSmall(item).outerHTML;
                 } else if (this.requestsSent.includes(item) || this.requestsReceived.includes(item)) {
@@ -5182,16 +5614,15 @@ renderSectionModalView() {
     
     body.innerHTML = html;
     
-    // إعادة ربط الأحداث حسب طريقة العرض
     if (isLarge) {
-        this.reattachTaskCardEvents();
-        this.reattachRequestCardEvents('requests-sent');
-        this.reattachRequestCardEvents('requests-received');
-        this.reattachPurchaseCardEvents('purchases-sent');
-        this.reattachPurchaseCardEvents('purchases-received');
-        this.reattachPenaltyCardEvents();
-        this.reattachManualPenaltyCardEvents();
-        // أحداث المواعيد
+        // ربط الأحداث داخل المودال الحالي (body) بدلاً من document بأكمله
+        this.reattachTaskCardEvents(body);
+        this.reattachRequestCardEvents('requests-sent', body);
+        this.reattachRequestCardEvents('requests-received', body);
+        this.reattachPurchaseCardEvents('purchases-sent', body);
+        this.reattachPurchaseCardEvents('purchases-received', body);
+        this.reattachPenaltyCardEvents(body);
+        this.reattachManualPenaltyCardEvents(body);
         modal.querySelectorAll('.appointment-card').forEach(card => {
             const id = card.dataset.id;
             if (id) {
@@ -5202,7 +5633,6 @@ renderSectionModalView() {
             }
         });
     } else {
-        // ربط أحداث الكروت المصغرة
         this.reattachSmallCardsEvents(modal);
     }
 }
@@ -5222,52 +5652,70 @@ reattachSmallCardsEvents(modal) {
         const id = card.dataset.id;
         if (!id) return;
         
-        // زر القائمة
         const menuBtn = card.querySelector('.task-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallTaskMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallTaskMenuHandler = menuHandler;
         }
         
-        // إجراءات القائمة
+        // حذف
         card.querySelectorAll('.delete-task').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallTaskDeleteHandler);
+            const delHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const taskId = btn.dataset.id;
+                const taskId = btn.dataset.id || id;
                 const task = this.tasks.find(t => t.id == taskId);
                 if (task) this.deleteTask(taskId, task.title);
-            });
+            };
+            btn.addEventListener('click', delHandler);
+            btn._smallTaskDeleteHandler = delHandler;
         });
+        
+        // أرشفة
         card.querySelectorAll('.archive-task').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallTaskArchiveHandler);
+            const archHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const taskId = btn.dataset.id;
+                const taskId = btn.dataset.id || id;
                 const task = this.tasks.find(t => t.id == taskId);
                 if (task) this.archiveTask(taskId, task.status, task.title);
-            });
+            };
+            btn.addEventListener('click', archHandler);
+            btn._smallTaskArchiveHandler = archHandler;
         });
+        
+        // تعديل
         card.querySelectorAll('.edit-task').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallTaskEditHandler);
+            const editHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const taskId = btn.dataset.id;
+                const taskId = btn.dataset.id || id;
                 this.editSubtask(taskId);
-            });
+            };
+            btn.addEventListener('click', editHandler);
+            btn._smallTaskEditHandler = editHandler;
         });
         
         // فتح التفاصيل عند النقر على البطاقة
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallTaskCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.task-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             this.openTaskDetails(id);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallTaskCardClick = cardClickHandler;
     });
     
     // الطلبات المصغرة
@@ -5275,27 +5723,36 @@ reattachSmallCardsEvents(modal) {
         const id = card.dataset.id;
         const menuBtn = card.querySelector('.request-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallRequestMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallRequestMenuHandler = menuHandler;
         }
         card.querySelectorAll('.archive-request').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallRequestArchiveHandler);
+            const archHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const reqId = btn.dataset.id;
+                const reqId = btn.dataset.id || id;
                 this.archiveRequest(reqId);
-            });
+            };
+            btn.addEventListener('click', archHandler);
+            btn._smallRequestArchiveHandler = archHandler;
         });
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallRequestCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.request-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             this.openRequestDetails(id);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallRequestCardClick = cardClickHandler;
     });
     
     // طلبات الشراء المصغرة
@@ -5303,27 +5760,36 @@ reattachSmallCardsEvents(modal) {
         const id = card.dataset.id;
         const menuBtn = card.querySelector('.purchase-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallPurchaseMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallPurchaseMenuHandler = menuHandler;
         }
         card.querySelectorAll('.archive-purchase').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallPurchaseArchiveHandler);
+            const archHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const purId = btn.dataset.id;
+                const purId = btn.dataset.id || id;
                 this.archivePurchase(purId);
-            });
+            };
+            btn.addEventListener('click', archHandler);
+            btn._smallPurchaseArchiveHandler = archHandler;
         });
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallPurchaseCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.purchase-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             this.openPurchaseDetails(id);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallPurchaseCardClick = cardClickHandler;
     });
     
     // الجزاءات المصغرة
@@ -5332,27 +5798,36 @@ reattachSmallCardsEvents(modal) {
         const taskId = card.dataset.taskId;
         const menuBtn = card.querySelector('.penalty-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallPenaltyMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallPenaltyMenuHandler = menuHandler;
         }
         card.querySelectorAll('.remove-penalty').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallPenaltyRemoveHandler);
+            const removeHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const penaltyId = btn.dataset.id;
+                const penaltyId = btn.dataset.id || id;
                 this.removePenalty(penaltyId);
-            });
+            };
+            btn.addEventListener('click', removeHandler);
+            btn._smallPenaltyRemoveHandler = removeHandler;
         });
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallPenaltyCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.penalty-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             if (taskId) this.openTaskDetails(taskId);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallPenaltyCardClick = cardClickHandler;
     });
     
     // الجزاءات اليدوية المصغرة
@@ -5360,20 +5835,24 @@ reattachSmallCardsEvents(modal) {
         const id = card.dataset.id;
         const menuBtn = card.querySelector('.manual-penalty-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallManualPenaltyMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallManualPenaltyMenuHandler = menuHandler;
         }
         card.querySelectorAll('.remove-manual-penalty').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallManualPenaltyRemoveHandler);
+            const removeHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const penaltyId = btn.dataset.id;
+                const penaltyId = btn.dataset.id || id;
                 this.selectedManualPenalty = this.manualPenalties.find(p => p.id == penaltyId);
                 if (this.selectedManualPenalty) {
                     Swal.fire({
@@ -5392,12 +5871,17 @@ reattachSmallCardsEvents(modal) {
                         }
                     });
                 }
-            });
+            };
+            btn.addEventListener('click', removeHandler);
+            btn._smallManualPenaltyRemoveHandler = removeHandler;
         });
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallManualPenaltyCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.manual-penalty-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             this.showManualPenaltyDetails(id);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallManualPenaltyCardClick = cardClickHandler;
     });
     
     // المواعيد المصغرة
@@ -5405,40 +5889,52 @@ reattachSmallCardsEvents(modal) {
         const id = card.dataset.id;
         const menuBtn = card.querySelector('.appointment-menu-btn');
         if (menuBtn) {
-            menuBtn.addEventListener('click', (e) => {
+            menuBtn.removeEventListener('click', this._smallAppointmentMenuHandler);
+            const menuHandler = (e) => {
                 e.stopPropagation();
                 const dropdown = card.querySelector('.card-dropdown');
                 if (dropdown) {
                     modal.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
                     dropdown.classList.toggle('show');
                 }
-            });
+            };
+            menuBtn.addEventListener('click', menuHandler);
+            menuBtn._smallAppointmentMenuHandler = menuHandler;
         }
         card.querySelectorAll('.edit-appointment').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallAppointmentEditHandler);
+            const editHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const appId = btn.dataset.id;
+                const appId = btn.dataset.id || id;
                 const appointment = this.appointments.find(a => a.id == appId);
                 if (appointment) {
                     this.closeModal(modal);
                     this.openEditAppointmentModal(appointment);
                 }
-            });
+            };
+            btn.addEventListener('click', editHandler);
+            btn._smallAppointmentEditHandler = editHandler;
         });
         card.querySelectorAll('.delete-appointment').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.removeEventListener('click', this._smallAppointmentDeleteHandler);
+            const deleteHandler = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const appId = btn.dataset.id;
+                const appId = btn.dataset.id || id;
                 this.deleteAppointmentWithConfirm(appId);
-            });
+            };
+            btn.addEventListener('click', deleteHandler);
+            btn._smallAppointmentDeleteHandler = deleteHandler;
         });
-        card.addEventListener('click', (e) => {
+        card.removeEventListener('click', this._smallAppointmentCardClick);
+        const cardClickHandler = (e) => {
             if (e.target.closest('.appointment-menu-btn, .card-dropdown, .card-dropdown-item')) return;
             const appointment = this.appointments.find(a => a.id == id);
             if (appointment) this.showAppointmentDetails(appointment);
-        });
+        };
+        card.addEventListener('click', cardClickHandler);
+        card._smallAppointmentCardClick = cardClickHandler;
     });
 }
 
@@ -5582,6 +6078,25 @@ createManualPenaltyCardSmall(penalty) {
     return card;
 }
 
+async deleteAttachment(taskId, attachmentId) {
+    try {
+        await this.apiRequest(`/api/admin/tasks/${taskId}/attachments/${attachmentId}`, {
+            method: 'DELETE'
+        });
+        await this.refreshAllData();
+        // إذا كان مودال المرفقات مفتوحاً، أغلقه وافتحه مجدداً لتحديث القائمة
+        const attachmentsModal = this.elements.attachmentsModal;
+        if (attachmentsModal && attachmentsModal.classList.contains('active')) {
+            this.closeModal(attachmentsModal);
+            this.openAttachmentsModal(taskId);
+        }
+        this.showNotification('تم حذف المرفق بنجاح', 'success');
+    } catch (error) {
+        console.error('Failed to delete attachment:', error);
+        this.showNotification('حدث خطأ أثناء حذف المرفق', 'error');
+    }
+}
+
 createAppointmentCardSmall(appointment) {
     const card = document.createElement('div');
     card.className = 'appointment-card-small';
@@ -5597,14 +6112,16 @@ createAppointmentCardSmall(appointment) {
     }
     const dateStr = appointment.appointmentDate ? moment(appointment.appointmentDate).format('DD/MM') : '';
     
-    const menuItems = `
+    // ✅ التحقق: إظهار أزرار فقط إذا كان المستخدم الحالي هو المرسل
+    const isCreator = this.currentUser && appointment.createdBy === this.currentUser.id;
+    const menuItems = isCreator ? `
         <a href="#" class="card-dropdown-item edit-appointment" data-id="${appointment.id}"><i class="fas fa-edit"></i> ${this.getTranslation('edit')}</a>
         <a href="#" class="card-dropdown-item delete-appointment" data-id="${appointment.id}"><i class="fas fa-trash"></i> ${this.getTranslation('delete')}</a>
-    `;
+    ` : '';
     
     card.innerHTML = `
-        <button class="appointment-menu-btn"><i class="fas fa-ellipsis-v"></i></button>
-        <div class="card-dropdown">${menuItems}</div>
+        ${menuItems ? `<button class="appointment-menu-btn"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="card-dropdown">${menuItems}</div>` : ''}
         <div class="title"><i class="fas fa-calendar-alt"></i> ${this.escapeHtml(appointment.title)}</div>
         <div class="meta"><i class="fas fa-clock"></i> ${dateStr} ${formattedTime}</div>
     `;
@@ -6128,6 +6645,15 @@ createAppointmentCardSmall(appointment) {
             });
         }
     });
+    const commentsModal = document.getElementById('comments-modal');
+if (commentsModal) {
+    const closeComments = () => {
+        this.currentCommentsEntity = null;
+    };
+    commentsModal.querySelectorAll('.modal-close, #comments-modal-close').forEach(btn => {
+        btn.addEventListener('click', closeComments);
+    });
+}
     const sectionModalClose = document.getElementById('section-modal-close');
     if (sectionModalClose) {
         sectionModalClose.addEventListener('click', () => {
@@ -6910,18 +7436,40 @@ createAppointmentCardSmall(appointment) {
             }
 
             const sendComment = document.getElementById('send-comment');
-            if (sendComment) {
-                sendComment.addEventListener('click', async () => {
-                    const commentText = document.getElementById('new-comment')?.value;
-                    if (commentText && commentText.trim() !== '') {
-                        await this.addNewComment(commentText);
-                        document.getElementById('new-comment').value = '';
-                        if (this.selectedTask) {
-                            await this.openCommentsModal(this.selectedTask.id);
-                        }
-                    }
-                });
+    if (sendComment) {
+        sendComment.removeEventListener('click', this.sendCommentHandler);
+        this.sendCommentHandler = async () => {
+            const commentText = document.getElementById('new-comment')?.value;
+            if (!commentText || commentText.trim() === '') return;
+
+            if (this.currentCommentsEntity) {
+                if (this.currentCommentsEntity.type === 'task') {
+                    await this.addNewComment(commentText);
+                } else if (this.currentCommentsEntity.type === 'request') {
+                    await this.addRequestCommentFromModal(commentText);
+                } else if (this.currentCommentsEntity.type === 'purchase') {
+                    await this.addPurchaseCommentFromModal(commentText);
+                }
+                document.getElementById('new-comment').value = '';
+                // إعادة تحميل التعليقات في المودال الحالي
+                if (this.currentCommentsEntity.type === 'request') {
+                    await this.openRequestCommentsModal(this.currentCommentsEntity.id);
+                } else if (this.currentCommentsEntity.type === 'purchase') {
+                    await this.openPurchaseCommentsModal(this.currentCommentsEntity.id);
+                } else if (this.currentCommentsEntity.type === 'task') {
+                    await this.openCommentsModal(this.currentCommentsEntity.id);
+                }
+            } else {
+                // إذا لم يكن هناك كيان محدد، نعتبر أنها مهمة (للتوافق القديم)
+                await this.addNewComment(commentText);
+                document.getElementById('new-comment').value = '';
+                if (this.selectedTask) {
+                    await this.openCommentsModal(this.selectedTask.id);
+                }
             }
+        };
+        sendComment.addEventListener('click', this.sendCommentHandler);
+    }
 
             const newTaskCancel = document.getElementById('new-task-cancel');
             if (newTaskCancel) {

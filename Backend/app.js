@@ -1,22 +1,37 @@
-// Backend/app.js - النسخة المحسنة مع APIs حقيقية (معدلة لـ mssql ومتوافقة مع Safari)
+// Backend/app.js - نسخة مدمجة: تعتمد على الثاني (mssql/tedious مع corsMiddleware) مع إضافة ميزات الأول (رفع الملفات والمجلدات)
 const express = require('express');
 const path = require('path');
-const corsMiddleware = require('./middleware/cors.middleware'); //  تم تحميل الميدلوير الجديد
+const fs = require('fs');           // ✅ من الأول – لإنشاء مجلدات الرفع
+const corsMiddleware = require('./middleware/cors.middleware'); // ✅ من الثاني
 const app = express();
 
-console.log('🚀 بدء تشغيل نظام إدارة العقارات - الإصدار الإنتاجي الكامل (mssql/tedious)');
+console.log('🚀 بدء تشغيل نظام إدارة العقارات - الإصدار الإنتاجي الكامل (mssql/tedious + تحسينات الرفع)');
 
-// ==================== إعدادات CORS من خلال الميدلوير المنفصل ====================
+// ==================== إعدادات CORS من خلال الميدلوير المنفصل (من الثاني) ====================
 app.use(corsMiddleware);
 
-// ✅ خدمة الملفات الثابتة للصور المرفوعة (فعّلها إن احتجت)
-// app.use('/uploads', express.static('/var/www/real-estate/uploads'));
+// ===== التأكد من وجود مجلد الرفع (من الأول) =====
+const uploadsDir = path.join(__dirname, 'uploads');
+const tasksUploadsDir = path.join(uploadsDir, 'tasks');
 
-// Middleware لمعالجة JSON
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ مجلد uploads تم إنشاؤه');
+}
+if (!fs.existsSync(tasksUploadsDir)) {
+    fs.mkdirSync(tasksUploadsDir, { recursive: true });
+    console.log('✅ مجلد uploads/tasks تم إنشاؤه');
+}
+
+// ===== خدمة الملفات الثابتة للصور المرفوعة (من الأول) =====
+app.use('/uploads', express.static(uploadsDir));
+console.log('✅ خدمة الملفات الثابتة /uploads تم تفعيلها');
+
+// Middleware لمعالجة JSON (من الثاني)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Middleware للتدوين (logging)
+// Middleware للتدوين (logging) (من الثاني مع تنسيق محسّن من الأول)
 app.use((req, res, next) => {
     console.log(`📝 ${new Date().toLocaleTimeString('ar-SA')} - ${req.method} ${req.originalUrl}`);
     if (req.body && Object.keys(req.body).length > 0) {
@@ -25,7 +40,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Route الأساسية للتحقق
+// Route الأساسية للتحقق (من الثاني مع تحسين الرسالة)
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
@@ -34,6 +49,7 @@ app.get('/api/health', (req, res) => {
         version: '5.0.0 - Complete Production System (mssql)',
         database: 'Connected to SQL Server using mssql/tedious',
         cors: 'Safari-compatible (dedicated middleware)',
+        uploads: 'Active with directory auto-creation',
         endpoints: {
             public: {
                 home: '/api/public/home/*',
@@ -55,7 +71,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Route لـ index
+// Route لـ index (من الثاني)
 app.get('/', (req, res) => {
     res.json({
         success: true,
@@ -105,7 +121,7 @@ app.get('/', (req, res) => {
     });
 });
 
-// ==================== استيراد جميع الراوترات الحقيقية ====================
+// ==================== استيراد جميع الراوترات الحقيقية (من الثاني مع الحفاظ على catch) ====================
 
 console.log('\n🔄 تحميل الراوترات العامة...');
 
@@ -229,7 +245,7 @@ try {
 
 console.log('✅ تم تحميل جميع الراوترات العامة');
 
-// ==================== استيراد الراوترات الإدارية ====================
+// ==================== استيراد الراوترات الإدارية (من الثاني) ====================
 
 console.log('\n🔄 تحميل الراوترات الإدارية...');
 
@@ -507,7 +523,7 @@ try {
 
 console.log('✅ تم تحميل جميع الراوترات الإدارية');
 
-// ==================== Middleware للتعامل مع الأخطاء ====================
+// ==================== Middleware للتعامل مع الأخطاء (من الثاني) ====================
 
 // Handle 404
 app.use('*', (req, res) => {

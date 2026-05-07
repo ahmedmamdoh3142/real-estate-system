@@ -209,6 +209,7 @@ exports.addComment = async (req, res) => {
 };
 
 exports.upload = upload.array('attachments', 10);
+
 exports.addAttachment = async (req, res) => {
     try {
         const { id } = req.params;
@@ -232,6 +233,17 @@ exports.addAttachment = async (req, res) => {
                 try { fs.unlinkSync(file.path); } catch(e) {}
             });
         }
+        handleError(res, error);
+    }
+};
+
+exports.deleteAttachment = async (req, res) => {
+    try {
+        const { taskId, attachmentId } = req.params;
+        const userId = req.user.id;
+        const result = await tasksService.deleteAttachment(parseInt(attachmentId), parseInt(taskId), userId);
+        res.json({ success: true, message: 'Attachment deleted', data: result });
+    } catch (error) {
         handleError(res, error);
     }
 };
@@ -397,6 +409,32 @@ exports.deleteRequest = async (req, res) => {
     }
 };
 
+// ===== تعليقات الطلبات =====
+exports.getRequestComments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const comments = await tasksService.getRequestComments(parseInt(id), userId, viewingUserId);
+        res.json({ success: true, data: comments });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+exports.addRequestComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { comment } = req.body;
+        if (!comment) return res.status(400).json({ success: false, message: 'Comment is required' });
+        const result = await tasksService.addRequestComment(parseInt(id), comment, userId);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
 // ========== طلبات الشراء (Purchase Requests) ==========
 exports.getPurchaseRequests = async (req, res) => {
     try {
@@ -455,6 +493,32 @@ exports.deletePurchaseRequest = async (req, res) => {
         const userId = req.user.id;
         await tasksService.deletePurchaseRequest(parseInt(id), userId);
         res.json({ success: true, message: 'Purchase request deleted' });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+// ===== تعليقات طلبات الشراء =====
+exports.getPurchaseComments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const viewingUserId = req.query.viewingUserId ? parseInt(req.query.viewingUserId) : null;
+        const comments = await tasksService.getPurchaseComments(parseInt(id), userId, viewingUserId);
+        res.json({ success: true, data: comments });
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+exports.addPurchaseComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { comment } = req.body;
+        if (!comment) return res.status(400).json({ success: false, message: 'Comment is required' });
+        const result = await tasksService.addPurchaseComment(parseInt(id), comment, userId);
+        res.json({ success: true, data: result });
     } catch (error) {
         handleError(res, error);
     }
