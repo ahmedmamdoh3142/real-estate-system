@@ -1,9 +1,10 @@
-// Backend/routes/public/home.routes.js - الإصدار المصحح بالكامل (معالجة مسارات الصور)
+// Backend/routes/public/home.routes.js - الإصدار المصحح (ضمان مسارات الصور المطلقة)
 const express = require('express');
 const sql = require('mssql');
 
 require('dotenv').config();
 
+// الحصول على pool من app.locals
 function getPool() {
     if (!global.dbPool) {
         throw new Error('قاعدة البيانات غير متصلة - global.dbPool غير موجود');
@@ -11,11 +12,13 @@ function getPool() {
     return global.dbPool;
 }
 
+// دالة لإنشاء الراوتر مع تمرير app
 module.exports = function(app) {
     const router = express.Router();
-
+    
     console.log('🚀 تهيئة home routes - VERSION 100% WORKING (mssql)...');
-
+    
+    // دالة مساعدة للاستعلامات مع Promise محسنة
     async function queryAsync(sqlQuery) {
         const pool = getPool();
         console.log('📝 تنفيذ استعلام:', sqlQuery.substring(0, 100) + '...');
@@ -28,33 +31,12 @@ module.exports = function(app) {
             throw err;
         }
     }
-
-    /**
-     * معالجة مسار الصورة وإرجاع رابط مطلق صالح على الخادم
-     */
-    function formatImageUrl(imageUrl) {
-        if (!imageUrl) return '/global/assets/images/project-placeholder.jpg';
-        // إذا كان الرابط مطلقاً بالفعل (http/https)
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            return imageUrl;
-        }
-        // إذا كان المسار يبدأ بشرطة مائلة فهو جاهز (مثل /uploads/...)
-        if (imageUrl.startsWith('/')) {
-            return imageUrl;
-        }
-        // إذا كان يبدأ بـ uploads نضيف شرطة في البداية
-        if (imageUrl.startsWith('uploads/')) {
-            return '/' + imageUrl;
-        }
-        // غير ذلك: مجرد اسم ملف، نفترض أنه موجود داخل /uploads/projects/
-        return '/uploads/projects/' + imageUrl;
-    }
-
+    
     // 🔍 التحقق من صحة الخادم
     router.get('/health', async (req, res) => {
         try {
             console.log('🏥 جلب معلومات الصحة...');
-
+            
             const result = await queryAsync(`
                 SELECT 
                     DB_NAME() as databaseName,
@@ -62,7 +44,7 @@ module.exports = function(app) {
                     GETDATE() as serverTime,
                     (SELECT COUNT(*) FROM Projects) as totalProjects
             `);
-
+            
             res.status(200).json({
                 success: true,
                 message: '✅ خادم العقارات يعمل بشكل ممتاز',
@@ -77,10 +59,10 @@ module.exports = function(app) {
                 timestamp: new Date().toISOString(),
                 version: '6.0.0 - Fixed Data'
             });
-
+            
         } catch (error) {
             console.error('❌ خطأ في health check:', error);
-
+            
             res.status(200).json({
                 success: true,
                 message: '✅ الخادم يعمل (قاعدة البيانات تحت الصيانة)',
@@ -88,12 +70,12 @@ module.exports = function(app) {
             });
         }
     });
-
-    // 📊 الحصول على إحصائيات حقيقية
+    
+    // 📊 الحصول على إحصائيات حقيقية - معدلة حسب الطلب
     router.get('/stats', async (req, res) => {
         try {
             console.log('📊 جلب إحصائيات من قاعدة البيانات...');
-
+            
             const statsQuery = `
                 SELECT
                     ISNULL(SUM(availableUnits), 0) as totalAvailableUnits,
@@ -102,12 +84,12 @@ module.exports = function(app) {
                     (SELECT COUNT(*) FROM Projects) as totalProjects
                 FROM Projects
             `;
-
+            
             const result = await queryAsync(statsQuery);
             const stats = result[0];
-
+            
             console.log('📊 الإحصائيات المحسوبة:', stats);
-
+            
             res.status(200).json({
                 success: true,
                 data: {
@@ -120,10 +102,10 @@ module.exports = function(app) {
                 timestamp: new Date().toISOString(),
                 message: 'تم جلب الإحصائيات بنجاح من قاعدة البيانات'
             });
-
+            
         } catch (error) {
             console.error('❌ خطأ في جلب الإحصائيات:', error.message);
-
+            
             res.status(200).json({
                 success: true,
                 data: {
@@ -137,14 +119,14 @@ module.exports = function(app) {
             });
         }
     });
-
-    // 🏢 الحصول على المشاريع المميزة - مع إصلاح مسار الصورة
+    
+    // 🏢 الحصول على المشاريع المميزة - الإصدار النهائي المصحح (مع ضمان مسارات الصور)
     router.get('/featured-projects', async (req, res) => {
         const { page = 1, limit = 6 } = req.query;
-
+        
         try {
             console.log(`🏢 جلب المشاريع المميزة من قاعدة البيانات...`);
-
+            
             const projectsQuery = `
                 SELECT 
                     p.id,
@@ -172,10 +154,10 @@ module.exports = function(app) {
                 ORDER BY p.createdAt DESC
                 OFFSET 0 ROWS FETCH NEXT ${limit} ROWS ONLY
             `;
-
+            
             const projects = await queryAsync(projectsQuery);
             console.log(`✅ تم جلب ${projects.length} مشروع مميز`);
-
+            
             let finalProjects = projects;
             if (projects.length === 0) {
                 console.log('⚠️ لا توجد مشاريع مميزة، جلب مشاريع عادية...');
@@ -187,29 +169,35 @@ module.exports = function(app) {
                 `);
                 finalProjects = allProjects;
             }
-
+            
             const formattedProjects = await Promise.all(finalProjects.map(async (project) => {
                 try {
-                    // جلب الصور مع المعالجة
-                    const images = await queryAsync(`
-                        SELECT TOP 1 imageUrl 
-                        FROM ProjectImages 
-                        WHERE projectId = ${project.id} AND isActive = 1
-                        ORDER BY displayOrder
-                    `);
-                    const rawImage = images && images.length > 0 ? images[0].imageUrl : null;
-                    const mainImage = formatImageUrl(rawImage);   // <-- المعالجة هنا
-
-                    // جلب المميزات
                     const features = await queryAsync(`
                         SELECT TOP 3 featureName, featureValue, icon 
                         FROM ProjectFeatures 
                         WHERE projectId = ${project.id}
                         ORDER BY displayOrder
                     `);
-
+                    
+                    const images = await queryAsync(`
+                        SELECT TOP 1 imageUrl 
+                        FROM ProjectImages 
+                        WHERE projectId = ${project.id} AND isActive = 1
+                        ORDER BY displayOrder
+                    `);
+                    
                     const isFeatured = project.isFeatured === true || project.isFeatured === 1 || project.isFeatured === 'true';
-
+                    
+                    // ✅ ضمان أن مسار الصورة يبدأ بـ "/" (مسار مطلق)
+                    let mainImage = '/global/assets/images/project-placeholder.jpg'; // افتراضي
+                    if (images && images.length > 0) {
+                        let imgPath = images[0].imageUrl;
+                        if (imgPath) {
+                            // إذا لم يبدأ بـ "/" نضيفه
+                            mainImage = imgPath.startsWith('/') ? imgPath : '/' + imgPath;
+                        }
+                    }
+                    
                     return {
                         id: parseInt(project.id),
                         projectCode: project.projectCode || `PRJ-${project.id}`,
@@ -231,7 +219,7 @@ module.exports = function(app) {
                         status: getStatusText(project.status || 'نشط'),
                         completionDate: project.completionDate || null,
                         createdAt: project.createdAt || new Date(),
-                        mainImage: mainImage,               // الرابط المُصحَّح
+                        mainImage: mainImage, // استخدم المسار المضمون
                         features: (features || []).map(f => ({
                             featureName: f.featureName || '',
                             featureValue: f.featureValue || '',
@@ -240,7 +228,8 @@ module.exports = function(app) {
                     };
                 } catch (error) {
                     console.error(`❌ خطأ في معالجة المشروع ${project.id}:`, error);
-
+                    
+                    // في حالة الخطأ نرسل بيانات افتراضية مع مسار صورة افتراضي مطلق
                     return {
                         id: parseInt(project.id),
                         projectName: project.projectName || 'عقار مميز',
@@ -262,9 +251,9 @@ module.exports = function(app) {
                     };
                 }
             }));
-
+            
             console.log(`🎨 تم تنسيق ${formattedProjects.length} مشروع`);
-
+            
             res.status(200).json({
                 success: true,
                 data: {
@@ -281,10 +270,10 @@ module.exports = function(app) {
                 timestamp: new Date().toISOString(),
                 message: `تم جلب ${formattedProjects.length} مشروع من قاعدة البيانات`
             });
-
+            
         } catch (error) {
             console.error('❌ خطأ في جلب المشاريع المميزة:', error.message);
-
+            
             try {
                 console.log('🔄 محاولة جلب بيانات خام من قاعدة البيانات...');
                 const rawData = await queryAsync('SELECT TOP 5 id, projectName, isFeatured FROM Projects');
@@ -292,8 +281,7 @@ module.exports = function(app) {
             } catch (dbError) {
                 console.error('❌ فشل جلب البيانات الخام:', dbError);
             }
-
-            // البيانات الاحتياطية مع روابط placeholder (تظل ثابتة لتجنب الأخطاء)
+            
             res.status(200).json({
                 success: true,
                 data: {
@@ -312,40 +300,63 @@ module.exports = function(app) {
             });
         }
     });
-
+    
+    // دالة لتحويل نوع المشروع للنص العربي
     function getProjectTypeText(type) {
         if (!type) return 'سكني';
+        
         const typeLower = type.toString().toLowerCase();
         const typeMap = {
-            'residential': 'سكني', 'commercial': 'تجاري', 'villa': 'فيلا',
-            'apartment': 'شقة', 'office': 'مكتب', 'shop': 'محل تجاري',
-            'land': 'أرض', 'صناعي': 'صناعي', 'فندقي': 'فندق',
-            'سكني': 'سكني', 'تجاري': 'تجاري'
+            'residential': 'سكني',
+            'commercial': 'تجاري',
+            'villa': 'فيلا',
+            'apartment': 'شقة',
+            'office': 'مكتب',
+            'shop': 'محل تجاري',
+            'land': 'أرض',
+            'صناعي': 'صناعي',
+            'فندقي': 'فندق',
+            'سكني': 'سكني',
+            'تجاري': 'تجاري'
         };
+        
         return typeMap[typeLower] || type;
     }
-
+    
     function getPriceTypeText(type) {
         if (!type) return 'شراء';
+        
         const typeLower = type.toString().toLowerCase();
         const typeMap = {
-            'شراء': 'شراء', 'تأجير': 'إيجار', 'إيجار_تشغيلي': 'إيجار',
-            'rent': 'إيجار', 'sale': 'بيع', 'بيع': 'بيع'
+            'شراء': 'شراء',
+            'تأجير': 'إيجار',
+            'إيجار_تشغيلي': 'إيجار',
+            'rent': 'إيجار',
+            'sale': 'بيع',
+            'بيع': 'بيع'
         };
+        
         return typeMap[typeLower] || type;
     }
-
+    
     function getStatusText(status) {
         if (!status) return 'نشط';
+        
         const statusLower = status.toString().toLowerCase();
         const statusMap = {
-            'جاهز_للتسليم': 'جاهز', 'مكتمل': 'مكتمل', 'نشط': 'نشط',
-            'قيد_الإنشاء': 'قيد الإنشاء', 'مباع': 'مباع',
-            'active': 'نشط', 'completed': 'مكتمل'
+            'جاهز_للتسليم': 'جاهز',
+            'مكتمل': 'مكتمل',
+            'نشط': 'نشط',
+            'قيد_الإنشاء': 'قيد الإنشاء',
+            'مباع': 'مباع',
+            'active': 'نشط',
+            'completed': 'مكتمل'
         };
+        
         return statusMap[statusLower] || status;
     }
-
+    
+    // بيانات احتياطية مضمونة (مسارات الصور مطلقة)
     function getGuaranteedProjects() {
         return [
             {
@@ -447,21 +458,21 @@ module.exports = function(app) {
             }
         ];
     }
-
+    
     // 📧 الاشتراك في النشرة البريدية
     router.post('/newsletter', async (req, res) => {
         try {
             const { email } = req.body;
-
+            
             if (!email || !email.includes('@')) {
                 return res.status(400).json({
                     success: false,
                     message: 'يرجى إدخال بريد إلكتروني صحيح'
                 });
             }
-
+            
             console.log(`📧 تسجيل بريد جديد: ${email}`);
-
+            
             res.status(200).json({
                 success: true,
                 message: 'تم تسجيل بريدك بنجاح في النشرة البريدية',
@@ -471,10 +482,10 @@ module.exports = function(app) {
                     id: Date.now()
                 }
             });
-
+            
         } catch (error) {
             console.error('❌ خطأ في تسجيل النشرة:', error);
-
+            
             res.status(200).json({
                 success: true,
                 message: 'تم استلام بريدك وسيتم إضافته قريباً',
@@ -485,17 +496,17 @@ module.exports = function(app) {
             });
         }
     });
-
+    
     // 🔧 اختبار قاعدة البيانات مباشرة
     router.get('/test-db', async (req, res) => {
         try {
             console.log('🧪 اختبار قاعدة البيانات مباشرة...');
-
+            
             const projectsCount = await queryAsync('SELECT COUNT(*) as count FROM Projects');
             const usersCount = await queryAsync('SELECT COUNT(*) as count FROM Users');
             const contractsCount = await queryAsync('SELECT COUNT(*) as count FROM Contracts');
             const featuredProjects = await queryAsync('SELECT id, projectName, isFeatured FROM Projects WHERE isFeatured = 1');
-
+            
             res.status(200).json({
                 success: true,
                 data: {
@@ -510,7 +521,7 @@ module.exports = function(app) {
                 },
                 message: '✅ اختبار قاعدة البيانات ناجح'
             });
-
+            
         } catch (error) {
             res.status(200).json({
                 success: false,
@@ -519,6 +530,6 @@ module.exports = function(app) {
             });
         }
     });
-
+    
     return router;
 };
