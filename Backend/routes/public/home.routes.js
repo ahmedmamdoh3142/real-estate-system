@@ -189,12 +189,22 @@ module.exports = function(app) {
                     const isFeatured = project.isFeatured === true || project.isFeatured === 1 || project.isFeatured === 'true';
                     
                     // ✅ ضمان أن مسار الصورة يبدأ بـ "/" (مسار مطلق)
+                    // ✅ ضمان المسار الكامل للصورة مع إضافة /uploads/ إذا لزم الأمر
                     let mainImage = '/global/assets/images/project-placeholder.jpg'; // افتراضي
                     if (images && images.length > 0) {
                         let imgPath = images[0].imageUrl;
                         if (imgPath) {
-                            // إذا لم يبدأ بـ "/" نضيفه
-                            mainImage = imgPath.startsWith('/') ? imgPath : '/' + imgPath;
+                            if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
+                                // رابط خارجي كامل
+                                mainImage = imgPath;
+                            } else if (imgPath.startsWith('/')) {
+                                // مسار مطلق بالفعل
+                                mainImage = imgPath;
+                            } else {
+                                // مجرد اسم ملف (مثل "1778324923037-355652436.png")
+                                // نضيف /uploads/ لأن الصور المرفوعة بتكون في مجلد uploads
+                                mainImage = '/uploads/' + imgPath;
+                            }
                         }
                     }
                     
