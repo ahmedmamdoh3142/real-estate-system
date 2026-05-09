@@ -1058,43 +1058,57 @@ class TasksService {
         return { success: true };
     }
 
-    async addAttachment(taskId, fileData, userId) {
-        taskId = this._toSafeInt(taskId, null, true);
-        userId = this._toSafeInt(userId, null, true);
-        const check = await this.queryAsync(`
-            SELECT 1 FROM Tasks t
-            LEFT JOIN TaskAssignees ta ON t.id = ta.taskId
-            WHERE t.id = ?
-              AND (t.senderId = ? OR ta.userId = ?)
-        `, [taskId, userId, userId]);
-        if (check.length === 0) throw new Error('Permission denied');
+    /**
+ * إضافة مرفق (ملف) إلى مهمة معينة مع التحقق من صحة المسار
+ */
+async addAttachment(taskId, fileData, userId) {
+    taskId = this._toSafeInt(taskId, null, true);
+    userId = this._toSafeInt(userId, null, true);
 
-        const relativePath = `/uploads/tasks/${path.basename(fileData.fileUrl)}`;
-        await this.executeAsync(`
-            INSERT INTO TaskAttachments (taskId, fileName, fileUrl, fileSize, mimeType, uploadedAt, uploadedBy)
-            VALUES (?, ?, ?, ?, ?, GETDATE(), ?)
-        `, [taskId, fileData.fileName, relativePath, fileData.fileSize, fileData.mimeType, userId]);
+    // التحقق من صلاحية المستخدم (يجب أن يكون مرسل المهمة أو من المعينين عليها)
+    const check = await this.queryAsync(`
+        SELECT 1 FROM Tasks t
+        LEFT JOIN TaskAssignees ta ON t.id = ta.taskId
+        WHERE t.id = ? AND (t.senderId = ? OR ta.userId = ?)
+    `, [taskId, userId, userId]);
+    if (check.length === 0) throw new Error('Permission denied');
 
-        const task = await this.getTaskById(taskId, userId);
-        const uploader = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
-        const uploaderName = uploader[0]?.fullName || 'مستخدم';
-        const assignees = await this.queryAsync(`SELECT userId FROM TaskAssignees WHERE taskId = ?`, [taskId]);
-        const recipients = new Set([task.senderId, ...assignees.map(a => a.userId)]);
-        recipients.delete(userId);
-        for (const recId of recipients) {
-            await this._createNotification(
-                recId,
-                'attachment_added',
-                `مرفق جديد في مهمة "${task.title}"`,
-                `${uploaderName} أضاف ملفاً: ${fileData.fileName}`,
-                'task',
-                taskId,
-                { taskTitle: task.title, uploader: uploaderName, fileName: fileData.fileName }
-            );
-        }
-
-        return { success: true };
+    // التأكد من أن المسار المخزن هو مسار نسبي يبدأ بـ /uploads/tasks/
+    // fileData.fileUrl يتم استلامه من الكونترولر ويفترض أنه تم إنشاؤه بواسطة multer
+    // نضيف '/uploads/tasks/' إذا كان مفقوداً
+    let relativePath = fileData.fileUrl;
+    if (!relativePath.startsWith('/uploads/')) {
+        relativePath = `/uploads/tasks/${path.basename(relativePath)}`;
     }
+
+    await this.executeAsync(`
+        INSERT INTO TaskAttachments (taskId, fileName, fileUrl, fileSize, mimeType, uploadedAt, uploadedBy)
+        VALUES (?, ?, ?, ?, ?, GETDATE(), ?)
+    `, [taskId, fileData.fileName, relativePath, fileData.fileSize, fileData.mimeType, userId]);
+
+    // جلب تفاصيل المهمة لإرسال الإشعارات
+    const task = await this.getTaskById(taskId, userId);
+    const uploader = await this.queryAsync(`SELECT fullName FROM Users WHERE id = ?`, [userId]);
+    const uploaderName = uploader[0]?.fullName || 'مستخدم';
+
+    // إرسال إشعارات للمعينين والمرسل
+    const assignees = await this.queryAsync(`SELECT userId FROM TaskAssignees WHERE taskId = ?`, [taskId]);
+    const recipients = new Set([task.senderId, ...assignees.map(a => a.userId)]);
+    recipients.delete(userId);
+    for (const recId of recipients) {
+        await this._createNotification(
+            recId,
+            'attachment_added',
+            `مرفق جديد في مهمة "${task.title}"`,
+            `${uploaderName} أضاف ملفاً: ${fileData.fileName}`,
+            'task',
+            taskId,
+            { taskTitle: task.title, uploader: uploaderName, fileName: fileData.fileName }
+        );
+    }
+
+    return { success: true };
+}
 
     async deleteAttachment(attachmentId, taskId, userId) {
         attachmentId = this._toSafeInt(attachmentId, null, true);

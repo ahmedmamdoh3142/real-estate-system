@@ -3,9 +3,11 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = path.join(__dirname, '../../../uploads/tasks');
+// المسار الصحيح داخل Backend/uploads/tasks
+const uploadDir = path.join(__dirname, '../../uploads/tasks');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
+    console.log('✅ تم إنشاء مجلد الرفع:', uploadDir);
 }
 
 const storage = multer.diskStorage({
@@ -214,18 +216,22 @@ exports.addAttachment = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ success: false, message: 'No files uploaded' });
         }
+
         const attachments = req.files.map(file => ({
             fileName: file.originalname,
-            fileUrl: `/uploads/tasks/${file.filename}`,
+            fileUrl: `/uploads/tasks/${file.filename}`, // ✅ مسار نسبي صحيح
             fileSize: file.size,
             mimeType: file.mimetype
         }));
+
         for (const att of attachments) {
             await tasksService.addAttachment(parseInt(id), att, userId);
         }
+
         res.json({ success: true, message: `${attachments.length} attachment(s) added` });
     } catch (error) {
         if (req.files) {
