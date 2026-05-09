@@ -5,7 +5,7 @@
  * Performance: Optimized & Lightweight
  * ============================================
  */
- 
+
 (function() {
   'use strict';
   
@@ -15,8 +15,7 @@
   class HomePage {
     constructor() {
       this.apiClient = window.API || null;
-      // ✅ رابط الخادم الخلفي - فاضي لأن Nginx بيعمل proxy للـ /api/ و /uploads/
-      this.baseURL = '';
+      this.baseURL = ''; // رابط الخادم الخلفي
       this.featuredProjects = [];
       this.stats = null;
       this.isMenuOpen = false;
@@ -27,49 +26,18 @@
       this.init();
     }
     
-    // ✅ دالة تحويل مسار الصورة إلى رابط صحيح - معالجة كل الحالات
+    // ✅ إضافة دالة تحويل مسار الصورة إلى رابط كامل
     getFullImageUrl(imageUrl) {
-      // لو مفيش صورة
       if (!imageUrl) return '/global/assets/images/project-placeholder.jpg';
-      
-      // لو الرابط فيه localhost أو 127.0.0.1 (بيانات قديمة من اللوكال)
-      // نستخرج المسار بعد البورت فقط
-      if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
-        try {
-          const url = new URL(imageUrl);
-          // نرجع المسار فقط بدون الـ host عشان Nginx يخدمه
-          return url.pathname;
-        } catch (e) {
-          // لو URL مش valid نكمل للبدائل
-        }
-      }
-      
-      // لو الرابط مطلق بالفعل (https أو http لكن مش localhost)
+      // إذا كان الرابط مطلقاً بالفعل (يبدأ بـ http) نرجعه كما هو
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl;
       }
-      
-      // لو مسار Windows (بيبدأ بـ C:\ أو D:\ إلخ) - بيانات مرفوعة من ويندوز
-      if (/^[A-Za-z]:[\\\/]/.test(imageUrl)) {
-        // نحاول نستخرج جزء uploads من المسار
-        const uploadsMatch = imageUrl.match(/[\\\/]uploads[\\\/](.*)/);
-        if (uploadsMatch) {
-          return '/uploads/' + uploadsMatch[1].replace(/\\/g, '/');
-        }
-        return '/global/assets/images/project-placeholder.jpg';
-      }
-      
-      // لو مسار نسبي يبدأ بـ / - نرجعه كما هو (Nginx هيخدمه)
+      // إذا كان المسار نسبياً ويبدأ بعلامة / (مثل /uploads/...)، نضيف رابط السيرفر
       if (imageUrl.startsWith('/')) {
-        return imageUrl;
+        return `${this.baseURL}${imageUrl}`;
       }
-      
-      // لو مسار نسبي من غير / في الأول
-      if (imageUrl.startsWith('uploads/')) {
-        return '/' + imageUrl;
-      }
-      
-      // أي حالة تانية نرجعه كما هو
+      // غير ذلك نعيده كما هو (قد يكون رابطاً نسبياً آخر)
       return imageUrl;
     }
     
@@ -454,7 +422,7 @@
         const bathrooms = project.bathrooms || 0;
         const price = project.price || 0;
         const priceType = this.getPriceType(project.priceType);
-        // ✅ استخدام getFullImageUrl للحصول على رابط الصورة الصحيح
+        // ✅ استخدام getFullImageUrl للحصول على رابط الصورة الكامل
         const image = this.getFullImageUrl(project.mainImage);
         const isFeatured = Boolean(project.isFeatured);
         const status = this.getStatus(project.status);
@@ -471,7 +439,7 @@
           <article class="project-card-grid" data-project-id="${id}" data-aos="fade-up" data-aos-delay="${aosDelay}" role="listitem">
             <!-- Card Image Section -->
             <div class="project-image-grid">
-              <img src="${image}" alt="${name}" loading="lazy" decoding="async" onerror="this.src='/global/assets/images/project-placeholder.jpg'">
+              <img src="${image}" alt="${name}" loading="lazy" decoding="async">
               <div class="project-overlay-grid">
                 <span class="project-badge-grid ${isFeatured ? 'featured' : 'available'}">
                   <i class="fas fa-${isFeatured ? 'star' : 'check-circle'}" aria-hidden="true"></i>
