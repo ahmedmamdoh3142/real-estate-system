@@ -11,43 +11,22 @@
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
     <!-- Google Fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    </noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-    <!-- Performance: Critical CSS hint & Non-critical deferral -->
-    <style>
-        /* تحسين الأداء: تأجيل تحميل الأقسام غير المرئية */
-        .featured-section,
-        .benefits-section,
-        .cta-section,
-        .footer {
-            content-visibility: auto;
-            contain-intrinsic-size: 500px;
-        }
-        /* تحسين الأداء: تسريع طبقات الخلفية */
-        .hero-bg-system {
-            will-change: transform;
-            contain: layout style paint;
-        }
-    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
 
     <!-- CSS -->
     <link rel="stylesheet" href="global/css/design-system.css">
     <link rel="stylesheet" href="global/css/utilities.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="global/css/animations.css" media="print" onload="this.media='all'">
-    
-    <link rel="stylesheet" href="public/pages/home/hero.css">
-    <link rel="stylesheet" href="public/pages/home/home.css">
 
-    <!-- AOS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" media="print" onload="this.media='all'">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <!-- Home & Hero CSS -->
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="hero.css">
 </head>
 <body class="dark-mode rtl">
     <!-- Notification Area -->
@@ -60,12 +39,13 @@
             <div class="nav-brand">
                 <a href="admin/pages/login/index.html" class="logo-link" aria-label="الصفحة الرئيسية">
                     <div class="upper-logo">
-                        <img 
+                        <img
                             src="global/assets/images/logo.webp"
                             alt="شعار مجموعة الشركات المتكاملة"
                             width="263"
                             height="146"
                             fetchpriority="high"
+                            decoding="async"
                         >
                     </div>
                 </a>
@@ -82,7 +62,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="public/pages/projects/index.html" class="nav-link">
+                    <a href="public/paages/projects/index.html" class="nav-link">
                         <div class="nav-icon-wrapper">
                             <i class="fas fa-building" aria-hidden="true"></i>
                         </div>
@@ -90,7 +70,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="public/pages/inquiry/index.html" class="nav-link">
+                    <a href="public/paages/inquiry/index.html" class="nav-link">
                         <div class="nav-icon-wrapper">
                             <i class="fas fa-headset" aria-hidden="true"></i>
                         </div>
@@ -98,7 +78,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="public/pages/about/index.html" class="nav-link">
+                    <a href="public/paages/about/index.html" class="nav-link">
                         <div class="nav-icon-wrapper">
                             <i class="fas fa-info-circle" aria-hidden="true"></i>
                         </div>
@@ -114,166 +94,73 @@
                 <span class="toggle-bar"></span>
             </button>
         </div>
-        
-        <div class="navbar-glow-line" aria-hidden="true"></div>
     </nav>
 
-     <!-- ═══════════════════════════════════════════
-         ███ FLAGSHIP HOME HERO - CINEMATIC ███
+    <!-- ═══════════════════════════════════════════
+         CINEMATIC VIDEO HERO — NEW
+         Professional video background with premium typography
          ═══════════════════════════════════════════ -->
     <section class="hero-section" id="main-hero" aria-labelledby="hero-title">
-        <!-- Cinematic Background Layers -->
-        <div class="hero-bg-system" aria-hidden="true">
-            <!-- Primary Gradient Layer -->
-            <div class="hero-gradient-primary"></div>
-            <!-- Animated Aurora Effect -->
-            <div class="hero-aurora">
-                <div class="aurora-beam aurora-beam-1"></div>
-                <div class="aurora-beam aurora-beam-2"></div>
-                <div class="aurora-beam aurora-beam-3"></div>
-            </div>
-            <!-- Dynamic Orbs -->
-            <div class="hero-orbs">
-                <div class="orb orb-1"></div>
-                <div class="orb orb-2"></div>
-                <div class="orb orb-3"></div>
-            </div>
-            <!-- Luxury Grid -->
-            <div class="hero-grid-pattern"></div>
-            <!-- Floating Particles -->
-            <div class="hero-particles" id="hero-particles"></div>
-            <!-- Light Rays -->
-            <div class="hero-light-rays">
-                <div class="light-ray light-ray-1"></div>
-                <div class="light-ray light-ray-2"></div>
-                <div class="light-ray light-ray-3"></div>
-            </div>
-            <!-- Noise Texture -->
-            <div class="hero-noise"></div>
-            <!-- Vignette -->
-            <div class="hero-vignette"></div>
+        <!-- Video Background -->
+        <div class="hero-video-container">
+            <video
+                class="hero-video-bg"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster="global/assets/images/hero-poster.jpg"
+            >
+                <source src="global/assets/images/hero.mp4" type="video/mp4">
+            </video>
         </div>
-        
-        <!-- Main Content -->
-        <div class="container hero-container">
-            <div class="hero-content">
-                <!-- Premium Badge -->
-                <div class="hero-badge">
-                    <span class="badge glow">
-                        <span class="badge-icon">
-                            <i class="fas fa-crown" aria-hidden="true"></i>
-                        </span>
-                        <span class="badge-text">عقارات حصرية للإيجار</span>
-                        <span class="badge-shine" aria-hidden="true"></span>
-                    </span>
-                </div>
-                
-                <!-- Cinematic Title -->
-                <h1 class="hero-title" id="hero-title">
-                    <span class="title-line title-line-1">
-                        <span class="char-wrapper">اكتشف عقارات</span>
-                    </span>
-                    <span class="title-line title-line-2 highlight">
-                        <span class="highlight-text">فاخرة للإيجار</span>
-                        <span class="highlight-underline" aria-hidden="true"></span>
-                        <span class="highlight-glow" aria-hidden="true"></span>
-                    </span>
-                </h1>
-                
-                <!-- Description with Glass Effect -->
-                <div class="hero-description-wrapper">
-                    <p class="hero-description">
-                        نقدم لك أفضل العقارات السكنية والتجارية والفلل للإيجار مع ضمان الجودة والمواقع المتميزة. 
-                         في أفضل الأحياء.
-                    </p>
-                </div>
-                
-                <!-- Premium CTA Buttons -->
-                <div class="hero-actions">
-                    <a href="public/pages/projects/index.html" class="btn btn-primary btn-lg">
-                        <span class="btn-bg" aria-hidden="true"></span>
-                        <span class="btn-glow" aria-hidden="true"></span>
-                        <span class="btn-content">
-                            <span class="btn-icon">
-                                <i class="fas fa-search" aria-hidden="true"></i>
-                            </span>
-                            <span class="btn-text">تصفح العقارات</span>
-                        </span>
-                        <span class="btn-shine" aria-hidden="true"></span>
-                    </a>
-                    <a href="public/pages/inquiry/index.html" class="btn btn-glass btn-lg">
-                        <span class="btn-border" aria-hidden="true"></span>
-                        <span class="btn-content">
-                            <span class="btn-icon">
-                                <i class="fas fa-calendar-check" aria-hidden="true"></i>
-                            </span>
-                            <span class="btn-text">حجز معاينة</span>
-                        </span>
-                        <span class="btn-hover-fill" aria-hidden="true"></span>
-                    </a>
-                </div>
-                
-                <!-- Stats Bar (تم إضافة IDs للربط مع البيانات الحية) -->
-                <div class="hero-stats" id="hero-stats-container">
-                    <div class="stat-item">
-                        <span class="stat-number" id="hero-stat-units" data-target="200">200+</span>
-                        <span class="stat-label">عقار متاح</span>
-                    </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="hero-stat-cities" data-target="50">50+</span>
-                        <span class="stat-label">حي مميز</span>
-                    </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="hero-stat-clients" data-target="1000">1000+</span>
-                        <span class="stat-label">عميل سعيد</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Cinematic Wave System -->
-        <div class="hero-waves" aria-hidden="true">
-            <svg class="wave-svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:rgba(255,255,255,0.03)"/>
-                        <stop offset="50%" style="stop-color:rgba(203,205,205,0.08)"/>
-                        <stop offset="100%" style="stop-color:rgba(255,255,255,0.03)"/>
-                    </linearGradient>
-                    <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:rgba(10,10,10,0.9)"/>
-                        <stop offset="50%" style="stop-color:rgba(20,20,20,0.95)"/>
-                        <stop offset="100%" style="stop-color:rgba(10,10,10,0.9)"/>
-                    </linearGradient>
-                </defs>
-                <path class="wave wave-1" fill="url(#waveGradient1)" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,138.7C672,128,768,160,864,181.3C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-                <path class="wave wave-2" fill="url(#waveGradient2)" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,165.3C1248,171,1344,213,1392,234.7L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-            </svg>
-            <div class="wave-glow-line"></div>
-        </div>
-        
-        <!-- Premium Scroll Indicator -->
-        <div class="scroll-indicator" aria-hidden="true">
-            <div class="scroll-line">
-                <div class="scroll-dot"></div>
-            </div>
-            <span class="scroll-text">اكتشف المزيد</span>
-        </div>
-        
-        <!-- Corner Accents -->
-        <div class="corner-accent corner-top-left" aria-hidden="true"></div>
-        <div class="corner-accent corner-top-right" aria-hidden="true"></div>
-        <div class="corner-accent corner-bottom-left" aria-hidden="true"></div>
-        <div class="corner-accent corner-bottom-right" aria-hidden="true"></div>
-    </section>
 
-    <!-- Featured Properties Section (الهيكل يبقى، المحتوى يولده JavaScript بتصميم الكود الأول) -->
-    <section class="featured-section premium-featured" aria-labelledby="featured-title">
-        <div class="featured-bg-pattern" aria-hidden="true"></div>
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <!-- Badge -->
+            <div class="hero-intro-badge">
+                <i class="fas fa-crown" aria-hidden="true"></i>
+                <span>عقارات حصرية للإيجار</span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="hero-headline" id="hero-title">
+                <span class="line">اكتشف عقارات</span>
+                <span class="line"><span class="accent">فاخرة للإيجار</span></span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="hero-subtitle">
+                نقدم لك أفضل العقارات السكنية والتجارية والفلل للإيجار
+                مع ضمان الجودة والمواقع المتميزة في أفضل الأحياء.
+            </p>
+
+            <!-- CTA -->
+            <a href="public/paages/projects/index.html" class="hero-cta-btn">
+                <span>تصفح العقارات</span>
+                <span class="btn-arrow">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </span>
+            </a>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="hero-scroll-hint" aria-hidden="true">
+            <div class="scroll-track"></div>
+            <span>اسكرول للأسفل</span>
+        </div>
+    </section>
+    <!-- END HERO -->
+
+    <div class="section-divider"></div>
+
+    <!-- ═══════════════════════════════════════════
+         Featured Properties Section - 3D Carousel
+         ═══════════════════════════════════════════ -->
+    <section class="featured-section premium-featured section-reveal" aria-labelledby="featured-title">
         <div class="container">
-            <header class="section-header premium-header" data-aos="fade-up">
+            <header class="section-header premium-header">
                 <div class="section-badge">
                     <span class="badge badge-outline premium-outline-badge">
                         <i class="fas fa-star" aria-hidden="true"></i>
@@ -281,39 +168,61 @@
                     </span>
                 </div>
                 <h2 class="section-title premium-title" id="featured-title">
-                    <span>عقاراتنا</span>
-                    <span class="highlight premium-highlight-text">المميزة</span>
+                    <span class="title-line">
+                        <span>عقاراتنا</span>
+                        <span class="highlight premium-highlight-text">المميزة</span>
+                    </span>
+                    <span class="title-accent" aria-hidden="true"></span>
                 </h2>
                 <p class="section-description premium-description">
                     مجموعة مختارة من أفضل العقارات السكنية والتجارية والفلل المتاحة للإيجار
                 </p>
             </header>
-            
-            <div class="featured-projects-grid" id="featured-projects-grid" role="list">
-                <div class="loading-projects" data-aos="fade-up">
-                    <div class="loading-spinner premium-spinner"></div>
-                    <p>جاري تحميل العقارات المميزة...</p>
+
+            <!-- 3D Carousel Container -->
+            <div class="carousel-wrapper">
+                <!-- Navigation Arrows -->
+                <button class="carousel-nav nav-prev" aria-label="السابق">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="carousel-nav nav-next" aria-label="التالي">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <!-- 3D Carousel -->
+                <div class="carousel-3d" id="carousel3d">
+                    <div class="loading-projects">
+                        <div class="loading-spinner premium-spinner">
+                            <span class="spinner-ring"></span>
+                            <span class="spinner-ring"></span>
+                            <span class="spinner-core"></span>
+                        </div>
+                        <p>جاري تحميل العقارات المميزة...</p>
+                    </div>
                 </div>
+
+                <!-- Carousel Indicators -->
+                <div class="carousel-indicators" id="carouselIndicators"></div>
             </div>
-            
-            <footer class="section-footer" data-aos="fade-up" data-aos-delay="200">
-                <a href="public/pages/projects/index.html" class="btn btn-outline btn-lg premium-view-all">
-                    <span>عرض جميع العقارات</span>
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                    <div class="btn-hover-effect" aria-hidden="true"></div>
+
+            <!-- Section Footer -->
+            <footer class="section-footer">
+                <a href="public/paages/projects/index.html" class="btn btn-outline btn-lg premium-view-all">
+                    <span class="btn-text">عرض جميع العقارات</span>
+                    <span class="btn-icon">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </span>
                 </a>
             </footer>
         </div>
-        <div class="featured-glow-orb" aria-hidden="true"></div>
     </section>
 
     <div class="section-divider"></div>
 
-    <!-- Benefits Section (تبقى دون تغيير) -->
-    <section class="benefits-section" aria-labelledby="benefits-title">
-        <div class="benefits-bg-animation" aria-hidden="true"></div>
+    <!-- Benefits Section — NEW PROFESSIONAL DESIGN -->
+    <section class="benefits-section section-reveal" aria-labelledby="benefits-title">
         <div class="container">
-            <header class="section-header text-center" data-aos="fade-up">
+            <header class="section-header text-center">
                 <h2 class="section-title" id="benefits-title">
                     لماذا تختار <span class="highlight">ABH Holding Group؟</span>
                 </h2>
@@ -321,111 +230,165 @@
                     نقدم مزايا وخدمات استثنائية تجعل تجربة إيجار العقار سهلة وآمنة
                 </p>
             </header>
-            
-            <div class="benefits-grid">
-                <article class="benefit-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="benefit-icon">
-                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
-                        <div class="icon-glow" aria-hidden="true"></div>
+
+            <div class="benefits-timeline">
+                <!-- Benefit 1 -->
+                <div class="timeline-item">
+                    <div class="timeline-marker">
+                        <div class="timeline-number">01</div>
+                        <div class="timeline-line"></div>
                     </div>
-                    <h3 class="benefit-title">عقود إيجار موثقة</h3>
-                    <p class="benefit-description">
-                        عقود إيجار رسمية موثقة من الجهات المختصة مع كامل الضمانات القانونية لحمايتك.
-                    </p>
-                </article>
-                
-                <article class="benefit-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="benefit-icon">
-                        <i class="fas fa-home" aria-hidden="true"></i>
-                        <div class="icon-glow" aria-hidden="true"></div>
+                    <div class="timeline-content">
+                        <div class="benefit-icon-large">
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                            <div class="icon-aura"></div>
+                        </div>
+                        <h3 class="benefit-title">عقود إيجار موثقة</h3>
+                        <p class="benefit-description">
+                            عقود إيجار رسمية موثقة من الجهات المختصة مع كامل الضمانات القانونية لحمايتك.
+                        </p>
                     </div>
-                    <h3 class="benefit-title">تنوع في الخيارات</h3>
-                    <p class="benefit-description">
-                        شقق سكنية، مكاتب تجارية، فلل، ومحلات تجارية في أفضل المواقع والأحياء.
-                    </p>
-                </article>
-                
-                <article class="benefit-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="benefit-icon">
-                        <i class="fas fa-headset" aria-hidden="true"></i>
-                        <div class="icon-glow" aria-hidden="true"></div>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="timeline-item">
+                    <div class="timeline-marker">
+                        <div class="timeline-number">02</div>
+                        <div class="timeline-line"></div>
                     </div>
-                    <h3 class="benefit-title">دعم ومتابعة مستمرة</h3>
-                    <p class="benefit-description">
-                        فريق متخصص لخدمتك 24/7 لمتابعة صيانة العقار وتقديم الدعم خلال فترة الإيجار.
-                    </p>
-                </article>
-                
-                <article class="benefit-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="benefit-icon">
-                        <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
-                        <div class="icon-glow" aria-hidden="true"></div>
+                    <div class="timeline-content">
+                        <div class="benefit-icon-large">
+                            <i class="fas fa-home" aria-hidden="true"></i>
+                            <div class="icon-aura"></div>
+                        </div>
+                        <h3 class="benefit-title">تنوع في الخيارات</h3>
+                        <p class="benefit-description">
+                            شقق سكنية، مكاتب تجارية، فلل، ومحلات تجارية في أفضل المواقع والأحياء.
+                        </p>
                     </div>
-                    <h3 class="benefit-title">مواقع استراتيجية</h3>
-                    <p class="benefit-description">
-                        عقاراتنا في أفضل المواقع الحيوية والقريبة من الخدمات والمرافق الأساسية.
-                    </p>
-                </article>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="timeline-item">
+                    <div class="timeline-marker">
+                        <div class="timeline-number">03</div>
+                        <div class="timeline-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="benefit-icon-large">
+                            <i class="fas fa-headset" aria-hidden="true"></i>
+                            <div class="icon-aura"></div>
+                        </div>
+                        <h3 class="benefit-title">دعم ومتابعة مستمرة</h3>
+                        <p class="benefit-description">
+                            فريق متخصص لخدمتك 24/7 لمتابعة صيانة العقار وتقديم الدعم خلال فترة الإيجار.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Benefit 4 -->
+                <div class="timeline-item">
+                    <div class="timeline-marker">
+                        <div class="timeline-number">04</div>
+                        <div class="timeline-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="benefit-icon-large">
+                            <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                            <div class="icon-aura"></div>
+                        </div>
+                        <h3 class="benefit-title">مواقع استراتيجية</h3>
+                        <p class="benefit-description">
+                            عقاراتنا في أفضل المواقع الحيوية والقريبة من الخدمات والمرافق الأساسية.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <div class="section-divider"></div>
 
-    <!-- CTA Section (بتصميم Premium من الكود الأول) -->
-    <section class="cta-section premium-cta">
-    <div class="container">
-        <div class="cta-card premium-cta-card" data-aos="fade-up" data-aos-duration="800">
-            <div class="cta-content">
-                <h2 class="cta-title" data-aos="fade-right" data-aos-delay="100">هل تبحث عن <span class="highlight premium-highlight-text">عقار للإيجار؟</span></h2>
-                <p class="cta-description" data-aos="fade-right" data-aos-delay="200">
-                    تواصل مع فريقنا الآن لحجز معاينة العقار المناسب لك والحصول على أفضل عروض الإيجار
-                    مع ضمان الجودة والموثوقية.
-                </p>
-                <div class="cta-actions" data-aos="fade-right" data-aos-delay="300">
-                    <a href="public/pages/inquiry/index.html" class="btn btn-primary btn-lg premium-cta-btn">
-                        <i class="fas fa-phone-alt" aria-hidden="true"></i>
-                        <span>اتصل لحجز معاينة</span>
-                    </a>
+    <!-- CTA Section — NEW CINEMATIC DESIGN -->
+    <section class="cta-section section-reveal">
+        <div class="container">
+            <div class="cta-cinematic">
+                <!-- Background Video/Image Layer -->
+                <div class="cta-media-layer">
+                    <video
+                        class="cta-video-bg"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="none"
+                        poster="global/assets/images/cta.png"
+                    >
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-luxury-apartment-interior-design-4837-large.mp4" type="video/mp4">
+                    </video>
+                    <div class="cta-media-overlay"></div>
                 </div>
-            </div>
-            <div class="cta-image" data-aos="fade-left" data-aos-delay="200">
-                <div class="image-placeholder premium-image">
-                    <div class="floating-elements">
-                        <div class="float-element element-1">
-                            <i class="fas fa-home"></i>
+
+                <!-- Content Layer -->
+                <div class="cta-content-layer">
+                    <div class="cta-left">
+                        <div class="cta-badge">
+                            <i class="fas fa-sparkles"></i>
+                            <span>ابدأ رحلتك الآن</span>
                         </div>
-                        <div class="float-element element-2">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <div class="float-element element-3">
-                            <i class="fas fa-key"></i>
+                        <h2 class="cta-title">هل تبحث عن <span class="highlight">عقار للإيجار؟</span></h2>
+                        <p class="cta-description">
+                            تواصل مع فريقنا الآن لحجز معاينة العقار المناسب لك والحصول على أفضل عروض الإيجار
+                            مع ضمان الجودة والموثوقية.
+                        </p>
+                        <div class="cta-actions">
+                            <a href="public/paages/inquiry/index.html" class="btn btn-primary btn-lg cta-main-btn">
+                                <span>اتصل لحجز معاينة</span>
+                                <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                            </a>
+                            <a href="public/paages/projects/index.html" class="btn btn-ghost btn-lg cta-secondary-btn">
+                                <span>تصفح العقارات</span>
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                            </a>
                         </div>
                     </div>
-                    <div class="main-icon">
-                        <i class="fas fa-handshake"></i>
+
+                    <div class="cta-right">
+                        <div class="cta-stats-float">
+                            <div class="float-stat" id="cta-stat-projects">
+                                <span class="stat-num" data-target="0">0</span>
+                                <span class="stat-label">عقار متاح</span>
+                            </div>
+                            <div class="float-stat" id="cta-stat-cities">
+                                <span class="stat-num" data-target="0">0</span>
+                                <span class="stat-label">حي سكني</span>
+                            </div>
+                            <div class="float-stat" id="cta-stat-support">
+                                <span class="stat-num" data-static="true">24/7</span>
+                                <span class="stat-label">دعم فني</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="image-glow"></div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-    <!-- Footer (يبقى دون تغيير) -->
+    <!-- Footer -->
     <footer class="footer" role="contentinfo">
         <div class="footer-main">
             <div class="container">
                 <div class="footer-grid">
                     <!-- About Column -->
-                    <div class="footer-col footer-about" data-aos="fade-up" data-aos-delay="100">
+                    <div class="footer-col footer-about">
                         <div class="footer-logo">
-                            <img 
+                            <img
                                 src="global/assets/images/logo.webp"
                                 alt="شعار مجموعة الشركات المتكاملة"
                                 width="263"
                                 height="146"
                                 loading="lazy"
+                                decoding="async"
                             >
                         </div>
                         <p class="footer-about-text">
@@ -455,7 +418,7 @@
                     </div>
 
                     <!-- Contact Column -->
-                    <div class="footer-col footer-contact" data-aos="fade-up" data-aos-delay="200">
+                    <div class="footer-col footer-contact">
                         <h3 class="footer-title">تواصل معنا</h3>
                         <ul class="footer-contact-list">
                             <li>
@@ -497,13 +460,11 @@
     <!-- JavaScript -->
     <script defer src="global/js/core.js"></script>
     <script defer src="global/js/api-client.js"></script>
-    
-    <!-- AOS -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-    
-    <!-- Home JS (تم تعديله لربط الإحصائيات وتحديثها من الـ API) -->
-    <script defer src="public/pages/home/home.js"></script>
-    <!-- Hero JS (تم تحسينه لرفع الأداء) -->
-    <script defer src="public/pages/home/hero.js"></script>
+
+    <!-- Home JS -->
+    <script defer src="public/paages/home/home.js"></script>
+
+    <!-- Hero JS -->
+    <script defer src="public/paages/home/"></script>
 </body>
 </html>
