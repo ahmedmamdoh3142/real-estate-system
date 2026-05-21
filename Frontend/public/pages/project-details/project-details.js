@@ -7,19 +7,19 @@
  * 
  * UPDATED: Added 3D Carousel for Related Projects
  * Added CTA Stats Animation
- * Added exact Home page footer styles
+ * Server-ready version (relative API paths)
  * =============================================
  */
 (function() {
     'use strict';
 
-    console.log('✅ project-details.js loaded - PREMIUM VERSION v2.0');
+    console.log('✅ project-details.js loaded - PREMIUM VERSION v2.0 (server)');
 
     // ─────────────────────────────────────────────
     // Configuration
     // ─────────────────────────────────────────────
     const CONFIG = {
-        baseURL: '',
+        baseURL: '',               // فارغ – المسارات نسبية
         autoPlayInterval: 5000,
         transitionDuration: 800,
         enableAutoPlay: true,
@@ -125,7 +125,7 @@
     ];
 
     // ─────────────────────────────────────────────
-    // 3D Carousel Class — CINEMATIC V2 (from home.js)
+    // 3D Carousel Class — CINEMATIC V2 (adapted for server)
     // ─────────────────────────────────────────────
     class Carousel3D {
         constructor(containerId, indicatorsId) {
@@ -168,6 +168,7 @@
             if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
                 return imageUrl;
             }
+            // المسارات النسبية التي تبدأ بـ / نضيف لها baseURL (فارغ حاليًا)
             if (imageUrl.startsWith('/')) {
                 return `${CONFIG.baseURL}${imageUrl}`;
             }
@@ -494,10 +495,13 @@
         }
     }
 
+    // ─────────────────────────────────────────────
+    // Main Page Controller
+    // ─────────────────────────────────────────────
     class ProjectDetailsPage {
         constructor() {
             this.apiBaseUrl = '/api/public';
-            this.baseURL = '';
+            this.baseURL = '';          // رابط الخادم الخلفي
             this.projectId = this.getProjectIdFromURL();
             this.projectData = null;
             this.relatedProjects = [];
@@ -510,14 +514,22 @@
             this.init();
         }
 
+        /**
+         * تحويل مسار الصورة إلى رابط كامل إذا كانت محفوظة على السيرفر
+         * @param {string} imageUrl - المسار النسبي أو المطلق للصورة
+         * @returns {string} رابط كامل صالح للعرض
+         */
         getFullImageUrl(imageUrl) {
             if (!imageUrl) return '/global/assets/images/project-placeholder.jpg';
+            // إذا كان الرابط مطلقاً بالفعل (يبدأ بـ http) نرجعه كما هو
             if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
                 return imageUrl;
             }
+            // فقط مسارات الملفات المرفوعة على السيرفر نضيف لها رابط الخادم
             if (imageUrl.startsWith('/uploads/')) {
                 return `${this.baseURL}${imageUrl}`;
             }
+            // أي مسار آخر (مثل الصور المحلية الافتراضية) نرجعه دون تغيير
             return imageUrl;
         }
 
@@ -562,6 +574,9 @@
             }, 300);
         }
 
+        /**
+         * Initialize AOS Animation Library
+         */
         initAOS() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
@@ -574,6 +589,7 @@
                 });
                 console.log('✨ AOS initialized');
 
+                // Refresh AOS after window load
                 window.addEventListener('load', () => {
                     setTimeout(() => AOS.refresh(), 200);
                 });
@@ -582,6 +598,9 @@
             }
         }
 
+        /**
+         * Setup Mobile Menu with Touch Support
+         */
         setupMobileMenu() {
             const toggle = document.getElementById('mobile-toggle');
             const navMenu = document.querySelector('.nav-menu');
@@ -621,18 +640,21 @@
                 this.isMenuOpen ? closeMenu() : openMenu();
             });
 
+            // Close menu on nav link click
             navMenu.addEventListener('click', (e) => {
                 if (e.target.closest('.nav-link')) {
                     closeMenu();
                 }
             });
 
+            // Close on resize
             window.addEventListener('resize', () => {
                 if (window.innerWidth > 768 && this.isMenuOpen) {
                     closeMenu();
                 }
             });
 
+            // Close on escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this.isMenuOpen) {
                     closeMenu();
@@ -640,6 +662,9 @@
             });
         }
 
+        /**
+         * Setup Navbar Scroll Effect with RAF
+         */
         setupNavbarScroll() {
             const navbar = document.querySelector('.navbar');
             if (!navbar) return;
@@ -659,9 +684,42 @@
             };
 
             window.addEventListener('scroll', handleScroll, { passive: true });
-            handleScroll();
+            handleScroll(); // Initial check
         }
 
+        addMobileAdminButtonStyles() {
+            if (document.getElementById('mobile-admin-styles')) return;
+
+            const style = document.createElement('style');
+            style.id = 'mobile-admin-styles';
+            style.textContent = `
+                @media (max-width: 768px) {
+                    .mobile-admin-btn {
+                        margin-top: auto;
+                        padding-top: 1.5rem;
+                        border-top: 1px solid rgba(203, 205, 205, 0.08);
+                        display: block !important;
+                    }
+                    
+                    .mobile-admin-btn .premium-link {
+                        background: rgba(203, 205, 205, 0.05) !important;
+                        border: 1px solid rgba(203, 205, 205, 0.1) !important;
+                    }
+                }
+                
+                @media (min-width: 769px) {
+                    .mobile-admin-btn {
+                        display: none !important;
+                    }
+                }
+            `;
+
+            document.head.appendChild(style);
+        }
+
+        /**
+         * Setup Event Listeners
+         */
         setupEventListeners() {
             // Share button
             const shareBtn = document.getElementById('share-button');
@@ -709,6 +767,9 @@
             this.setupGalleryModal();
         }
 
+        /**
+         * Setup Form Validation
+         */
         setupFormValidation() {
             const form = document.getElementById('inquiry-form');
             if (!form) return;
@@ -720,6 +781,7 @@
                 input.addEventListener('blur', () => this.validateField(input));
             });
 
+            // Special handling for radio buttons
             const radioButtons = document.querySelectorAll('input[name="contactPreference"]');
             radioButtons.forEach(radio => {
                 radio.addEventListener('change', () => {
@@ -731,6 +793,7 @@
                 });
             });
 
+            // Phone validation
             const phoneInput = document.getElementById('customer-phone');
             if (phoneInput) {
                 phoneInput.addEventListener('input', () => this.validatePhoneField(phoneInput));
@@ -738,6 +801,9 @@
             }
         }
 
+        /**
+         * Validate Phone Field
+         */
         validatePhoneField(input) {
             const value = input.value.trim();
             const errorElement = document.getElementById('phone-error');
@@ -753,6 +819,7 @@
                 return false;
             }
 
+            // Relaxed phone regex for Saudi numbers
             const phoneRegex = /^(05|5)([0-9]{8,9})$/;
             const cleaned = value.replace(/\s+/g, '');
 
@@ -769,6 +836,9 @@
             }
         }
 
+        /**
+         * Validate Field
+         */
         validateField(input) {
             const errorElement = document.getElementById(`${input.name}-error`);
             if (!errorElement) return true;
@@ -827,7 +897,7 @@
 
         async loadStatistics() {
             try {
-                const response = await fetch('/api/public/home/stats');
+                const response = await fetch(`${this.apiBaseUrl}/home/stats`);
                 if (!response.ok) throw new Error('Failed to load stats');
 
                 const data = await response.json();
@@ -898,6 +968,9 @@
             requestAnimationFrame(update);
         }
 
+        /**
+         * Load Project Details from API
+         */
         async loadProjectDetails() {
             try {
                 console.log(`🔍 جلب تفاصيل العقار ID: ${this.projectId}`);
@@ -924,6 +997,7 @@
                     this.initializeGallery();
                     this.loadRelatedProjects();
 
+                    // Refresh AOS after content load
                     setTimeout(() => {
                         if (typeof AOS !== 'undefined') AOS.refresh();
                     }, 100);
@@ -937,6 +1011,9 @@
             }
         }
 
+        /**
+         * Load Related Projects
+         */
         async loadRelatedProjects() {
             try {
                 console.log('🏢 جلب العقارات المشابهة...');
@@ -971,30 +1048,9 @@
             }
         }
 
-        renderRelatedProjects() {
-            const container = document.getElementById('carousel3d');
-            const indicatorsContainer = document.getElementById('carouselIndicators');
-            const noRelatedContainer = document.getElementById('no-related-projects');
-
-            if (!container) return;
-
-            if (!this.relatedProjects || this.relatedProjects.length === 0) {
-                if (noRelatedContainer) noRelatedContainer.style.display = 'block';
-                // Still load sample projects for the carousel
-                if (this.carousel3D) {
-                    this.carousel3D.loadProjects(SAMPLE_PROJECTS);
-                }
-                return;
-            }
-
-            if (noRelatedContainer) noRelatedContainer.style.display = 'none';
-
-            // Load into 3D Carousel
-            if (this.carousel3D) {
-                this.carousel3D.loadProjects(this.relatedProjects);
-            }
-        }
-
+        /**
+         * Submit Inquiry Form
+         */
         async submitInquiryForm() {
             const form = document.getElementById('inquiry-form');
             const submitBtn = document.getElementById('submit-inquiry');
@@ -1005,6 +1061,7 @@
                 return;
             }
 
+            // Validate all fields
             let isValid = true;
             const inputs = form.querySelectorAll('input[required], textarea[required]');
 
@@ -1016,6 +1073,7 @@
                 }
             });
 
+            // Validate contact preference
             const contactPref = document.querySelector('input[name="contactPreference"]:checked');
             if (!contactPref) {
                 const errorEl = document.getElementById('contactPref-error');
@@ -1031,6 +1089,7 @@
                 return;
             }
 
+            // Collect form data
             const formData = {
                 customerName: document.getElementById('customer-name').value.trim(),
                 customerEmail: document.getElementById('customer-email').value.trim(),
@@ -1071,6 +1130,7 @@
             } catch (error) {
                 console.error('❌ Error submitting inquiry:', error);
 
+                // Fallback attempt
                 try {
                     const testResponse = await fetch(`${this.apiBaseUrl}/project-details/test-inquiry`, {
                         method: 'POST',
@@ -1097,21 +1157,27 @@
             }
         }
 
+        /**
+         * Reset Inquiry Form
+         */
         resetInquiryForm() {
             const form = document.getElementById('inquiry-form');
             if (!form) return;
 
             form.reset();
 
+            // Clear error messages
             document.querySelectorAll('.form-error').forEach(el => {
                 el.textContent = '';
                 el.classList.remove('active');
             });
 
+            // Clear validation classes
             form.querySelectorAll('input, textarea').forEach(input => {
                 input.classList.remove('valid', 'invalid');
             });
 
+            // Reset radio buttons
             document.querySelectorAll('input[name="contactPreference"]').forEach(radio => {
                 radio.checked = false;
             });
@@ -1120,6 +1186,9 @@
             if (preferredTime) preferredTime.value = '';
         }
 
+        /**
+         * Show Inquiry Success
+         */
         showInquirySuccess() {
             const form = document.getElementById('inquiry-form');
             const success = document.getElementById('inquiry-success');
@@ -1128,6 +1197,9 @@
             if (success) success.style.display = 'block';
         }
 
+        /**
+         * Show Inquiry Form
+         */
         showInquiryForm() {
             const form = document.getElementById('inquiry-form');
             const success = document.getElementById('inquiry-success');
@@ -1139,6 +1211,9 @@
             }
         }
 
+        /**
+         * Show Notification
+         */
         showNotification(message, type = 'info') {
             let notification = document.getElementById('custom-notification');
 
@@ -1180,6 +1255,7 @@
                 notification.style.display = 'none';
             }, 5000);
 
+            // Add animation styles
             if (!document.getElementById('notification-styles')) {
                 const style = document.createElement('style');
                 style.id = 'notification-styles';
@@ -1199,6 +1275,9 @@
             }
         }
 
+        /**
+         * Show Loading State
+         */
         showLoadingState() {
             const titleElement = document.getElementById('project-title');
             if (titleElement) {
@@ -1206,23 +1285,30 @@
             }
         }
 
+        /**
+         * Render Project Details
+         */
         renderProjectDetails() {
             if (!this.projectData) return;
 
             const project = this.projectData;
 
+            // Update page title
             const titleElement = document.getElementById('project-title');
             if (titleElement) {
                 titleElement.textContent = project.projectName;
             }
 
+            // Update document title
             document.title = `${project.projectName} | نظام إدارة العقارات`;
 
+            // Update breadcrumb
             const breadcrumb = document.getElementById('project-name-breadcrumb');
             if (breadcrumb) {
                 breadcrumb.textContent = project.projectName;
             }
 
+            // Update sections
             this.updateQuickInfo(project);
             this.updatePropertyBadges(project);
             this.updateDescription(project);
@@ -1233,6 +1319,9 @@
             this.hideLoadingStates();
         }
 
+        /**
+         * Update Quick Info
+         */
         updateQuickInfo(project) {
             const elements = {
                 price: document.getElementById('quick-price'),
@@ -1247,6 +1336,9 @@
             if (elements.status) elements.status.textContent = project.status || 'نشط';
         }
 
+        /**
+         * Update Property Badges
+         */
         updatePropertyBadges(project) {
             const container = document.getElementById('property-badges');
             if (!container) return;
@@ -1296,6 +1388,9 @@
             container.innerHTML = html;
         }
 
+        /**
+         * Update Description
+         */
         updateDescription(project) {
             const container = document.getElementById('project-description');
             if (!container) return;
@@ -1310,6 +1405,9 @@
             }
         }
 
+        /**
+         * Update Features
+         */
         updateFeatures(project) {
             const container = document.getElementById('features-grid');
             if (!container) return;
@@ -1336,6 +1434,9 @@
             }
         }
 
+        /**
+         * Update Specifications
+         */
         updateSpecifications(project) {
             const container = document.getElementById('specs-grid');
             if (!container) return;
@@ -1362,6 +1463,9 @@
             `).join('');
         }
 
+        /**
+         * Update Location
+         */
         updateLocation(project) {
             const container = document.getElementById('location-details');
             if (!container) return;
@@ -1405,6 +1509,9 @@
             this.updateMap(project);
         }
 
+        /**
+         * Update Map
+         */
         updateMap(project) {
             const mapContainer = document.getElementById('location-map');
             if (!mapContainer) return;
@@ -1436,6 +1543,9 @@
             }
         }
 
+        /**
+         * Update Inquiry Form with Project Data
+         */
         updateInquiryForm(project) {
             const projectIdInput = document.getElementById('project-id');
             const projectNameInput = document.getElementById('project-name-input');
@@ -1444,6 +1554,9 @@
             if (projectNameInput) projectNameInput.value = project.projectName;
         }
 
+        /**
+         * Initialize Gallery - مع تطبيق getFullImageUrl على مسارات الصور
+         */
         initializeGallery() {
             const project = this.projectData;
             if (!project) return;
@@ -1475,6 +1588,7 @@
                 mainImageContainer.style.display = 'block';
             }
 
+            // Populate gallery modal
             const galleryImages = document.getElementById('gallery-images');
             if (galleryImages) {
                 galleryImages.innerHTML = project.images.map((image, index) => `
@@ -1485,6 +1599,9 @@
             }
         }
 
+        /**
+         * Setup Gallery Modal
+         */
         setupGalleryModal() {
             const modal = document.getElementById('gallery-modal');
             const openBtn = document.getElementById('view-gallery-btn');
@@ -1521,12 +1638,41 @@
             }
         }
 
+        /**
+         * Hide Loading States
+         */
         hideLoadingStates() {
             document.querySelectorAll('.loading-line, .loading-features, .loading-specs, .loading-location, .loading-projects').forEach(el => {
                 el.style.display = 'none';
             });
         }
 
+        /**
+         * Render Related Projects - now uses 3D Carousel
+         */
+        renderRelatedProjects() {
+            const noRelatedContainer = document.getElementById('no-related-projects');
+
+            if (!this.relatedProjects || this.relatedProjects.length === 0) {
+                if (noRelatedContainer) noRelatedContainer.style.display = 'block';
+                // Still load sample projects for the carousel
+                if (this.carousel3D) {
+                    this.carousel3D.loadProjects(SAMPLE_PROJECTS);
+                }
+                return;
+            }
+
+            if (noRelatedContainer) noRelatedContainer.style.display = 'none';
+
+            // Load into 3D Carousel
+            if (this.carousel3D) {
+                this.carousel3D.loadProjects(this.relatedProjects);
+            }
+        }
+
+        /**
+         * Share Project
+         */
         shareProject() {
             const project = this.projectData;
             const url = window.location.href;
@@ -1541,6 +1687,7 @@
                 navigator.clipboard.writeText(url)
                     .then(() => this.showNotification('تم نسخ رابط العقار إلى الحافظة', 'success'))
                     .catch(() => {
+                        // Fallback for older browsers
                         const tempInput = document.createElement('input');
                         tempInput.value = url;
                         document.body.appendChild(tempInput);
@@ -1552,6 +1699,9 @@
             }
         }
 
+        /**
+         * Print Project Details
+         */
         printProjectDetails() {
             const project = this.projectData;
             if (!project) return;
@@ -1628,6 +1778,9 @@
             }, 500);
         }
 
+        /**
+         * Download Project Details
+         */
         downloadProjectDetails() {
             const project = this.projectData;
             if (!project) return;
@@ -1672,6 +1825,9 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
             this.showNotification('تم تحميل التفاصيل بنجاح', 'success');
         }
 
+        /**
+         * Show Fallback Project Details
+         */
         showFallbackProjectDetails() {
             console.log('🔄 Using fallback project details');
 
@@ -1713,6 +1869,9 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
             }, 100);
         }
 
+        /**
+         * Format Price
+         */
         formatPrice(price, priceType) {
             if (!price) return '---';
 
@@ -1729,6 +1888,9 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
             return num.toLocaleString('ar-SA') + ' ر.س';
         }
 
+        /**
+         * Get Price Type Text
+         */
         getPriceTypeText(type) {
             if (!type) return 'شراء';
 
@@ -1739,6 +1901,9 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
             return 'شراء';
         }
 
+        /**
+         * Format Date
+         */
         formatDate(dateString) {
             if (!dateString) return 'غير محدد';
 
@@ -1755,6 +1920,9 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
         }
     }
 
+    /**
+     * Initialize Application
+     */
     async function initialize() {
         try {
             window.projectDetailsPage = new ProjectDetailsPage();
@@ -1764,6 +1932,7 @@ ${project.features.map(f => `• ${f.name}: ${f.value || ''}`).join('\n')}
         }
     }
 
+    // Start initialization
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
