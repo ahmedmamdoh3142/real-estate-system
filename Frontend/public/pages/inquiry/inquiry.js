@@ -470,7 +470,7 @@
             if (callBtn) {
                 callBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    window.location.href = 'tel:+966501234567';
+                    window.location.href = 'tel:+966561117516';
                 });
             }
 
